@@ -46,16 +46,14 @@ this mid-session; the entire Next.js app (everything except `.claude/`)
 was moved from `glucgp` to `Mamawebseite`. `glucgp` should be left alone —
 it belongs to a different project.
 
-One side effect: the Claude Code dev-server launch config
-(`.claude/launch.json`) lives in `glucgp` (the harness's fixed session
-root), not in `Mamawebseite`, because that's where the preview tool reads
-it from for this session. It defines an `aurora-homes-dev` entry pointing
-`--prefix` at the Mamawebseite folder on port `3100` (port 3000 was
-occupied by an unrelated `highersignal-hq` dev server). If you start a
-fresh session rooted at `Mamawebseite` directly, you can ignore this and
-just use `npm run dev` normally (see package.json — it's hardcoded to
-`next dev -p 3100`; change back to the default port if that constraint no
-longer applies).
+One side effect: during that session, the Claude Code dev-server launch
+config (`.claude/launch.json`) had to live in `glucgp` (the harness's fixed
+session root) pointing `--prefix` at the Mamawebseite folder on port
+`3100`, because port 3000 was occupied by an unrelated `highersignal-hq`
+dev server on that machine at the time. This was a local-session-only
+workaround — `package.json`'s `dev` script runs plain `next dev` (port
+3000) as normal; don't reintroduce a hardcoded port unless you hit the
+same local conflict again.
 
 ---
 
@@ -420,7 +418,7 @@ Worth knowing before touching related code:
 ```bash
 cd C:\Users\husky\Documents\Mamawebseite
 npm install
-npm run dev        # currently hardcoded to port 3100, see package.json
+npm run dev        # http://localhost:3000
 ```
 
 Works immediately with no env vars. To connect Supabase or a real AI
