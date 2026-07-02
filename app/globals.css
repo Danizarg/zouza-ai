@@ -1,26 +1,95 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  /* Aurora Homes — Mediterranean palette */
+  --color-ivory: #faf7f0;
+  --color-parchment: #f4eee1;
+  --color-sand: #ece3d0;
+  --color-sand-deep: #ddcfb4;
+  --color-line: #e5dcc9;
+
+  --color-navy-950: #0b1929;
+  --color-navy-900: #122740;
+  --color-navy-800: #1a3557;
+  --color-navy-700: #24446c;
+  --color-navy-600: #2f537f;
+  --color-navy-500: #3f6291;
+  --color-navy-400: #6683a8;
+  --color-navy-300: #93a9c4;
+
+  --color-gold-700: #8a6f36;
+  --color-gold-600: #9c7e3f;
+  --color-gold-500: #b3945a;
+  --color-gold-300: #d3bd8b;
+  --color-gold-200: #e6d9b8;
+  --color-gold-100: #f2ead5;
+
+  --color-terra-700: #a34a28;
+  --color-terra-600: #b65731;
+  --color-terra-500: #c96a41;
+  --color-terra-200: #ecc7b3;
+  --color-terra-100: #f6e3d8;
+
+  --color-olive-600: #5f6b45;
+  --color-olive-100: #eaecdd;
+
+  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+
+  --shadow-card: 0 1px 2px rgb(18 39 64 / 0.05), 0 10px 28px -14px rgb(18 39 64 / 0.14);
+  --shadow-lift: 0 2px 4px rgb(18 39 64 / 0.07), 0 18px 44px -16px rgb(18 39 64 / 0.24);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  body {
+    background-color: var(--color-ivory);
+    color: var(--color-navy-900);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background-color: var(--color-gold-200);
+    color: var(--color-navy-950);
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-gold-600);
+    outline-offset: 2px;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@utility container-page {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 76rem;
+  padding-inline: 1rem;
+
+  @media (min-width: 640px) {
+    padding-inline: 1.5rem;
+  }
+
+  @media (min-width: 1024px) {
+    padding-inline: 2rem;
+  }
+}
+
+@utility eyebrow {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-gold-600);
 }

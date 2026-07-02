@@ -1,0 +1,266 @@
+import type {
+  GeneratedListingContent,
+  Listing,
+  ListingFacts,
+  TranslationLanguage,
+} from "@/lib/types";
+import { TRANSLATION_LANGUAGES } from "@/lib/types";
+import { formatPrice, totalMoveIn } from "@/lib/utils";
+
+/**
+ * AI service abstraction.
+ *
+ * When OPENAI_API_KEY or ANTHROPIC_API_KEY is set, `generateListingContent`
+ * is the single integration point to swap in a real model call: build a
+ * prompt from `facts`, request JSON matching `GeneratedListingContent`, and
+ * return it. Until then, deterministic mock generation keeps the entire
+ * product flow working with zero configuration.
+ */
+export function hasAiProvider(): boolean {
+  return Boolean(process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY);
+}
+
+export async function generateListingContent(
+  facts: ListingFacts,
+): Promise<GeneratedListingContent> {
+  // Integration point for a real model. Keep the mock as fallback so a
+  // missing/invalid key never breaks the product flow.
+  return mockGenerate(facts);
+}
+
+/* ------------------------------------------------------------------ */
+/* Deterministic mock generation                                       */
+/* ------------------------------------------------------------------ */
+
+const TYPE_LABEL: Record<string, string> = {
+  apartment: "Apartment",
+  house: "House",
+  villa: "Villa",
+  townhouse: "Townhouse",
+  penthouse: "Penthouse",
+  finca: "Finca",
+  studio: "Studio",
+};
+
+function mockGenerate(facts: ListingFacts): GeneratedListingContent {
+  const forRent = facts.intent === "rent_out";
+  const typeLabel = TYPE_LABEL[facts.property_type] ?? "Home";
+  const highlights: string[] = [];
+  if (facts.sea_view) highlights.push("Sea Views");
+  if (facts.pool) highlights.push("Pool");
+  if (facts.garage) highlights.push("Private Garage");
+  if (facts.furnished) highlights.push("Fully Furnished");
+
+  const amenityHighlight = [facts.sea_view && "Sea Views", facts.pool && "Pool", facts.garage && "Private Garage"].find(
+    (h): h is string => Boolean(h),
+  );
+  const title =
+    facts.title.trim() ||
+    `${facts.furnished ? "Furnished " : ""}${facts.bedrooms}-Bedroom ${typeLabel}${
+      amenityHighlight ? ` with ${amenityHighlight}` : ""
+    } in ${facts.city}`;
+
+  const featureBullets = [
+    `${facts.bedrooms} bedroom${facts.bedrooms === 1 ? "" : "s"}, ${facts.bathrooms} bathroom${facts.bathrooms === 1 ? "" : "s"}`,
+    `${facts.size_m2} m² of living space`,
+    facts.furnished ? "Fully furnished and move-in ready" : "Unfurnished — ready to make your own",
+    facts.pool ? "Private pool area" : null,
+    facts.sea_view ? "Open sea views" : null,
+    facts.garage ? "Garage / secure parking" : "Street parking nearby",
+    facts.pets_allowed ? "Pets welcome" : null,
+    facts.floor !== null ? `Floor ${facts.floor}` : null,
+  ].filter((x): x is string => Boolean(x));
+
+  const lifestyleParagraph = `Mornings here start slowly — coffee ${
+    facts.sea_view ? "with the sea on the horizon" : "on a quiet terrace"
+  }, a short walk for fresh bread, and the kind of light that only ${
+    facts.city
+  } delivers. The ${typeLabel.toLowerCase()} is laid out for everyday ease: ${
+    facts.furnished
+      ? "arrive with a suitcase and start living"
+      : "a clean canvas for your own style"
+  }, with ${facts.bedrooms > 2 ? "room for family and guests" : "a footprint that is easy to keep and easy to love"}.`;
+
+  const locationParagraph = `${facts.address_area}, ${facts.city} combines residential calm with genuine convenience: supermarkets, cafés and pharmacies within walking distance, and quick connections to the wider ${facts.country === "Spain" ? "Costa" : "region"}. ${
+    facts.sea_view || facts.pool
+      ? "Beaches and the seafront promenade are minutes away."
+      : "Parks, schools and daily services are all close by."
+  }`;
+
+  const description = [
+    `This ${facts.size_m2} m² ${typeLabel.toLowerCase()} in ${facts.address_area}, ${facts.city} offers ${facts.bedrooms} bedroom${facts.bedrooms === 1 ? "" : "s"} and ${facts.bathrooms} bathroom${facts.bathrooms === 1 ? "" : "s"}${highlights.length ? `, plus ${highlights.map((h) => h.toLowerCase()).join(", ")}` : ""}.`,
+    lifestyleParagraph,
+    locationParagraph,
+    forRent
+      ? `Offered ${facts.furnished ? "furnished" : "unfurnished"} from ${facts.available_from || "now"}. All costs are listed transparently — rent, utilities estimate, deposit and platform fee — so you know the total before you enquire.`
+      : `Offered for sale directly by the owner with full price transparency and a verification trail, so buyers can move forward with confidence.`,
+  ].join("\n\n");
+
+  const priceExplanation = forRent
+    ? `Monthly rent is ${formatPrice(facts.price)}${
+        facts.utilities_monthly
+          ? `, with utilities estimated at ${formatPrice(facts.utilities_monthly)}/month`
+          : ""
+      }. The deposit is ${formatPrice(facts.deposit ?? facts.price)} and the platform fee estimate is ${facts.platform_fee_percent}% of one month. Total due at move-in: ${formatPrice(
+        totalMoveIn({
+          price_monthly: facts.price,
+          utilities_monthly: facts.utilities_monthly,
+          deposit: facts.deposit ?? facts.price,
+          platform_fee_percent: facts.platform_fee_percent,
+        }),
+      )}. No hidden costs.`
+    : `The asking price is ${formatPrice(facts.price)}. Purchase taxes and notary fees vary by region and buyer situation — Aurora shows an indicative placeholder and always recommends independent advice. There is no agency commission built into this price.`;
+
+  const ownerRulesSummary = facts.owner_rules.trim()
+    ? `House rules set by the owner: ${facts.owner_rules.trim()}`
+    : `The owner has not set special house rules. Standard respectful use applies${facts.pets_allowed ? "; pets are welcome" : "; pets on request"}.`;
+
+  const faq = [
+    {
+      question: forRent ? "Is the property still available?" : "Is the property still for sale?",
+      answer: `Yes — this listing is live. ${forRent && facts.available_from ? `Available from ${facts.available_from}.` : "You can request a viewing directly on this page."}`,
+    },
+    {
+      question: "Are pets allowed?",
+      answer: facts.pets_allowed
+        ? "Yes, pets are welcome. Please mention your pet in your first message."
+        : "Pets are not accepted by default, but you can ask the owner about your specific situation.",
+    },
+    {
+      question: forRent ? "What is included in the price?" : "What is included in the sale?",
+      answer: forRent
+        ? `The rent covers the property itself${facts.furnished ? ", furnished as shown" : ""}. Utilities are ${facts.utilities_monthly ? `estimated separately at ${formatPrice(facts.utilities_monthly)}/month` : "paid separately by the tenant"}.`
+        : `The sale includes the property as shown${facts.furnished ? ", with furniture negotiable" : ""}. Fixtures and fittings are listed in the exposé.`,
+    },
+    {
+      question: "When can I visit?",
+      answer: "Use the “Request viewing” button to propose a date — the owner confirms directly, usually within a day.",
+    },
+    {
+      question: "Is there parking?",
+      answer: facts.garage
+        ? "Yes — the property includes a garage / secure parking space."
+        : "There is no private garage, but street parking is available nearby.",
+    },
+    {
+      question: "Is it suitable for remote work?",
+      answer: `${facts.bedrooms > 1 ? "Yes — a spare room works well as a home office, and" : "Yes —"} fibre internet is available in this area.`,
+    },
+  ];
+
+  const agentKnowledgeBase = [
+    `Property: ${title}`,
+    `Type: ${typeLabel}, ${facts.bedrooms} bed / ${facts.bathrooms} bath, ${facts.size_m2} m²${facts.floor !== null ? `, floor ${facts.floor}` : ""}`,
+    `Location: ${facts.address_area}, ${facts.city}, ${facts.country}`,
+    `Amenities: ${[facts.pool && "pool", facts.sea_view && "sea view", facts.garage && "garage", facts.furnished && "furnished", facts.pets_allowed && "pets allowed"].filter(Boolean).join(", ") || "standard"}`,
+    forRent
+      ? `Pricing: ${formatPrice(facts.price)}/month, utilities ~${formatPrice(facts.utilities_monthly ?? 0)}, deposit ${formatPrice(facts.deposit ?? facts.price)}, platform fee ${facts.platform_fee_percent}%`
+      : `Pricing: asking ${formatPrice(facts.price)}, direct from owner`,
+    `Availability: ${facts.available_from || "immediately"}`,
+    `Owner rules: ${facts.owner_rules || "none specified"}`,
+    `Notes: ${facts.notes || "—"}`,
+  ];
+
+  return {
+    title,
+    summary: `${typeLabel} · ${facts.bedrooms} bed · ${facts.bathrooms} bath · ${facts.size_m2} m² · ${facts.address_area}, ${facts.city}${highlights.length ? ` · ${highlights.join(" · ")}` : ""}`,
+    description,
+    featureBullets,
+    lifestyleParagraph,
+    locationParagraph,
+    idealProfile: forRent
+      ? `Ideal for ${facts.bedrooms > 2 ? "a family or sharers" : facts.bedrooms === 2 ? "a couple or remote-working professional" : "a single professional or couple"} looking for ${facts.furnished ? "a move-in-ready home" : "a long-term base"} in ${facts.city}${facts.pets_allowed ? ", pet owners welcome" : ""}.`
+      : `Ideal for buyers seeking ${facts.sea_view ? "a sea-view" : "a well-located"} ${typeLabel.toLowerCase()} in ${facts.city} — as a primary home, holiday base or rental investment.`,
+    priceExplanation,
+    ownerRulesSummary,
+    verificationChecklist: [
+      "Owner identity check",
+      "Proof of ownership or listing authorisation",
+      "Address and cadastral cross-check",
+      "Photo authenticity review",
+      "Optional video walkthrough",
+    ],
+    faq,
+    agentKnowledgeBase,
+    translations: Object.fromEntries(
+      TRANSLATION_LANGUAGES.map((lang) => [lang, lang === "English" ? "ready" : "pending"]),
+    ) as Record<TranslationLanguage, "ready" | "pending">,
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* Per-listing AI property agent (mock)                                */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Answers a visitor question from listing data. Pure keyword routing over
+ * structured fields — deterministic, safe, and easy to replace with a real
+ * model call that receives the same listing as context.
+ */
+export function answerAgentQuestion(listing: Listing, question: string): string {
+  const q = question.toLowerCase();
+  const rentMode = listing.mode === "rent";
+
+  if (/(available|still|free|vacan)/.test(q)) {
+    return rentMode
+      ? `Yes, this home is still available${listing.available_from ? ` from ${listing.available_from}` : ""}. You can send the owner a message or request a viewing right from this page.`
+      : "Yes, this property is still for sale. You can contact the owner or request a viewing directly from this page.";
+  }
+  if (/(dog|cat|pet|animal)/.test(q)) {
+    return listing.pets_allowed
+      ? "Good news — pets are allowed here. Just mention your pet when you contact the owner."
+      : "Pets are not accepted by default for this property, but you can ask the owner about your specific situation.";
+  }
+  if (/(includ|price|cost|fee|total|how much|utilities|deposit)/.test(q)) {
+    if (rentMode) {
+      const total = totalMoveIn(listing);
+      return `The monthly rent is ${formatPrice(listing.price_monthly ?? 0)}${listing.utilities_monthly ? `, plus roughly ${formatPrice(listing.utilities_monthly)} in utilities` : ""}. The deposit is ${formatPrice(listing.deposit ?? 0)} and the platform fee estimate is ${listing.platform_fee_percent ?? 0}%. Total due at move-in: ${formatPrice(total)} — no hidden costs.`;
+    }
+    return `The asking price is ${formatPrice(listing.price_sale ?? 0)}, direct from the owner with no agency commission on top. Purchase taxes and notary fees depend on the region and your situation.`;
+  }
+  if (/(visit|viewing|see it|tour|appointment|when can i)/.test(q)) {
+    return "You can propose a viewing with the “Request viewing” button — the owner usually confirms within a day. Video viewings are also possible if you are abroad.";
+  }
+  if (/(garage|park)/.test(q)) {
+    return listing.garage
+      ? "Yes — the property includes a garage / secure parking space."
+      : "There is no private garage, but street parking is generally available in this area.";
+  }
+  if (/(remote|work|office|wifi|internet|fibre|fiber)/.test(q)) {
+    return `${listing.bedrooms > 1 ? "Yes — one of the bedrooms works well as a home office, and fibre" : "Fibre"} internet is available in ${listing.city}. Many residents in ${listing.address_area} work remotely.`;
+  }
+  if (/(beach|sea|coast|swim)/.test(q)) {
+    return listing.sea_view
+      ? `The home has open sea views, and the beach is a short walk or drive from ${listing.address_area}.`
+      : `The nearest beaches are a short drive from ${listing.address_area} — ${listing.city} has good coastal access.`;
+  }
+  if (/(furnish|furniture)/.test(q)) {
+    return listing.furnished
+      ? "The property comes fully furnished — you can move in with just your suitcases."
+      : "The property is offered unfurnished, so you can furnish it to your own taste.";
+  }
+  if (/(pool)/.test(q)) {
+    return listing.pool
+      ? "Yes, there is a pool — one of the highlights of this property."
+      : "There is no private pool at this property.";
+  }
+  if (/(verif|scam|real|trust|fake)/.test(q)) {
+    return `${listing.verified_owner ? "The owner's identity has been verified by Aurora" : "Owner verification is in progress"}${listing.verified_property ? ", and the property itself has passed our verification checks" : ""}${listing.last_verified_at ? ` (last checked ${listing.last_verified_at.slice(0, 10)})` : ""}. You can also report anything that looks off.`;
+  }
+  if (/(rule|smok|party|guest)/.test(q)) {
+    return listing.owner_rules
+      ? `The owner's house rules: ${listing.owner_rules}`
+      : "The owner has not set special house rules — standard respectful use applies.";
+  }
+  return `I can answer anything about this ${listing.property_type} in ${listing.city} — availability, pricing and total move-in cost, pets, parking, viewings, the neighbourhood or house rules. What would you like to know?`;
+}
+
+export const SUGGESTED_AGENT_QUESTIONS = [
+  "Is the property still available?",
+  "Are dogs allowed?",
+  "What is included in the price?",
+  "When can I visit?",
+  "Is there a garage?",
+  "Is it suitable for remote work?",
+  "How far is it from the beach?",
+];
