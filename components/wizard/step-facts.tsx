@@ -36,7 +36,7 @@ export function StepFacts({
     <div>
       <h1 className="text-2xl font-semibold text-navy-950 sm:text-3xl">Basic property facts</h1>
       <p className="mt-2 text-navy-600">
-        A few simple details — Aurora turns these into a full listing.
+        A few simple details — Zouza turns these into a full listing.
       </p>
 
       <div className="mt-8 space-y-8">
@@ -44,7 +44,7 @@ export function StepFacts({
           <Label htmlFor="title" hint="optional">Property title</Label>
           <Input
             id="title"
-            placeholder="Leave blank and Aurora will write one for you"
+            placeholder="Leave blank and Zouza will write one for you"
             value={facts.title}
             onChange={(e) => set("title", e.target.value)}
           />
@@ -130,7 +130,7 @@ export function StepFacts({
         </div>
 
         <div>
-          <Label htmlFor="notes" hint="optional">Anything else Aurora should know</Label>
+          <Label htmlFor="notes" hint="optional">Anything else Zouza should know</Label>
           <Textarea id="notes" placeholder="Nearby transport, recent renovations, why you love this home..." value={facts.notes} onChange={(e) => set("notes", e.target.value)} />
         </div>
       </div>

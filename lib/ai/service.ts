@@ -109,7 +109,7 @@ function mockGenerate(facts: ListingFacts): GeneratedListingContent {
           platform_fee_percent: facts.platform_fee_percent,
         }),
       )}. No hidden costs.`
-    : `The asking price is ${formatPrice(facts.price)}. Purchase taxes and notary fees vary by region and buyer situation — Aurora shows an indicative placeholder and always recommends independent advice. There is no agency commission built into this price.`;
+    : `The asking price is ${formatPrice(facts.price)}. Purchase taxes and notary fees vary by region and buyer situation — Zouza shows an indicative placeholder and always recommends independent advice. There is no agency commission built into this price.`;
 
   const ownerRulesSummary = facts.owner_rules.trim()
     ? `House rules set by the owner: ${facts.owner_rules.trim()}`
@@ -245,7 +245,7 @@ export function answerAgentQuestion(listing: Listing, question: string): string 
       : "There is no private pool at this property.";
   }
   if (/(verif|scam|real|trust|fake)/.test(q)) {
-    return `${listing.verified_owner ? "The owner's identity has been verified by Aurora" : "Owner verification is in progress"}${listing.verified_property ? ", and the property itself has passed our verification checks" : ""}${listing.last_verified_at ? ` (last checked ${listing.last_verified_at.slice(0, 10)})` : ""}. You can also report anything that looks off.`;
+    return `${listing.verified_owner ? "The owner's identity has been verified by Zouza" : "Owner verification is in progress"}${listing.verified_property ? ", and the property itself has passed our verification checks" : ""}${listing.last_verified_at ? ` (last checked ${listing.last_verified_at.slice(0, 10)})` : ""}. You can also report anything that looks off.`;
   }
   if (/(rule|smok|party|guest)/.test(q)) {
     return listing.owner_rules

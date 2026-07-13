@@ -2,7 +2,7 @@
 
 import type { Listing } from "@/lib/types";
 
-const STORAGE_KEY = "aurora_local_listings";
+const STORAGE_KEY = "zouza_local_listings";
 
 /**
  * Client-side listing store used when Supabase is not configured, so the

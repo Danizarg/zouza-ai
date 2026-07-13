@@ -41,7 +41,7 @@ export function StepPhotos({
     <div>
       <h1 className="text-2xl font-semibold text-navy-950 sm:text-3xl">Upload photos</h1>
       <p className="mt-2 text-navy-600">
-        Drag in the photos you already have — Aurora will detect rooms and
+        Drag in the photos you already have — Zouza will detect rooms and
         features automatically.{" "}
         {isSupabaseConfigured()
           ? "Photos are stored securely in Supabase."

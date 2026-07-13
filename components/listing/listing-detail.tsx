@@ -128,7 +128,7 @@ export function ListingDetail({ listing }: { listing: Listing }) {
             <p className="mt-3 text-sm text-navy-600">
               Standard {isRent ? "rental" : "sale"} contract templates for
               {" "}{listing.country} will be available to download here before
-              you sign anything. Aurora does not provide legal advice —
+              you sign anything. Zouza does not provide legal advice —
               always have contracts reviewed independently.
             </p>
             <div className="mt-4 rounded-2xl border border-dashed border-line bg-parchment p-5 text-sm text-navy-500">

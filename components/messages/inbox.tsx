@@ -112,13 +112,13 @@ export function Inbox() {
                       "max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
                       m.sender === "me"
                         ? "rounded-br-md bg-navy-900 text-ivory"
-                        : m.sender === "aurora_ai"
+                        : m.sender === "zouza_ai"
                           ? "rounded-bl-md border border-gold-200 bg-gold-100 text-navy-800"
                           : "rounded-bl-md bg-parchment text-navy-800",
                     )}
                   >
-                    {m.sender === "aurora_ai" ? (
-                      <p className="mb-1 text-xs font-semibold text-gold-700">Aurora AI pre-check</p>
+                    {m.sender === "zouza_ai" ? (
+                      <p className="mb-1 text-xs font-semibold text-gold-700">Zouza AI pre-check</p>
                     ) : null}
                     {m.body}
                   </div>

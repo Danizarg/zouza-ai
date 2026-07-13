@@ -9,16 +9,16 @@ import {
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "About Aurora Homes",
+  title: "About Zouza.ai",
   description:
-    "Aurora Homes' mission: professional property marketing powered by AI, verified homes, transparent prices, direct owners — Spain first, global next.",
+    "Zouza.ai' mission: professional property marketing powered by AI, verified homes, transparent prices, direct owners — Spain first, global next.",
 };
 
 const pillars = [
   {
     icon: Sparkles,
     title: "AI-powered property marketing",
-    text: "Most owners aren't copywriters or photographers. Aurora turns ordinary phone photos and a few facts into an agency-grade listing — exposé, FAQ, translations, and a dedicated AI assistant per property.",
+    text: "Most owners aren't copywriters or photographers. Zouza turns ordinary phone photos and a few facts into an agency-grade listing — exposé, FAQ, translations, and a dedicated AI assistant per property.",
   },
   {
     icon: BadgeCheck,
@@ -48,7 +48,7 @@ export default function AboutPage() {
               Property marketing, made honest and effortless.
             </h1>
             <p className="mt-5 text-lg leading-relaxed text-navy-600">
-              Aurora Homes exists because listing a property shouldn&rsquo;t
+              Zouza.ai exists because listing a property shouldn&rsquo;t
               require an agency, a copywriter, or a second job answering the
               same questions all day. We built an AI assistant that does the
               marketing work, on top of a marketplace built around
@@ -84,7 +84,7 @@ export default function AboutPage() {
               the Costa del Sol, Barcelona and Andalusia — where the gap
               between agency-level presentation and everyday owners is
               widest. Once the verification and AI marketing model is proven
-              here, Aurora expands to new regions with the same principles:
+              here, Zouza expands to new regions with the same principles:
               honest prices, verified homes, and an AI assistant on every
               listing.
             </p>
@@ -97,7 +97,7 @@ export default function AboutPage() {
           <Reveal>
             <h2 className="text-2xl font-semibold text-navy-950">Why a pure intermediary MVP</h2>
             <p className="mt-4 leading-relaxed text-navy-600">
-              Aurora Homes is deliberately scoped as a marketing and
+              Zouza.ai is deliberately scoped as a marketing and
               marketplace platform in this first version — listings, search,
               messaging, verification, contract template area, reviews,
               viewing requests, and AI tools. We do not process payments,

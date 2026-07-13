@@ -1,4 +1,4 @@
--- Aurora Homes — Supabase schema
+-- Zouza.ai — Supabase schema
 -- Run in the Supabase SQL editor (or `supabase db push`) after creating a project.
 
 -- =========================================================
@@ -108,7 +108,7 @@ create table if not exists public.messages (
   id uuid primary key default gen_random_uuid(),
   conversation_id uuid not null references public.conversations (id) on delete cascade,
   sender_id uuid references public.profiles (id) on delete set null,
-  sender_kind text not null default 'user' check (sender_kind in ('user', 'aurora_ai')),
+  sender_kind text not null default 'user' check (sender_kind in ('user', 'zouza_ai')),
   body text not null,
   created_at timestamptz not null default now()
 );

@@ -25,12 +25,12 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-ivory/90 backdrop-blur-md">
       <div className="container-page flex h-16 items-center justify-between gap-4">
-        <Link href="/" className="flex items-center gap-2" aria-label="Aurora Homes home">
+        <Link href="/" className="flex items-center gap-2" aria-label="Zouza.ai home">
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-navy-900 text-gold-300">
             <Sparkles className="h-4 w-4" aria-hidden />
           </span>
           <span className="font-display text-lg font-semibold tracking-tight text-navy-900">
-            Aurora Homes
+            Zouza.ai
           </span>
         </Link>
 

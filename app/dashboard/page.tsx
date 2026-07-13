@@ -32,7 +32,7 @@ export default function DashboardPage() {
   return (
     <div className="container-page max-w-5xl py-8 md:py-10">
       <h1 className="text-2xl font-semibold text-navy-950 sm:text-3xl">Welcome back</h1>
-      <p className="mt-1 text-sm text-navy-500">Here&rsquo;s what&rsquo;s happening across your Aurora account.</p>
+      <p className="mt-1 text-sm text-navy-500">Here&rsquo;s what&rsquo;s happening across your Zouza account.</p>
 
       <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard icon={UserIcon} label="Active listings" value={myListings.length} />

@@ -1,31 +1,31 @@
-# Aurora Homes — Project Context
+# Zouza.ai — Project Context
 
 This file is a handover/continuation document for anyone (human or AI) picking
 up this project. It records what exists, why it was built this way, what is
 real vs. mock, and what's left to do. Keep it updated as the project evolves.
 
-Last updated: 2026-07-02.
+Last updated: 2026-07-13.
 
 ---
 
 ## 1. What this project is
 
-**Aurora Homes** — an AI-powered real estate marketing assistant and
+**Zouza.ai** — an AI-powered real estate marketing assistant and
 verified property marketplace. Positioning: *"Professional Property
-Marketing. Powered by AI."* / *"Upload photos. Aurora creates the
+Marketing. Powered by AI."* / *"Upload photos. Zouza creates the
 listing."*
 
 Spain-first, global-next. It is **not** Airbnb-but-cheaper and **not**
 another Idealista-style portal — the emotional centerpiece is the AI
 listing-creation flow, not a big search bar.
 
-**Business model (MVP):** pure intermediary marketplace. Aurora provides
+**Business model (MVP):** pure intermediary marketplace. Zouza provides
 listings, search, messaging, verification, a contract-template area,
 reviews, viewing requests, AI listing generation, AI translation, AI FAQ
 generation, a dedicated AI agent per listing, and AI lead
 prequalification.
 
-**Aurora explicitly does NOT provide** (and the UI must never imply
+**Zouza explicitly does NOT provide** (and the UI must never imply
 otherwise): payment processing, rent collection, escrow, deposit
 management, rent guarantees, or legal advice. Every legal page and several
 UI surfaces (sell page, pricing page, listing detail) carry disclaimers to
@@ -176,7 +176,7 @@ README.md                       Setup / Supabase / AI / Vercel deploy guide
 | `/rent-out`, `/sell` | Owner landing pages: hero, benefits, step flow, FAQ (rent-out); features grid + legal disclaimer (sell) |
 | `/create-listing` | The 7-step AI wizard — see §8 |
 | `/listings/[id]` | Full detail page — see §9 |
-| `/messages` | Two-pane inbox, mock conversations with a prequalification badge and an `aurora_ai` pre-check message type |
+| `/messages` | Two-pane inbox, mock conversations with a prequalification badge and an `zouza_ai` pre-check message type |
 | `/dashboard` | Client component: stat cards, my listings, saved homes (from localStorage), AI drafts (from localStorage), viewing requests, verification status, profile |
 | `/dashboard/owner` | Listing performance, enquiries/AI-answered stats, viewing requests, verification tasks, draft + published listings |
 | `/login`, `/signup`, `/forgot-password` | Supabase Auth when configured; mock mode simulates success and routes to `/dashboard` |
@@ -231,7 +231,7 @@ State machine lives in `wizard.tsx`, steps 1–7:
 3. **Facts** (`step-facts.tsx`) — address/city/country, type, beds/baths/size,
    pool/sea-view/garage/pets/furnished, price, utilities/deposit/fee
    (rent only), availability, owner rules, free-text notes
-4. **AI generation** (`step-generating.tsx`) — animated "Aurora is creating
+4. **AI generation** (`step-generating.tsx`) — animated "Zouza is creating
    your listing" screen with a 6-stage progress list. **Important
    synchronization detail:** the transition to step 5 happens only once
    *both* the animation has played its full sequence *and* the (mock or
@@ -255,7 +255,7 @@ State machine lives in `wizard.tsx`, steps 1–7:
 upload via synthetic `File`/`DataTransfer`, form fill via the preview
 tool's `preview_fill`, generation animation, review, preview, publish, and
 confirmed the resulting listing was correctly written to
-`localStorage['aurora_local_listings']`).
+`localStorage['zouza_local_listings']`).
 
 ---
 
@@ -428,3 +428,45 @@ in code).
 Before shipping further changes: `npx tsc --noEmit`, `npm run lint`,
 `npm run build` should all stay clean — they were clean as of this
 writing (24/24 routes built, 0 lint errors).
+
+---
+
+## 14. Rebrand: Aurora Homes → Zouza.ai (2026-07-13)
+
+The user purchased the domain **zouza.ai** and the product was renamed
+from "Aurora Homes" to **Zouza.ai** throughout — the GitHub repo was
+renamed from `aurora-homes` to `zouza-ai` to match (repo:
+[Danizarg/zouza-ai](https://github.com/Danizarg/zouza-ai)).
+
+**What changed:** every user-facing occurrence of "Aurora Homes" →
+"Zouza.ai", and standalone "Aurora" (the AI persona in prose, e.g.
+"Aurora creates the listing") → "Zouza", across all pages, components,
+metadata, legal text, README, and this file. Also renamed:
+- `package.json` name: `aurora-homes` → `zouza-ai`
+- localStorage keys: `aurora_saved_listings` → `zouza_saved_listings`,
+  `aurora_local_listings` → `zouza_local_listings`
+- message sender type value: `"aurora_ai"` → `"zouza_ai"` (in
+  `lib/types.ts`, `lib/mock-data.ts`, `components/messages/inbox.tsx`,
+  `supabase/schema.sql`)
+- placeholder contact email: `hello@aurorahomes.example` →
+  `hello@zouza.ai`
+
+This was done via a scripted find-and-replace across all git-tracked
+source files (ordered substitution: full brand phrase first, then
+standalone word, to avoid partial-match corruption), followed by
+`npx tsc --noEmit` / `npm run lint` / `npm run build` to confirm nothing
+broke — all clean, 24/24 routes.
+
+**If you rebrand again:** repeat this pattern rather than hand-editing —
+grep case-insensitively for the old name across the whole repo first to
+find every file, decide the exact replacement order (longest/most
+specific string first), then verify with the same three commands
+afterward. Don't forget `package-lock.json` (regenerate via `npm install`
+after changing `package.json`'s `name`, rather than hand-editing the
+lockfile) and the GitHub repo name itself (a separate manual/API step,
+not part of the codebase).
+
+**Still says the old name:** nothing, as far as a full-repo
+case-insensitive grep for "aurora" could find (checked immediately after
+the rename). If you spot a leftover, it likely means a new file was added
+between the rename and now.

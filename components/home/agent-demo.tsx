@@ -25,7 +25,7 @@ export function AgentDemo() {
   const [messages, setMessages] = useState<DemoMessage[]>([
     {
       role: "agent",
-      text: `Hola! I'm the Aurora assistant for “${demoListing.title}”. Ask me anything about this home — availability, costs, pets, the neighbourhood.`,
+      text: `Hola! I'm the Zouza assistant for “${demoListing.title}”. Ask me anything about this home — availability, costs, pets, the neighbourhood.`,
     },
   ]);
   const [thinking, setThinking] = useState(false);
@@ -83,7 +83,7 @@ export function AgentDemo() {
         {thinking ? (
           <div className="flex justify-start">
             <p className="rounded-2xl rounded-bl-md bg-parchment px-4 py-2.5 text-sm text-navy-400">
-              Aurora is typing…
+              Zouza is typing…
             </p>
           </div>
         ) : null}

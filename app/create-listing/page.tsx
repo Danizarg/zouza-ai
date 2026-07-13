@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Create your AI-generated listing",
   description:
-    "Upload photos and answer a few simple questions — Aurora writes your exposé, FAQ, translations and switches on your property's AI assistant.",
+    "Upload photos and answer a few simple questions — Zouza writes your exposé, FAQ, translations and switches on your property's AI assistant.",
 };
 
 export default function CreateListingPage() {

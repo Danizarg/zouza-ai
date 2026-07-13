@@ -7,7 +7,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Pricing & fees",
   description:
-    "Aurora Homes' transparent, low-fee model — every cost shown before you enquire, with no hidden charges.",
+    "Zouza.ai' transparent, low-fee model — every cost shown before you enquire, with no hidden charges.",
 };
 
 const principles = [
@@ -28,7 +28,7 @@ export default function PricingPage() {
               Low, transparent fees. No hidden costs.
             </h1>
             <p className="mt-5 text-lg leading-relaxed text-navy-600">
-              Aurora Homes is a pure intermediary — we don&rsquo;t process
+              Zouza.ai is a pure intermediary — we don&rsquo;t process
               payments or take a commission on your rent or sale price. We
               charge a small platform fee for the marketplace and AI tools,
               shown clearly before anyone commits to anything.

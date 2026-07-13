@@ -581,8 +581,8 @@ export const MOCK_MESSAGES: Message[] = [
   {
     id: "m2",
     conversation_id: "c1",
-    sender: "aurora_ai",
-    body: "Aurora pre-check: this enquiry matches the listing — availability from 1 Aug ✓, pets allowed ✓, budget confirmed ✓. Passed to the owner as a qualified lead.",
+    sender: "zouza_ai",
+    body: "Zouza pre-check: this enquiry matches the listing — availability from 1 Aug ✓, pets allowed ✓, budget confirmed ✓. Passed to the owner as a qualified lead.",
     created_at: "2026-07-01T17:55:30Z",
   },
   {

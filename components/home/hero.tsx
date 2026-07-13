@@ -54,7 +54,7 @@ export function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.12 }}
           >
-            Upload photos. Aurora creates the listing — a polished exposé,
+            Upload photos. Zouza creates the listing — a polished exposé,
             buyer and tenant FAQ, translations, and a dedicated AI assistant
             that answers questions about your property around the clock.
           </motion.p>
@@ -94,7 +94,7 @@ export function Hero() {
             <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-sand">
               <Image
                 src={heroImage}
-                alt="A whitewashed Mediterranean villa with a pool, presented as an Aurora listing"
+                alt="A whitewashed Mediterranean villa with a pool, presented as an Zouza listing"
                 fill
                 priority
                 sizes="(max-width: 1024px) 100vw, 40vw"
@@ -106,7 +106,7 @@ export function Hero() {
               </span>
             </div>
             <div className="p-4">
-              <p className="eyebrow">Aurora generated</p>
+              <p className="eyebrow">Zouza generated</p>
               <p className="mt-1.5 font-display text-lg leading-snug font-semibold text-navy-900">
                 Whitewashed Villa with Pool and Montgó Views, Jávea
               </p>

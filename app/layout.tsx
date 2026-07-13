@@ -20,24 +20,24 @@ const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
   title: {
-    default: "Aurora Homes — Professional Property Marketing. Powered by AI.",
-    template: "%s · Aurora Homes",
+    default: "Zouza.ai — Professional Property Marketing. Powered by AI.",
+    template: "%s · Zouza.ai",
   },
   description:
-    "Upload photos. Aurora creates the listing. Verified homes, transparent prices and a dedicated AI assistant for every property. Spain first — global next.",
+    "Upload photos. Zouza creates the listing. Verified homes, transparent prices and a dedicated AI assistant for every property. Spain first — global next.",
   openGraph: {
-    title: "Aurora Homes — Professional Property Marketing. Powered by AI.",
+    title: "Zouza.ai — Professional Property Marketing. Powered by AI.",
     description:
-      "Upload photos. Aurora creates the listing, exposé, FAQ, translations and a dedicated AI assistant for every property.",
+      "Upload photos. Zouza creates the listing, exposé, FAQ, translations and a dedicated AI assistant for every property.",
     url: appUrl,
-    siteName: "Aurora Homes",
+    siteName: "Zouza.ai",
     locale: "en_GB",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Aurora Homes — Professional Property Marketing. Powered by AI.",
-    description: "Upload photos. Aurora creates the listing.",
+    title: "Zouza.ai — Professional Property Marketing. Powered by AI.",
+    description: "Upload photos. Zouza creates the listing.",
   },
 };
 

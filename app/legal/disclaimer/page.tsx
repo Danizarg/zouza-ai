@@ -8,7 +8,7 @@ export default function DisclaimerPage() {
     <LegalPage title="Disclaimer" updated="2 July 2026">
       <LegalSection title="Independent concept">
         <p>
-          Aurora Homes is an independent concept and is not affiliated with,
+          Zouza.ai is an independent concept and is not affiliated with,
           endorsed by, sponsored by, or otherwise connected to Airbnb,
           Idealista, ThinkSpain, Zillow, Booking.com, or any other rental or
           property platform. Any resemblance in category or function is
@@ -18,9 +18,9 @@ export default function DisclaimerPage() {
 
       <LegalSection title="No payment processing or escrow">
         <p>
-          Aurora Homes does not process rent, deposits, or sale payments,
+          Zouza.ai does not process rent, deposits, or sale payments,
           and does not hold funds in escrow. Any transfer of money between
-          users happens entirely outside of Aurora Homes and at users&rsquo;
+          users happens entirely outside of Zouza.ai and at users&rsquo;
           own risk. Never send money to someone you have not verified
           independently, and never send money before signing a proper
           contract.
@@ -29,7 +29,7 @@ export default function DisclaimerPage() {
 
       <LegalSection title="No rent or outcome guarantees">
         <p>
-          Aurora Homes does not guarantee rental income, a successful sale,
+          Zouza.ai does not guarantee rental income, a successful sale,
           tenant or buyer reliability, or that any listing is free of
           defects or misrepresentation. Verification badges reflect a
           best-effort check, not a guarantee — see{" "}
@@ -39,7 +39,7 @@ export default function DisclaimerPage() {
 
       <LegalSection title="No legal, tax, or financial advice">
         <p>
-          Nothing on Aurora Homes constitutes legal, tax, financial, or
+          Nothing on Zouza.ai constitutes legal, tax, financial, or
           investment advice. Price breakdowns (including tax and notary fee
           placeholders) are illustrative estimates only. Always consult an
           independent lawyer, notary, and tax advisor before signing a

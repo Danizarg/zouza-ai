@@ -16,7 +16,7 @@ export function StepIntent({
       <h1 className="text-2xl font-semibold text-navy-950 sm:text-3xl">
         What would you like to do?
       </h1>
-      <p className="mt-2 text-navy-600">Aurora tailors the whole flow to your goal.</p>
+      <p className="mt-2 text-navy-600">Zouza tailors the whole flow to your goal.</p>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         <button
@@ -31,7 +31,7 @@ export function StepIntent({
           </span>
           <span className="font-display text-xl font-semibold text-navy-900">Rent out</span>
           <span className="text-sm leading-relaxed text-navy-600">
-            List your property for rent — Aurora writes the exposé and
+            List your property for rent — Zouza writes the exposé and
             answers tenants around the clock.
           </span>
         </button>

@@ -32,7 +32,7 @@ const intents = [
     icon: KeyRound,
     title: "Rent out",
     de: "Vermieten",
-    text: "List a rental in minutes. Aurora writes the exposé and answers tenants 24/7.",
+    text: "List a rental in minutes. Zouza writes the exposé and answers tenants 24/7.",
   },
   {
     href: "/sell",
@@ -59,7 +59,7 @@ const intents = [
 
 const aiFlow = [
   { icon: Camera, title: "Upload photos", text: "Drag in the photos you already have on your phone." },
-  { icon: Wand2, title: "AI analyses", text: "Aurora detects rooms, light, features and selling points." },
+  { icon: Wand2, title: "AI analyses", text: "Zouza detects rooms, light, features and selling points." },
   { icon: FileText, title: "Exposé generated", text: "Professional title, description, lifestyle and location copy." },
   { icon: MessageCircle, title: "FAQ created", text: "Tenant and buyer questions answered before they are asked." },
   { icon: Sparkles, title: "Listing published", text: "Live with translations and its own AI assistant." },
@@ -68,7 +68,7 @@ const aiFlow = [
 const ownerBenefits = [
   { icon: Clock3, title: "Save hours per listing", text: "No more writing descriptions, retyping the same answers, or juggling portals." },
   { icon: FileText, title: "Look professional", text: "Every home gets an agency-grade exposé — even if you have never written one." },
-  { icon: MessageCircle, title: "More qualified enquiries", text: "Aurora pre-answers routine questions, so the leads that reach you are serious." },
+  { icon: MessageCircle, title: "More qualified enquiries", text: "Zouza pre-answers routine questions, so the leads that reach you are serious." },
   { icon: Euro, title: "Reduce agent costs", text: "Keep control and skip the classic commission for marketing work AI now does." },
 ] as const;
 
@@ -141,7 +141,7 @@ export default function HomePage() {
       <section className="border-y border-line bg-parchment py-16 md:py-24">
         <div className="container-page">
           <Reveal>
-            <p className="eyebrow">How Aurora works</p>
+            <p className="eyebrow">How Zouza works</p>
             <h2 className="mt-3 max-w-2xl text-3xl font-semibold text-navy-950 sm:text-4xl">
               From phone photos to a professional listing in five steps
             </h2>
@@ -179,7 +179,7 @@ export default function HomePage() {
             This exposé was generated from seven photos
           </h2>
           <p className="mt-4 max-w-md text-navy-600">
-            The owner uploaded photos and five facts. Aurora wrote the title,
+            The owner uploaded photos and five facts. Zouza wrote the title,
             description, feature list and FAQ, prepared six translations, and
             switched on the property&rsquo;s own AI assistant.
           </p>
@@ -217,7 +217,7 @@ export default function HomePage() {
             <ShieldCheck className="h-6 w-6 text-gold-300" aria-hidden />
             <h2 className="mt-4 text-3xl font-semibold text-ivory sm:text-4xl">Verified homes</h2>
             <p className="mt-4 max-w-md leading-relaxed text-navy-300">
-              Fake listings are the plague of property portals. Aurora verifies
+              Fake listings are the plague of property portals. Zouza verifies
               owner identity and proof of ownership, cross-checks the address,
               and shows you when each home was last checked — for example,
               &ldquo;last verified 12 days ago&rdquo;.
@@ -246,7 +246,7 @@ export default function HomePage() {
               </dl>
             </div>
             <p className="mt-4 max-w-md text-sm text-navy-300">
-              Every rental on Aurora shows this breakdown before you enquire.
+              Every rental on Zouza shows this breakdown before you enquire.
               No hidden costs — ever.
             </p>
           </Reveal>
@@ -355,7 +355,7 @@ export default function HomePage() {
           <Reveal>
             <p className="eyebrow">Spain first — global next</p>
             <h2 className="mt-3 text-3xl font-semibold text-navy-950 sm:text-4xl">
-              Where Aurora is opening
+              Where Zouza is opening
             </h2>
           </Reveal>
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -400,7 +400,7 @@ export default function HomePage() {
               Low, transparent fees. No hidden costs.
             </h2>
             <p className="mt-4 leading-relaxed text-navy-600">
-              Aurora is built as a pure intermediary: we charge a small,
+              Zouza is built as a pure intermediary: we charge a small,
               clearly displayed platform fee instead of classic agency
               commissions, and every cost is shown before anyone enquires.
               Join the waitlist and be first in when we open your area.
@@ -423,7 +423,7 @@ export default function HomePage() {
           className={buttonClasses("primary", "lg", "w-full shadow-lift")}
         >
           <Upload className="h-4.5 w-4.5" aria-hidden />
-          Upload photos — Aurora does the rest
+          Upload photos — Zouza does the rest
         </Link>
       </div>
     </>

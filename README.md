@@ -1,9 +1,9 @@
-# Aurora Homes
+# Zouza.ai
 
 **Professional Property Marketing. Powered by AI.**
-Upload photos. Aurora creates the listing.
+Upload photos. Zouza creates the listing.
 
-Aurora Homes is an AI-powered real estate marketing assistant and verified
+Zouza.ai is an AI-powered real estate marketing assistant and verified
 property marketplace — Spain-first, built with Next.js, TypeScript,
 Tailwind CSS and Supabase. It is a pure intermediary in this MVP: no
 payment processing, escrow, deposit management, rent guarantees, or legal
@@ -110,15 +110,18 @@ All are optional for local development.
 
 ## Deploying to Vercel
 
-1. Push this repository to GitHub.
+Live domain: **[zouza.ai](https://zouza.ai)**.
+
+1. Push this repository to GitHub (already done — [Danizarg/zouza-ai](https://github.com/Danizarg/zouza-ai)).
 2. Import the repo into [Vercel](https://vercel.com/new).
 3. Add the environment variables above in Project Settings → Environment
    Variables (or skip them to launch in mock mode).
-4. If using Supabase, run `supabase/schema.sql` against your production
-   project first, and set `NEXT_PUBLIC_APP_URL` to your production URL
-   (used for metadata, Open Graph, and the sitemap).
-5. Deploy. `npm run build` is used automatically; there are no
-   local-only dependencies.
+4. Set `NEXT_PUBLIC_APP_URL=https://zouza.ai` (used for metadata, Open
+   Graph, and the sitemap). If using Supabase, also run
+   `supabase/schema.sql` against your production project first.
+5. Deploy, then attach the `zouza.ai` domain in Project Settings → Domains
+   and point its DNS at Vercel per their instructions. `npm run build` is
+   used automatically; there are no local-only dependencies.
 
 ## What's still needed for production
 

@@ -17,7 +17,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Rent out your property professionally, powered by AI",
   description:
-    "Upload photos. Aurora creates the listing, exposé, FAQ, translations and a dedicated AI assistant — rent out your property in minutes.",
+    "Upload photos. Zouza creates the listing, exposé, FAQ, translations and a dedicated AI assistant — rent out your property in minutes.",
 };
 
 const benefits = [
@@ -31,7 +31,7 @@ const benefits = [
 const steps = [
   { icon: Camera, title: "Upload photos", text: "Drag in the photos from your phone — no professional camera needed." },
   { icon: FileText, title: "Add basic facts", text: "Bedrooms, size, rent, deposit — five minutes of simple questions." },
-  { icon: Sparkles, title: "AI creates the listing", text: "Aurora writes the exposé, FAQ, translations and price breakdown." },
+  { icon: Sparkles, title: "AI creates the listing", text: "Zouza writes the exposé, FAQ, translations and price breakdown." },
   { icon: FileEdit, title: "Review and edit", text: "Everything is editable — change anything before it goes live." },
   { icon: Rocket, title: "Publish", text: "Your listing goes live on the marketplace, ready to be found." },
   { icon: MessageCircle, title: "AI assistant takes over", text: "It answers tenant questions 24/7, using only your listing's facts." },
@@ -40,7 +40,7 @@ const steps = [
 const faqs = [
   {
     q: "Do I need to be technical to use this?",
-    a: "No. If you can use WhatsApp, you can use Aurora. Upload photos, answer simple questions, and review the result before publishing.",
+    a: "No. If you can use WhatsApp, you can use Zouza. Upload photos, answer simple questions, and review the result before publishing.",
   },
   {
     q: "Can I still write my own description?",
@@ -71,7 +71,7 @@ export default function RentOutPage() {
               Rent out your property professionally in minutes.
             </h1>
             <p className="mt-4 max-w-xl text-lg text-navy-600">
-              Upload photos. Aurora creates the listing, exposé, FAQ,
+              Upload photos. Zouza creates the listing, exposé, FAQ,
               translations, and AI assistant.
             </p>
             <div className="mt-8">
@@ -86,7 +86,7 @@ export default function RentOutPage() {
 
       <section className="container-page py-16 md:py-20">
         <Reveal>
-          <h2 className="text-3xl font-semibold text-navy-950">Why owners switch to Aurora</h2>
+          <h2 className="text-3xl font-semibold text-navy-950">Why owners switch to Zouza</h2>
         </Reveal>
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
           {benefits.map((b, i) => (
@@ -144,7 +144,7 @@ export default function RentOutPage() {
           <p className="mt-3 max-w-xl text-navy-600">
             We tested this flow with owners who had never listed a property
             before. If you can send a photo by text message, you can publish a
-            professional listing on Aurora.
+            professional listing on Zouza.
           </p>
         </Reveal>
         <div className="mt-10 grid gap-3 md:grid-cols-2">

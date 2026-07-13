@@ -34,10 +34,10 @@ export default function LoginPage() {
   return (
     <AuthCard
       title="Welcome back"
-      subtitle={isSupabaseConfigured() ? "Log in to your Aurora Homes account." : "Demo mode — any email/password logs you in."}
+      subtitle={isSupabaseConfigured() ? "Log in to your Zouza.ai account." : "Demo mode — any email/password logs you in."}
       footer={
         <>
-          New to Aurora?{" "}
+          New to Zouza?{" "}
           <Link href="/signup" className="font-medium text-terra-600 hover:text-terra-700">
             Create an account
           </Link>

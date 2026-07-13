@@ -65,7 +65,7 @@ export function AgentChat({ listing }: { listing: Listing }) {
         ))}
         {thinking ? (
           <div className="flex justify-start">
-            <p className="rounded-2xl rounded-bl-md bg-parchment px-4 py-2.5 text-sm text-navy-400">Aurora is typing…</p>
+            <p className="rounded-2xl rounded-bl-md bg-parchment px-4 py-2.5 text-sm text-navy-400">Zouza is typing…</p>
           </div>
         ) : null}
       </div>

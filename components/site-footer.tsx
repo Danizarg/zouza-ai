@@ -17,7 +17,7 @@ const columns = [
       { href: "/create-listing", label: "AI Listing Creator" },
       { href: "/pricing", label: "Pricing & fees" },
       { href: "/trust", label: "Trust & verification" },
-      { href: "/about", label: "About Aurora" },
+      { href: "/about", label: "About Zouza" },
     ],
   },
   {
@@ -41,7 +41,7 @@ export function SiteFooter() {
               <Sparkles className="h-4 w-4" aria-hidden />
             </span>
             <span className="font-display text-lg font-semibold text-navy-900">
-              Aurora Homes
+              Zouza.ai
             </span>
           </div>
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-navy-600">
@@ -70,9 +70,9 @@ export function SiteFooter() {
       <div className="border-t border-line">
         <div className="container-page py-6">
           <p className="text-xs leading-relaxed text-navy-500">
-            © {new Date().getFullYear()} Aurora Homes. Aurora Homes is an independent
+            © {new Date().getFullYear()} Zouza.ai. Zouza.ai is an independent
             concept and is not affiliated with Airbnb, Idealista, ThinkSpain, Zillow,
-            Booking, or any other rental or property platform. Aurora Homes acts as a
+            Booking, or any other rental or property platform. Zouza.ai acts as a
             pure intermediary and does not provide legal advice, payment processing,
             escrow, deposit management, rent guarantees, or tax advice.
           </p>

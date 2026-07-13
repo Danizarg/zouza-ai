@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { Heart } from "lucide-react";
 import { useState } from "react";
 
-const STORAGE_KEY = "aurora_saved_listings";
+const STORAGE_KEY = "zouza_saved_listings";
 
 export function getSavedIds(): string[] {
   if (typeof window === "undefined") return [];

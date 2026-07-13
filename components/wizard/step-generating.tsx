@@ -36,7 +36,7 @@ export function StepGenerating({ onDone }: { onDone: () => void }) {
         <Sparkles className="h-7 w-7" aria-hidden />
       </motion.span>
       <h1 className="mt-6 text-2xl font-semibold text-navy-950 sm:text-3xl">
-        Aurora is creating your listing
+        Zouza is creating your listing
       </h1>
       <p className="mt-2 max-w-sm text-navy-600">
         This normally takes a few seconds — writing something a real agent

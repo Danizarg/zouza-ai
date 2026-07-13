@@ -1,5 +1,5 @@
 /**
- * Domain types for Aurora Homes.
+ * Domain types for Zouza.ai.
  * These mirror the Supabase schema in `supabase/schema.sql`.
  */
 
@@ -114,7 +114,7 @@ export interface Conversation {
 export interface Message {
   id: string;
   conversation_id: string;
-  sender: "me" | "them" | "aurora_ai";
+  sender: "me" | "them" | "zouza_ai";
   body: string;
   created_at: string;
 }
@@ -167,7 +167,7 @@ export interface GeneratedFaqItem {
   answer: string;
 }
 
-/** The structured exposé Aurora generates from photos + facts. */
+/** The structured exposé Zouza generates from photos + facts. */
 export interface GeneratedListingContent {
   title: string;
   summary: string;
