@@ -470,3 +470,41 @@ not part of the codebase).
 case-insensitive grep for "aurora" could find (checked immediately after
 the rename). If you spot a leftover, it likely means a new file was added
 between the rename and now.
+
+---
+
+## 15. Vercel deployment blocked by commit-author verification (2026-07-13)
+
+Hit right after connecting `zouza.ai`: every push to `main` (and even
+manually clicking **Redeploy** in the dashboard) showed **"Deployment
+Blocked"** with:
+
+> The deployment was blocked because the commit author did not have
+> contributing access to the project on Vercel. Hobby teams do not
+> support collaboration. Please upgrade to Pro to add team members.
+
+This looked like a real permissions problem, but the repo owner
+(Danizarg) and the Vercel project owner were the same person — the
+actual cause was that local git commits were authored with the
+**GitHub-generated noreply proxy email**
+(`135036797+Danizarg@users.noreply.github.com`, produced by GitHub's
+"Keep my email addresses private" setting), and Vercel's commit-author
+verification couldn't resolve that address back to a verified account
+with access to the Vercel project — even though it's the correct owner.
+It blocked the deploy as if it were an untrusted external contributor,
+on the Hobby plan's "no collaborators" restriction.
+
+**Fix:** switched git's `user.email` (both local repo config and global)
+to the GitHub account's actual primary verified email
+(`daniel.zarghoum@gmail.com`, from github.com/settings/emails) instead of
+the noreply proxy, then pushed a new commit under the corrected identity.
+Did **not** amend/rewrite the already-pushed commits (that needs a force
+push, which was avoided) — a fresh commit with the right author was
+enough to unblock deploys going forward.
+
+**If this happens again** (e.g. on a new machine, or after re-enabling
+"Keep my email addresses private" on GitHub): check
+`git config user.email` and `git config --global user.email` — if either
+is set to a `*.users.noreply.github.com` address, that's very likely the
+cause. Set it to the real verified primary email from
+github.com/settings/emails instead.
