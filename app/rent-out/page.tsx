@@ -91,8 +91,8 @@ export default function RentOutPage() {
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
           {benefits.map((b, i) => (
             <Reveal key={b.title} delay={i * 0.06} className="h-full">
-              <div className="flex h-full flex-col rounded-2xl border border-line bg-white p-5">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-terra-100 text-terra-700">
+              <div className="flex h-full flex-col rounded-xl border border-line bg-white p-5">
+                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy-950 text-gold-300">
                   <b.icon className="h-5 w-5" aria-hidden />
                 </span>
                 <h3 className="mt-4 font-sans text-sm font-semibold text-navy-900">{b.title}</h3>
@@ -112,7 +112,7 @@ export default function RentOutPage() {
           <ol className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {steps.map((step, i) => (
               <Reveal key={step.title} delay={i * 0.06} className="h-full">
-                <li className="flex h-full flex-col rounded-2xl border border-navy-700 bg-navy-900 p-5">
+                <li className="flex h-full flex-col rounded-xl border border-navy-700 bg-navy-900 p-5">
                   <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gold-500/15 text-gold-300">
                     {i + 1}
                   </span>
@@ -150,7 +150,7 @@ export default function RentOutPage() {
         <div className="mt-10 grid gap-3 md:grid-cols-2">
           {faqs.map((f, i) => (
             <Reveal key={f.q} delay={i * 0.05} className="h-full">
-              <div className="h-full rounded-2xl border border-line bg-white p-5">
+              <div className="h-full rounded-xl border border-line bg-white p-5">
                 <h3 className="font-sans text-sm font-semibold text-navy-900">{f.q}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-navy-600">{f.a}</p>
               </div>

@@ -39,7 +39,7 @@ export function AgentChat({ listing }: { listing: Listing }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
+    <div className="overflow-hidden rounded-xl border border-line bg-white">
       <div className="flex items-center gap-3 border-b border-line bg-navy-900 px-5 py-4">
         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gold-500/20 text-gold-300">
           <Sparkles className="h-4.5 w-4.5" aria-hidden />
@@ -55,7 +55,7 @@ export function AgentChat({ listing }: { listing: Listing }) {
           <div key={i} className={cn("flex", m.role === "user" ? "justify-end" : "justify-start")}>
             <p
               className={cn(
-                "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
+                "max-w-[85%] rounded-xl px-4 py-2.5 text-sm leading-relaxed",
                 m.role === "user" ? "rounded-br-md bg-navy-900 text-ivory" : "rounded-bl-md bg-parchment text-navy-800",
               )}
             >
@@ -65,7 +65,7 @@ export function AgentChat({ listing }: { listing: Listing }) {
         ))}
         {thinking ? (
           <div className="flex justify-start">
-            <p className="rounded-2xl rounded-bl-md bg-parchment px-4 py-2.5 text-sm text-navy-400">Zouza is typing…</p>
+            <p className="rounded-xl rounded-bl-md bg-parchment px-4 py-2.5 text-sm text-navy-400">Zouza is typing…</p>
           </div>
         ) : null}
       </div>
@@ -96,13 +96,13 @@ export function AgentChat({ listing }: { listing: Listing }) {
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask about this property…"
           aria-label="Ask the property AI agent"
-          className="flex-1 rounded-full border border-line bg-white px-4 py-2 text-sm focus:border-gold-500 focus:outline-none"
+          className="flex-1 rounded-lg border border-line bg-white px-4 py-2 text-sm focus:border-navy-400 focus:outline-none"
         />
         <button
           type="submit"
           disabled={thinking || !input.trim()}
           aria-label="Send"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-navy-900 text-ivory disabled:opacity-40 cursor-pointer"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy-950 text-ivory disabled:opacity-40 cursor-pointer"
         >
           <Send className="h-4 w-4" aria-hidden />
         </button>

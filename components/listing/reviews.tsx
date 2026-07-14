@@ -5,7 +5,7 @@ import { Star } from "lucide-react";
 export function Reviews({ reviews, rating, count }: { reviews: Review[]; rating: number | null; count: number }) {
   if (reviews.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-line bg-parchment p-6 text-sm text-navy-600">
+      <div className="rounded-xl border border-dashed border-line bg-parchment p-6 text-sm text-navy-600">
         No reviews yet — be the first to stay here and share your experience.
       </div>
     );

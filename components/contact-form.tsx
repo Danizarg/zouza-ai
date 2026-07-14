@@ -39,7 +39,7 @@ export function ContactForm() {
 
   if (status === "done") {
     return (
-      <div className="flex items-start gap-3 rounded-2xl border border-gold-200 bg-gold-100 p-6">
+      <div className="flex items-start gap-3 rounded-xl border border-gold-200 bg-gold-100 p-6">
         <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-gold-700" aria-hidden />
         <div>
           <p className="font-medium text-navy-900">Message sent</p>

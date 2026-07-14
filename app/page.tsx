@@ -8,14 +8,10 @@ import { MOCK_LISTINGS, SPAIN_DESTINATIONS } from "@/lib/mock-data";
 import {
   ArrowRight,
   BadgeCheck,
-  Building2,
   Camera,
   Clock3,
   Euro,
   FileText,
-  Home,
-  KeyRound,
-  Landmark,
   MessageCircle,
   Receipt,
   ShieldCheck,
@@ -27,34 +23,10 @@ import Image from "next/image";
 import Link from "next/link";
 
 const intents = [
-  {
-    href: "/rent-out",
-    icon: KeyRound,
-    title: "Rent out",
-    de: "Vermieten",
-    text: "List a rental in minutes. Zouza writes the exposé and answers tenants 24/7.",
-  },
-  {
-    href: "/sell",
-    icon: Landmark,
-    title: "Sell",
-    de: "Verkaufen",
-    text: "Agency-level presentation without the agency process — direct to buyers.",
-  },
-  {
-    href: "/rent",
-    icon: Home,
-    title: "Rent",
-    de: "Mieten",
-    text: "Verified homes with the total move-in cost shown before you enquire.",
-  },
-  {
-    href: "/buy",
-    icon: Building2,
-    title: "Buy",
-    de: "Kaufen",
-    text: "Buy directly from verified owners. Transparent asking prices, no games.",
-  },
+  { href: "/rent-out", title: "Rent out", de: "Vermieten" },
+  { href: "/sell", title: "Sell", de: "Verkaufen" },
+  { href: "/rent", title: "Rent", de: "Mieten" },
+  { href: "/buy", title: "Buy", de: "Kaufen" },
 ] as const;
 
 const aiFlow = [
@@ -108,71 +80,61 @@ export default function HomePage() {
     <>
       <Hero />
 
-      {/* Intent cards */}
-      <section className="container-page pb-16 md:pb-20">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {intents.map((intent, i) => (
-            <Reveal key={intent.href} delay={i * 0.06} className="h-full">
-              <Link
-                href={intent.href}
-                className="group flex h-full flex-col rounded-2xl border border-line bg-white p-6 shadow-card transition-shadow hover:shadow-lift"
-              >
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-parchment text-navy-800">
-                  <intent.icon className="h-5 w-5" aria-hidden />
+      {/* Intent row — quiet chips, divide-x */}
+      <section className="border-y border-line bg-white">
+        <div className="container-page grid grid-cols-2 divide-x divide-line lg:grid-cols-4">
+          {intents.map((intent) => (
+            <Link
+              key={intent.href}
+              href={intent.href}
+              className="group flex items-center justify-between px-5 py-5 transition-colors hover:bg-parchment"
+            >
+              <span>
+                <span className="block text-sm font-semibold text-navy-950">{intent.title}</span>
+                <span className="block text-[0.65rem] font-medium tracking-[0.12em] text-navy-400 uppercase">
+                  {intent.de}
                 </span>
-                <p className="mt-4 font-display text-xl font-semibold text-navy-900">
-                  {intent.title}
-                  <span className="ml-2 font-sans text-xs font-normal tracking-wide text-navy-400 uppercase">
-                    {intent.de}
-                  </span>
-                </p>
-                <p className="mt-2 flex-1 text-sm leading-relaxed text-navy-600">{intent.text}</p>
-                <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-terra-600">
-                  Start
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
-                </span>
-              </Link>
-            </Reveal>
+              </span>
+              <ArrowRight
+                className="h-4 w-4 text-navy-300 transition-transform group-hover:translate-x-0.5 group-hover:text-navy-600"
+                aria-hidden
+              />
+            </Link>
           ))}
         </div>
       </section>
 
-      {/* AI upload flow */}
-      <section className="border-y border-line bg-parchment py-16 md:py-24">
+      {/* AI upload flow — ruled numbered columns */}
+      <section className="bg-parchment py-16 md:py-20">
         <div className="container-page">
           <Reveal>
-            <p className="eyebrow">How Zouza works</p>
-            <h2 className="mt-3 max-w-2xl text-3xl font-semibold text-navy-950 sm:text-4xl">
-              From phone photos to a professional listing in five steps
-            </h2>
-          </Reveal>
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
-            {aiFlow.map((step, i) => (
-              <Reveal key={step.title} delay={i * 0.07} className="h-full">
-                <div className="relative h-full rounded-2xl border border-line bg-white p-5">
-                  <span className="absolute -top-3 left-5 rounded-full bg-navy-900 px-2.5 py-0.5 text-xs font-semibold text-gold-300">
-                    {i + 1}
-                  </span>
-                  <step.icon className="mt-2 h-5 w-5 text-gold-600" aria-hidden />
-                  <h3 className="mt-3 font-sans text-sm font-semibold text-navy-900">{step.title}</h3>
-                  <p className="mt-1.5 text-sm leading-relaxed text-navy-600">{step.text}</p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-          <Reveal delay={0.2}>
-            <div className="mt-10">
-              <Link href="/create-listing" className={buttonClasses("ink", "md")}>
-                <Upload className="h-4 w-4" aria-hidden />
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <h2 className="max-w-2xl font-display text-3xl font-semibold text-navy-950 sm:text-4xl">
+                From phone photos to a professional listing in five steps
+              </h2>
+              <Link href="/create-listing" className="inline-flex items-center gap-1.5 text-sm font-medium text-terra-600 hover:text-terra-700">
                 Try it with your photos
+                <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>
             </div>
           </Reveal>
+          <ol className="mt-10 grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-5">
+            {aiFlow.map((step, i) => (
+              <Reveal key={step.title} delay={i * 0.06} className="h-full">
+                <li className="h-full border-t-2 border-navy-950 pt-4">
+                  <p className="text-xs font-semibold text-navy-400 tabular-nums">0{i + 1}</p>
+                  <step.icon className="mt-2 h-4.5 w-4.5 text-gold-600" aria-hidden />
+                  <h3 className="mt-2 text-sm font-semibold text-navy-950">{step.title}</h3>
+                  <p className="mt-1 text-sm leading-relaxed text-navy-600">{step.text}</p>
+                </li>
+              </Reveal>
+            ))}
+          </ol>
         </div>
       </section>
 
       {/* Example AI-generated listing + agent demo */}
-      <section className="container-page grid items-start gap-10 py-16 md:py-24 lg:grid-cols-2">
+      <section className="container-page grid items-start gap-10 py-16 md:py-20 lg:grid-cols-2">
         <Reveal>
           <p className="eyebrow">Example output</p>
           <h2 className="mt-3 text-3xl font-semibold text-navy-950 sm:text-4xl">
@@ -211,7 +173,7 @@ export default function HomePage() {
       </section>
 
       {/* Trust: verified homes + real prices */}
-      <section className="border-y border-line bg-navy-950 py-16 text-ivory md:py-24">
+      <section className="border-y border-line bg-navy-950 py-16 text-ivory md:py-20">
         <div className="container-page grid gap-12 lg:grid-cols-2">
           <Reveal>
             <ShieldCheck className="h-6 w-6 text-gold-300" aria-hidden />
@@ -233,7 +195,7 @@ export default function HomePage() {
           <Reveal delay={0.1}>
             <Receipt className="h-6 w-6 text-gold-300" aria-hidden />
             <h2 className="mt-4 text-3xl font-semibold text-ivory sm:text-4xl">Real price transparency</h2>
-            <div className="mt-6 max-w-md rounded-2xl border border-navy-700 bg-navy-900 p-6">
+            <div className="mt-6 max-w-md rounded-xl border border-navy-700 bg-navy-900 p-6">
               <dl className="space-y-2.5 text-sm">
                 <div className="flex justify-between"><dt className="text-navy-300">Monthly rent</dt><dd className="font-medium">€1,200</dd></div>
                 <div className="flex justify-between"><dt className="text-navy-300">Utilities (estimate)</dt><dd className="font-medium">€150</dd></div>
@@ -241,7 +203,7 @@ export default function HomePage() {
                 <div className="flex justify-between"><dt className="text-navy-300">Platform fee (2%)</dt><dd className="font-medium">€24</dd></div>
                 <div className="mt-3 flex justify-between border-t border-navy-700 pt-3">
                   <dt className="font-semibold text-ivory">Total due at move-in</dt>
-                  <dd className="font-display text-lg font-semibold text-gold-300">€2,574</dd>
+                  <dd className="font-display text-lg font-semibold text-terra-500">€2,574</dd>
                 </div>
               </dl>
             </div>
@@ -254,7 +216,7 @@ export default function HomePage() {
       </section>
 
       {/* Stay / Live / Buy */}
-      <section className="container-page py-16 md:py-24">
+      <section className="container-page py-16 md:py-20">
         <Reveal>
           <p className="eyebrow">One marketplace, three ways in</p>
           <h2 className="mt-3 text-3xl font-semibold text-navy-950 sm:text-4xl">Stay. Live. Buy.</h2>
@@ -264,9 +226,9 @@ export default function HomePage() {
             <Reveal key={mode.title} delay={i * 0.07} className="h-full">
               <Link
                 href={mode.href}
-                className="group flex h-full flex-col rounded-2xl border border-line bg-white p-7 shadow-card transition-shadow hover:shadow-lift"
+                className="group flex h-full flex-col rounded-xl border border-line bg-white p-7 transition-colors hover:border-navy-300"
               >
-                <p className="font-display text-2xl font-semibold text-navy-900">{mode.title}</p>
+                <p className="font-display text-2xl font-semibold text-navy-950">{mode.title}</p>
                 <p className="mt-1 text-xs font-semibold tracking-wide text-gold-600 uppercase">
                   {mode.subtitle}
                 </p>
@@ -282,7 +244,7 @@ export default function HomePage() {
       </section>
 
       {/* Featured verified homes */}
-      <section className="border-y border-line bg-parchment py-16 md:py-24">
+      <section className="border-y border-line bg-parchment py-16 md:py-20">
         <div className="container-page">
           <Reveal>
             <div className="flex flex-wrap items-end justify-between gap-4">
@@ -308,7 +270,7 @@ export default function HomePage() {
       </section>
 
       {/* Benefits */}
-      <section className="container-page grid gap-14 py-16 md:py-24 lg:grid-cols-2">
+      <section className="container-page grid gap-14 py-16 md:py-20 lg:grid-cols-2">
         <Reveal>
           <p className="eyebrow">For owners</p>
           <h2 className="mt-3 text-3xl font-semibold text-navy-950">
@@ -317,11 +279,11 @@ export default function HomePage() {
           <ul className="mt-8 space-y-6">
             {ownerBenefits.map((b) => (
               <li key={b.title} className="flex gap-4">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-terra-100 text-terra-700">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-navy-950 text-gold-300">
                   <b.icon className="h-5 w-5" aria-hidden />
                 </span>
                 <div>
-                  <h3 className="font-sans text-sm font-semibold text-navy-900">{b.title}</h3>
+                  <h3 className="text-sm font-semibold text-navy-950">{b.title}</h3>
                   <p className="mt-1 text-sm leading-relaxed text-navy-600">{b.text}</p>
                 </div>
               </li>
@@ -336,11 +298,11 @@ export default function HomePage() {
           <ul className="mt-8 space-y-6">
             {seekerBenefits.map((b) => (
               <li key={b.title} className="flex gap-4">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gold-100 text-gold-700">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-navy-950 text-gold-300">
                   <b.icon className="h-5 w-5" aria-hidden />
                 </span>
                 <div>
-                  <h3 className="font-sans text-sm font-semibold text-navy-900">{b.title}</h3>
+                  <h3 className="text-sm font-semibold text-navy-950">{b.title}</h3>
                   <p className="mt-1 text-sm leading-relaxed text-navy-600">{b.text}</p>
                 </div>
               </li>
@@ -350,7 +312,7 @@ export default function HomePage() {
       </section>
 
       {/* Destinations */}
-      <section className="border-t border-line bg-ivory py-16 md:py-24">
+      <section className="border-t border-line bg-ivory py-16 md:py-20">
         <div className="container-page">
           <Reveal>
             <p className="eyebrow">Spain first — global next</p>
@@ -363,7 +325,7 @@ export default function HomePage() {
               <Reveal key={d.name} delay={i * 0.05}>
                 <Link
                   href="/rent"
-                  className="group relative block overflow-hidden rounded-2xl shadow-card"
+                  className="group relative block overflow-hidden rounded-xl border border-line"
                 >
                   <div className="relative aspect-[16/10] bg-sand">
                     <Image
@@ -380,7 +342,7 @@ export default function HomePage() {
                       <p className="font-display text-xl font-semibold text-ivory">{d.name}</p>
                       <p className="text-xs text-ivory/80">{d.tagline}</p>
                     </div>
-                    <span className="rounded-full bg-ivory/15 px-2.5 py-1 text-xs font-medium text-ivory backdrop-blur">
+                    <span className="rounded-lg bg-ivory/15 px-2.5 py-1 text-xs font-medium text-ivory backdrop-blur">
                       {d.count} homes
                     </span>
                   </div>
@@ -392,7 +354,7 @@ export default function HomePage() {
       </section>
 
       {/* Fees + waitlist */}
-      <section className="border-t border-line bg-parchment py-16 md:py-24">
+      <section className="border-t border-line bg-parchment py-16 md:py-20">
         <div className="container-page max-w-3xl">
           <Reveal>
             <p className="eyebrow">Early access</p>
@@ -420,7 +382,7 @@ export default function HomePage() {
       <div className="sticky bottom-4 z-40 px-4 lg:hidden">
         <Link
           href="/create-listing"
-          className={buttonClasses("primary", "lg", "w-full shadow-lift")}
+          className={buttonClasses("primary", "lg", "w-full shadow-card")}
         >
           <Upload className="h-4.5 w-4.5" aria-hidden />
           Upload photos — Zouza does the rest

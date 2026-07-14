@@ -2,7 +2,7 @@
 
 import { buttonClasses } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Menu, Sparkles, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -23,27 +23,25 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-line bg-ivory/90 backdrop-blur-md">
-      <div className="container-page flex h-16 items-center justify-between gap-4">
+    <header className="sticky top-0 z-50 border-b border-line bg-ivory/95 backdrop-blur-md">
+      <div className="container-page flex h-14 items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-2" aria-label="Zouza.ai home">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-navy-900 text-gold-300">
-            <Sparkles className="h-4 w-4" aria-hidden />
-          </span>
-          <span className="font-display text-lg font-semibold tracking-tight text-navy-900">
+          <span className="h-2 w-2 rounded-full bg-terra-600" aria-hidden />
+          <span className="font-display text-lg font-semibold tracking-tight text-navy-950">
             Zouza.ai
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-1 lg:flex" aria-label="Main">
+        <nav className="hidden items-center gap-6 lg:flex" aria-label="Main">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               className={cn(
-                "rounded-full px-3 py-2 text-sm transition-colors",
+                "text-sm transition-colors",
                 pathname === link.href
-                  ? "bg-parchment font-medium text-navy-900"
-                  : "text-navy-700 hover:bg-parchment hover:text-navy-900",
+                  ? "font-medium text-navy-950"
+                  : "text-navy-600 hover:text-navy-950",
               )}
             >
               {link.label}
@@ -51,8 +49,8 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-2 lg:flex">
-          <Link href="/login" className={buttonClasses("ghost", "sm")}>
+        <div className="hidden items-center gap-4 lg:flex">
+          <Link href="/login" className="text-sm font-medium text-navy-700 hover:text-navy-950">
             Log in
           </Link>
           <Link href="/create-listing" className={buttonClasses("primary", "sm")}>
@@ -62,7 +60,7 @@ export function SiteHeader() {
 
         <button
           type="button"
-          className="flex h-10 w-10 items-center justify-center rounded-full text-navy-900 hover:bg-parchment lg:hidden"
+          className="flex h-10 w-10 items-center justify-center rounded-lg text-navy-900 hover:bg-parchment lg:hidden"
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-label={open ? "Close menu" : "Open menu"}
@@ -80,9 +78,9 @@ export function SiteHeader() {
                 href={link.href}
                 onClick={() => setOpen(false)}
                 className={cn(
-                  "rounded-xl px-3 py-2.5 text-base",
+                  "rounded-lg px-3 py-2.5 text-base",
                   pathname === link.href
-                    ? "bg-parchment font-medium text-navy-900"
+                    ? "bg-parchment font-medium text-navy-950"
                     : "text-navy-700",
                 )}
               >

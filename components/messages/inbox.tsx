@@ -109,7 +109,7 @@ export function Inbox() {
                 <div key={m.id} className={cn("flex", m.sender === "me" ? "justify-end" : "justify-start")}>
                   <div
                     className={cn(
-                      "max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
+                      "max-w-[75%] rounded-xl px-4 py-2.5 text-sm leading-relaxed",
                       m.sender === "me"
                         ? "rounded-br-md bg-navy-900 text-ivory"
                         : m.sender === "zouza_ai"
@@ -138,13 +138,13 @@ export function Inbox() {
                 onChange={(e) => setDraft(e.target.value)}
                 placeholder="Type a message…"
                 aria-label="Message"
-                className="flex-1 rounded-full border border-line bg-white px-4 py-2.5 text-sm focus:border-gold-500 focus:outline-none"
+                className="flex-1 rounded-lg border border-line bg-white px-4 py-2.5 text-sm focus:border-navy-400 focus:outline-none"
               />
               <button
                 type="submit"
                 disabled={!draft.trim()}
                 aria-label="Send"
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-navy-900 text-ivory disabled:opacity-40"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-navy-950 text-ivory disabled:opacity-40"
               >
                 <Send className="h-4 w-4" aria-hidden />
               </button>

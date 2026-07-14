@@ -73,8 +73,8 @@ export default function TrustPage() {
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {steps.map((s, i) => (
             <Reveal key={s.title} delay={i * 0.06} className="h-full">
-              <div className="flex h-full flex-col rounded-2xl border border-line bg-white p-6 shadow-card">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold-100 text-gold-700">
+              <div className="flex h-full flex-col rounded-xl border border-line bg-white p-6">
+                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy-950 text-gold-300">
                   <s.icon className="h-5 w-5" aria-hidden />
                 </span>
                 <h2 className="mt-4 font-sans text-sm font-semibold text-navy-900">{s.title}</h2>
@@ -88,7 +88,7 @@ export default function TrustPage() {
       <section className="border-t border-line bg-parchment py-16 md:py-20">
         <div className="container-page max-w-2xl">
           <Reveal>
-            <div className="flex items-start gap-3 rounded-2xl border border-terra-200 bg-terra-100 p-6">
+            <div className="flex items-start gap-3 rounded-xl border border-terra-200 bg-terra-100 p-6">
               <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-terra-700" aria-hidden />
               <div>
                 <h2 className="font-sans text-sm font-semibold text-navy-900">

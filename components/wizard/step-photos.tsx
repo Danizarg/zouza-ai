@@ -60,7 +60,7 @@ export function StepPhotos({
           addFiles(e.dataTransfer.files);
         }}
         onClick={() => inputRef.current?.click()}
-        className={`mt-6 flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-10 text-center transition-colors ${
+        className={`mt-6 flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-10 text-center transition-colors ${
           dragging ? "border-gold-500 bg-gold-100" : "border-line bg-parchment hover:border-navy-300"
         }`}
       >

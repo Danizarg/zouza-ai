@@ -52,7 +52,7 @@ export default function PricingPage() {
           </Reveal>
 
           <Reveal delay={0.08}>
-            <div className="rounded-2xl border border-line bg-white p-6 shadow-card">
+            <div className="rounded-xl border border-line bg-white p-6">
               <p className="eyebrow">Example rental breakdown</p>
               <dl className="mt-4 space-y-2.5 text-sm">
                 <div className="flex justify-between"><dt className="text-navy-600">Monthly rent</dt><dd className="font-medium text-navy-900">€1,200</dd></div>

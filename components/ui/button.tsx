@@ -4,19 +4,19 @@ import type { ButtonHTMLAttributes } from "react";
 export type ButtonVariant = "primary" | "ink" | "outline" | "ghost";
 export type ButtonSize = "sm" | "md" | "lg";
 
+/* design.md: navy-led CTA voice, rounded-lg, border-led secondary. */
 const variantClasses: Record<ButtonVariant, string> = {
-  primary:
-    "bg-terra-600 text-ivory hover:bg-terra-700 active:bg-terra-700 shadow-card",
+  primary: "bg-navy-950 text-ivory hover:bg-navy-800 active:bg-navy-900",
   ink: "bg-navy-900 text-ivory hover:bg-navy-800 active:bg-navy-950",
   outline:
-    "border border-navy-900/20 bg-transparent text-navy-900 hover:border-navy-900/50 hover:bg-parchment",
-  ghost: "bg-transparent text-navy-800 hover:bg-parchment",
+    "border border-line bg-white text-navy-900 hover:border-navy-300",
+  ghost: "bg-transparent text-navy-700 hover:bg-parchment hover:text-navy-950",
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
   sm: "h-9 px-4 text-sm",
   md: "h-11 px-6 text-sm",
-  lg: "h-13 px-8 text-base",
+  lg: "h-12 px-7 text-base",
 };
 
 export function buttonClasses(
@@ -25,7 +25,7 @@ export function buttonClasses(
   className?: string,
 ): string {
   return cn(
-    "inline-flex items-center justify-center gap-2 rounded-full font-medium transition-colors duration-200 disabled:pointer-events-none disabled:opacity-50 cursor-pointer whitespace-nowrap",
+    "inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors duration-200 disabled:pointer-events-none disabled:opacity-50 cursor-pointer whitespace-nowrap",
     variantClasses[variant],
     sizeClasses[size],
     className,

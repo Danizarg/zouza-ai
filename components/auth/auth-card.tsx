@@ -14,7 +14,7 @@ export function AuthCard({
 }) {
   return (
     <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-parchment px-4 py-16">
-      <div className="w-full max-w-sm rounded-2xl border border-line bg-white p-8 shadow-card">
+      <div className="w-full max-w-sm rounded-xl border border-line bg-white p-8 shadow-card">
         <Link href="/" className="mb-6 inline-block font-display text-lg font-semibold text-navy-900">
           Zouza.ai
         </Link>

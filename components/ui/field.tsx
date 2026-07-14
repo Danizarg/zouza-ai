@@ -7,7 +7,7 @@ import type {
 } from "react";
 
 const controlClasses =
-  "w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-400 transition-colors focus:border-gold-500 focus:outline-none disabled:opacity-50";
+  "w-full rounded-lg border border-line bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-400 transition-colors focus:border-navy-400 focus:outline-none disabled:opacity-50";
 
 export function Label({
   children,
@@ -74,9 +74,9 @@ export function CheckboxRow({
     <label
       htmlFor={id}
       className={cn(
-        "flex cursor-pointer items-center gap-2.5 rounded-xl border px-3.5 py-2.5 text-sm transition-colors select-none",
+        "flex cursor-pointer items-center gap-2.5 rounded-lg border px-3.5 py-2.5 text-sm transition-colors select-none",
         checked
-          ? "border-gold-500 bg-gold-100 text-navy-900"
+          ? "border-navy-950 bg-parchment text-navy-950"
           : "border-line bg-white text-navy-700 hover:border-navy-300",
       )}
     >

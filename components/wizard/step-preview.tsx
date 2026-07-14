@@ -22,7 +22,7 @@ export function StepPreview({
       <h1 className="text-2xl font-semibold text-navy-950 sm:text-3xl">Preview your listing</h1>
       <p className="mt-2 text-navy-600">This is exactly what buyers and tenants will see.</p>
 
-      <div className="mt-8 overflow-hidden rounded-2xl border border-line bg-white shadow-card">
+      <div className="mt-8 overflow-hidden rounded-xl border border-line bg-white">
         <div className="grid gap-1 sm:grid-cols-4">
           <div className="relative aspect-[4/3] bg-sand sm:col-span-2 sm:aspect-auto">
             {listing.images[0] ? (

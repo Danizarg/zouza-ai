@@ -47,7 +47,7 @@ export function SearchResults({
             <button
               type="button"
               onClick={() => setMobileFiltersOpen(true)}
-              className="flex items-center gap-1.5 rounded-full border border-line bg-white px-3.5 py-2 text-sm font-medium text-navy-700 lg:hidden"
+              className="flex items-center gap-1.5 rounded-lg border border-line bg-white px-3.5 py-2 text-sm font-medium text-navy-700 lg:hidden"
             >
               <SlidersHorizontal className="h-4 w-4" aria-hidden />
               Filters
@@ -65,12 +65,12 @@ export function SearchResults({
               <option value="newest">Newest</option>
               <option value="most_verified">Most verified</option>
             </Select>
-            <div className="hidden items-center gap-1 rounded-full border border-line bg-white p-1 sm:flex">
+            <div className="hidden items-center gap-1 rounded-lg border border-line bg-white p-1 sm:flex">
               <button
                 type="button"
                 onClick={() => setView("list")}
                 aria-pressed={view === "list"}
-                className={`flex h-8 w-8 items-center justify-center rounded-full ${view === "list" ? "bg-navy-900 text-ivory" : "text-navy-500"}`}
+                className={`flex h-8 w-8 items-center justify-center rounded-md ${view === "list" ? "bg-navy-950 text-ivory" : "text-navy-500"}`}
                 aria-label="List view"
               >
                 <List className="h-4 w-4" aria-hidden />
@@ -79,7 +79,7 @@ export function SearchResults({
                 type="button"
                 onClick={() => setView("map")}
                 aria-pressed={view === "map"}
-                className={`flex h-8 w-8 items-center justify-center rounded-full ${view === "map" ? "bg-navy-900 text-ivory" : "text-navy-500"}`}
+                className={`flex h-8 w-8 items-center justify-center rounded-md ${view === "map" ? "bg-navy-950 text-ivory" : "text-navy-500"}`}
                 aria-label="Map view"
               >
                 <MapIcon className="h-4 w-4" aria-hidden />
@@ -107,11 +107,11 @@ export function SearchResults({
         ) : null}
 
         {view === "map" ? (
-          <div className="mt-6 flex aspect-video items-center justify-center rounded-2xl border border-dashed border-line bg-parchment text-sm text-navy-500">
+          <div className="mt-6 flex aspect-video items-center justify-center rounded-xl border border-dashed border-line bg-parchment text-sm text-navy-500">
             Interactive map view — coming soon. Showing {results.length} pinned homes.
           </div>
         ) : results.length === 0 ? (
-          <div className="mt-6 flex flex-col items-center gap-2 rounded-2xl border border-dashed border-line bg-parchment py-16 text-center">
+          <div className="mt-6 flex flex-col items-center gap-2 rounded-xl border border-dashed border-line bg-parchment py-16 text-center">
             <p className="font-display text-lg font-semibold text-navy-900">No homes match yet</p>
             <p className="max-w-sm text-sm text-navy-600">
               Try widening your budget or clearing a filter — new verified homes

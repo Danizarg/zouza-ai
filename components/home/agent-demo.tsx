@@ -49,7 +49,7 @@ export function AgentDemo() {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-lift">
+    <div className="overflow-hidden rounded-xl border border-line bg-white">
       <div className="flex items-center gap-3 border-b border-line bg-navy-900 px-5 py-4">
         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gold-500/20 text-gold-300">
           <Sparkles className="h-4.5 w-4.5" aria-hidden />
@@ -70,7 +70,7 @@ export function AgentDemo() {
           >
             <p
               className={cn(
-                "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
+                "max-w-[85%] rounded-xl px-4 py-2.5 text-sm leading-relaxed",
                 m.role === "user"
                   ? "rounded-br-md bg-navy-900 text-ivory"
                   : "rounded-bl-md bg-parchment text-navy-800",
@@ -82,7 +82,7 @@ export function AgentDemo() {
         ))}
         {thinking ? (
           <div className="flex justify-start">
-            <p className="rounded-2xl rounded-bl-md bg-parchment px-4 py-2.5 text-sm text-navy-400">
+            <p className="rounded-xl rounded-bl-md bg-parchment px-4 py-2.5 text-sm text-navy-400">
               Zouza is typing…
             </p>
           </div>

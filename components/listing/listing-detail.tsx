@@ -96,7 +96,7 @@ export function ListingDetail({ listing }: { listing: Listing }) {
 
           <section>
             <h2 className="font-display text-xl font-semibold text-navy-900">Location</h2>
-            <div className="mt-4 flex aspect-video items-center justify-center rounded-2xl border border-dashed border-line bg-parchment text-sm text-navy-500">
+            <div className="mt-4 flex aspect-video items-center justify-center rounded-xl border border-dashed border-line bg-parchment text-sm text-navy-500">
               Interactive map — coming soon ({listing.address_area}, {listing.city})
             </div>
           </section>
@@ -114,7 +114,7 @@ export function ListingDetail({ listing }: { listing: Listing }) {
                 </span>
                 {listing.minimum_stay ? ` · Minimum stay: ${listing.minimum_stay}` : ""}
               </p>
-              <div className="mt-4 flex aspect-[3/1] items-center justify-center rounded-2xl border border-dashed border-line bg-parchment text-sm text-navy-500">
+              <div className="mt-4 flex aspect-[3/1] items-center justify-center rounded-xl border border-dashed border-line bg-parchment text-sm text-navy-500">
                 Availability calendar — coming soon
               </div>
             </section>
@@ -131,7 +131,7 @@ export function ListingDetail({ listing }: { listing: Listing }) {
               you sign anything. Zouza does not provide legal advice —
               always have contracts reviewed independently.
             </p>
-            <div className="mt-4 rounded-2xl border border-dashed border-line bg-parchment p-5 text-sm text-navy-500">
+            <div className="mt-4 rounded-xl border border-dashed border-line bg-parchment p-5 text-sm text-navy-500">
               Contract template area — coming soon
             </div>
           </section>
@@ -145,7 +145,7 @@ export function ListingDetail({ listing }: { listing: Listing }) {
         </div>
 
         <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start">
-          <div className="rounded-2xl border border-line bg-white p-6 shadow-card">
+          <div className="rounded-xl border border-line bg-white p-6">
             <p className="font-display text-2xl font-semibold text-navy-900">
               {formatPrice((isRent ? listing.price_monthly : listing.price_sale) ?? 0)}
               {isRent ? <span className="font-sans text-sm font-normal text-navy-500"> /month</span> : null}

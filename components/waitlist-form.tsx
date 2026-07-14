@@ -24,7 +24,7 @@ export function WaitlistForm() {
 
   if (status === "done") {
     return (
-      <div className="flex items-center gap-3 rounded-2xl border border-gold-200 bg-gold-100 px-5 py-4">
+      <div className="flex items-center gap-3 rounded-xl border border-gold-200 bg-gold-100 px-5 py-4">
         <CheckCircle2 className="h-5 w-5 shrink-0 text-gold-700" aria-hidden />
         <p className="text-sm text-navy-800">
           You are on the list. We will invite you before public launch — owners

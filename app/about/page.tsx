@@ -62,8 +62,8 @@ export default function AboutPage() {
         <div className="grid gap-6 sm:grid-cols-2">
           {pillars.map((p, i) => (
             <Reveal key={p.title} delay={i * 0.07} className="h-full">
-              <div className="flex h-full flex-col rounded-2xl border border-line bg-white p-6 shadow-card">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold-100 text-gold-700">
+              <div className="flex h-full flex-col rounded-xl border border-line bg-white p-6">
+                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy-950 text-gold-300">
                   <p.icon className="h-5 w-5" aria-hidden />
                 </span>
                 <h2 className="mt-4 font-display text-lg font-semibold text-navy-900">{p.title}</h2>

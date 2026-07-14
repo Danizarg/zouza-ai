@@ -10,7 +10,7 @@ export function Gallery({ images, title }: { images: string[]; title: string }) 
 
   return (
     <>
-      <div className="grid gap-1.5 overflow-hidden rounded-2xl sm:grid-cols-4 sm:grid-rows-2">
+      <div className="grid gap-1.5 overflow-hidden rounded-xl sm:grid-cols-4 sm:grid-rows-2">
         <button
           type="button"
           onClick={() => setLightbox(0)}

@@ -56,8 +56,8 @@ export default function SellPage() {
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((f, i) => (
             <Reveal key={f.title} delay={i * 0.06} className="h-full">
-              <div className="flex h-full flex-col rounded-2xl border border-line bg-white p-6 shadow-card">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold-100 text-gold-700">
+              <div className="flex h-full flex-col rounded-xl border border-line bg-white p-6">
+                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy-950 text-gold-300">
                   <f.icon className="h-5 w-5" aria-hidden />
                 </span>
                 <h3 className="mt-4 font-sans text-sm font-semibold text-navy-900">{f.title}</h3>

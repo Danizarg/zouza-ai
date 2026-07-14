@@ -22,7 +22,7 @@ export function StepIntent({
         <button
           type="button"
           onClick={() => onSelect("rent_out")}
-          className={`flex flex-col items-start gap-3 rounded-2xl border-2 p-6 text-left transition-colors ${
+          className={`flex flex-col items-start gap-3 rounded-xl border-2 p-6 text-left transition-colors ${
             value === "rent_out" ? "border-gold-500 bg-gold-100" : "border-line bg-white hover:border-navy-300"
           }`}
         >
@@ -39,7 +39,7 @@ export function StepIntent({
         <button
           type="button"
           onClick={() => onSelect("sell")}
-          className={`flex flex-col items-start gap-3 rounded-2xl border-2 p-6 text-left transition-colors ${
+          className={`flex flex-col items-start gap-3 rounded-xl border-2 p-6 text-left transition-colors ${
             value === "sell" ? "border-gold-500 bg-gold-100" : "border-line bg-white hover:border-navy-300"
           }`}
         >

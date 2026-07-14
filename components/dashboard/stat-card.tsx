@@ -13,7 +13,7 @@ export function StatCard({
   tone?: "neutral" | "gold" | "terra";
 }) {
   return (
-    <div className="rounded-2xl border border-line bg-white p-5 shadow-card">
+    <div className="rounded-xl border border-line bg-white p-5">
       <span
         className={cn(
           "flex h-9 w-9 items-center justify-center rounded-xl",

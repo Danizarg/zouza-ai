@@ -12,7 +12,7 @@ export function ListingCard({ listing }: { listing: Listing }) {
   const price = isRent ? listing.price_monthly : listing.price_sale;
 
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-card transition-shadow duration-300 hover:shadow-lift">
+    <article className="group relative flex flex-col overflow-hidden rounded-xl border border-line bg-white transition-colors duration-200 hover:border-navy-300">
       <Link
         href={`/listings/${listing.id}`}
         className="absolute inset-0 z-10"

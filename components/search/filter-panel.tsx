@@ -26,7 +26,7 @@ export function FilterPanel({ mode, filters, onChange }: FilterPanelProps) {
   }
 
   return (
-    <div className="space-y-6 rounded-2xl border border-line bg-white p-5">
+    <div className="space-y-6 rounded-xl border border-line bg-white p-5">
       <div>
         <Label htmlFor="f-query">Location</Label>
         <Input
