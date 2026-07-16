@@ -1,4 +1,4 @@
-# Design — Zouza.ai
+# Design — Zouza
 
 A locked design system for this app. Every page redesign reads this file before
 emitting code. Do not regenerate per page — extend or amend this file when the
@@ -11,13 +11,13 @@ Serious, engineered, calm. Navy leads; gold and terracotta are seasoning, not
 paint.
 
 ## Macrostructure family
-- Marketing pages (/, /rent-out, /sell, /about, /trust, /pricing):
-  product-panel hero or statement head → bordered content sections separated
-  by hairlines (`border-line`) and alternating ivory/parchment bands. Section
+- Marketing pages (/, /how-it-works, /about, /trust, /pricing): AI-chat hero
+  or statement head → bordered content sections separated by hairlines
+  (`border-line`) and alternating ivory/parchment/navy-950 bands. Section
   heads: Fraunces display heading, optional one-line support text; eyebrow
   labels quiet (navy-400), not gold.
-- App pages (/rent, /buy, /dashboard*, /messages, /create-listing,
-  /listings/[id]): function carries the page. White cards with 1px
+- App pages (/ai-search, /explore, /dashboard*, /list-with-ai,
+  /property/[id]): function carries the page. White cards with 1px
   `border-line`, `rounded-xl`, minimal shadow. No enrichment.
 - Content pages (/legal/*, /contact): typography only.
 
@@ -78,12 +78,16 @@ spinner. Respect prefers-reduced-motion (Reveal component).
 - The old terracotta pill primary is RETIRED.
 
 ## What pages MUST share
-- The wordmark: "Zouza.ai" Inter 600 with a 2×2 terra-600 dot (h-2 w-2
-  rounded-full) — replaces the old sparkle-in-circle logo.
+- The wordmark: "Zouza" Inter 600 with a navy-950 rounded-lg sparkle badge
+  (matches the AI-agent chat header icon) — used in header and footer.
 - Nav: h-14 sticky, bg-ivory/95 backdrop-blur, border-b border-line,
-  links Inter 14px navy-600, "Log in" ghost + "Start free" navy primary.
+  links Inter 14px navy-600, "Sign in" ghost + "Start with AI" navy primary.
 - Footer: slim two-row (brand + link row, then hairline + legal microtext).
 - CTA voice, radius scale, eyebrow treatment, border-led depth.
+- Every AI chat surface (homepage panel, property agent, list-with-ai chat
+  facts) uses the same bubble language: navy-950 user bubbles
+  (`rounded-br-md`), parchment AI bubbles (`rounded-bl-md`), rounded-lg
+  input + send button.
 
 ## What pages MAY differ on
 - Marketing pages may use one parchment band and one navy-950 band per page.
@@ -95,3 +99,13 @@ spinner. Respect prefers-reduced-motion (Reveal component).
   is fine where it's clearly product demo content.
 - Legal disclaimers (pure intermediary, non-affiliation) must survive every
   redesign of footer/legal surfaces.
+
+## 2026-07-13 addendum: AI-first product pivot
+Same day, later in the session, the product pivoted from "verified property
+marketplace with AI tools" to an explicit AI-chat-first positioning ("AI
+Operating System for Real Estate") — see `CONTEXT.md` §15 for the full
+rationale and route mapping. The visual system above (palette, radius,
+depth, CTA voice, typography) was **kept as-is**; only the macrostructure/
+route list and the "what pages must share" nav/footer copy changed. Any
+future redesign should keep treating this file as the single visual source
+of truth regardless of which product-positioning era a page was built in.

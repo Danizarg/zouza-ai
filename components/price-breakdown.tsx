@@ -59,7 +59,7 @@ export function PriceBreakdown({ listing }: { listing: Listing }) {
       />
       <p className="pt-3 text-xs leading-relaxed text-navy-500">
         Purchase taxes, notary and registry fees depend on the region and your
-        situation. Zouza.ai does not provide legal or tax advice — always
+        situation. Zouza does not provide legal or tax advice — always
         confirm final costs with an independent professional.
       </p>
     </dl>

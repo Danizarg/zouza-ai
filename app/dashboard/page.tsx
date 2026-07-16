@@ -44,7 +44,7 @@ export default function DashboardPage() {
       <section className="mt-12">
         <div className="flex items-center justify-between">
           <h2 className="font-display text-xl font-semibold text-navy-900">My listings</h2>
-          <Link href="/create-listing" className={buttonClasses("outline", "sm")}>
+          <Link href="/list-with-ai" className={buttonClasses("outline", "sm")}>
             Add listing
           </Link>
         </div>

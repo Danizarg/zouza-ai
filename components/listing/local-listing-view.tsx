@@ -17,7 +17,7 @@ export function LocalListingView({ id }: { id: string }) {
         <p className="max-w-sm text-navy-600">
           This listing may have been unpublished, or the link is incorrect.
         </p>
-        <Link href="/rent" className={buttonClasses("primary", "md")}>
+        <Link href="/explore" className={buttonClasses("primary", "md")}>
           Browse homes
         </Link>
       </div>

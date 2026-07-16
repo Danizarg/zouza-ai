@@ -2,19 +2,26 @@
 
 import { buttonClasses } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Menu, X } from "lucide-react";
+import { Menu, Sparkles, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 const NAV_LINKS = [
-  { href: "/rent", label: "Rent" },
-  { href: "/buy", label: "Buy" },
-  { href: "/rent-out", label: "Rent out" },
-  { href: "/sell", label: "Sell" },
-  { href: "/create-listing", label: "AI Listing Creator" },
+  { href: "/ai-search", label: "AI Search" },
+  { href: "/list-with-ai", label: "List with AI" },
+  { href: "/explore", label: "Explore Homes" },
+  { href: "/how-it-works", label: "How it works" },
   { href: "/pricing", label: "Pricing" },
-  { href: "/trust", label: "Trust" },
+] as const;
+
+const MOBILE_LINKS = [
+  { href: "/", label: "Home" },
+  { href: "/ai-search", label: "AI Search" },
+  { href: "/explore", label: "Explore" },
+  { href: "/list-with-ai", label: "List with AI" },
+  { href: "/how-it-works", label: "How it works" },
+  { href: "/pricing", label: "Pricing" },
   { href: "/contact", label: "Contact" },
 ] as const;
 
@@ -25,10 +32,12 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-ivory/95 backdrop-blur-md">
       <div className="container-page flex h-14 items-center justify-between gap-4">
-        <Link href="/" className="flex items-center gap-2" aria-label="Zouza.ai home">
-          <span className="h-2 w-2 rounded-full bg-terra-600" aria-hidden />
+        <Link href="/" className="flex items-center gap-2" aria-label="Zouza home">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-navy-950 text-gold-300">
+            <Sparkles className="h-3.5 w-3.5" aria-hidden />
+          </span>
           <span className="font-display text-lg font-semibold tracking-tight text-navy-950">
-            Zouza.ai
+            Zouza
           </span>
         </Link>
 
@@ -50,11 +59,12 @@ export function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-4 lg:flex">
-          <Link href="/login" className="text-sm font-medium text-navy-700 hover:text-navy-950">
-            Log in
+          <Link href="/auth/sign-in" className="text-sm font-medium text-navy-700 hover:text-navy-950">
+            Sign in
           </Link>
-          <Link href="/create-listing" className={buttonClasses("primary", "sm")}>
-            Get started
+          <Link href="/list-with-ai" className={buttonClasses("primary", "sm")}>
+            <Sparkles className="h-3.5 w-3.5" aria-hidden />
+            Start with AI
           </Link>
         </div>
 
@@ -72,7 +82,7 @@ export function SiteHeader() {
       {open ? (
         <div className="border-t border-line bg-ivory lg:hidden">
           <nav className="container-page flex flex-col gap-1 py-4" aria-label="Mobile">
-            {NAV_LINKS.map((link) => (
+            {MOBILE_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -88,11 +98,11 @@ export function SiteHeader() {
               </Link>
             ))}
             <div className="mt-3 flex gap-2">
-              <Link href="/login" onClick={() => setOpen(false)} className={buttonClasses("outline", "md", "flex-1")}>
-                Log in
+              <Link href="/auth/sign-in" onClick={() => setOpen(false)} className={buttonClasses("outline", "md", "flex-1")}>
+                Sign in
               </Link>
-              <Link href="/create-listing" onClick={() => setOpen(false)} className={buttonClasses("primary", "md", "flex-1")}>
-                Get started
+              <Link href="/list-with-ai" onClick={() => setOpen(false)} className={buttonClasses("primary", "md", "flex-1")}>
+                Start with AI
               </Link>
             </div>
           </nav>

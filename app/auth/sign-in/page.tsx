@@ -9,7 +9,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export default function LoginPage() {
+export default function SignInPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,11 +34,11 @@ export default function LoginPage() {
   return (
     <AuthCard
       title="Welcome back"
-      subtitle={isSupabaseConfigured() ? "Log in to your Zouza.ai account." : "Demo mode — any email/password logs you in."}
+      subtitle={isSupabaseConfigured() ? "Sign in to your Zouza account." : "Demo mode — any email/password signs you in."}
       footer={
         <>
           New to Zouza?{" "}
-          <Link href="/signup" className="font-medium text-terra-600 hover:text-terra-700">
+          <Link href="/auth/sign-up" className="font-medium text-terra-600 hover:text-terra-700">
             Create an account
           </Link>
         </>
@@ -56,12 +56,12 @@ export default function LoginPage() {
         {error ? <p className="text-sm text-terra-700">{error}</p> : null}
         <div className="flex items-center justify-between text-sm">
           <span />
-          <Link href="/forgot-password" className="text-navy-500 hover:text-navy-700">
+          <Link href="/auth/forgot-password" className="text-navy-500 hover:text-navy-700">
             Forgot password?
           </Link>
         </div>
         <Button type="submit" disabled={status === "loading"} className="w-full">
-          {status === "loading" ? "Logging in…" : "Log in"}
+          {status === "loading" ? "Signing in…" : "Sign in"}
         </Button>
       </form>
     </AuthCard>

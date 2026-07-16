@@ -10,7 +10,7 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
   const listing = await getListingById(id);
-  if (!listing) return { title: "Listing" };
+  if (!listing) return { title: "Property" };
   return {
     title: listing.title,
     description: listing.summary,
@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function ListingPage({ params }: PageProps) {
+export default async function PropertyPage({ params }: PageProps) {
   const { id } = await params;
   const listing = await getListingById(id);
 

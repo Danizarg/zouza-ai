@@ -1,4 +1,4 @@
-# Zouza.ai — Project Context
+# Zouza — Project Context
 
 This file is a handover/continuation document for anyone (human or AI) picking
 up this project. It records what exists, why it was built this way, what is
@@ -6,11 +6,18 @@ real vs. mock, and what's left to do. Keep it updated as the project evolves.
 
 Last updated: 2026-07-13.
 
+**⚠ Read §16 first.** Later on 2026-07-13 the product pivoted from a
+"verified marketplace with AI tools" positioning to an AI-chat-first
+product ("AI Operating System for Real Estate"). §1's narrative and §6's
+route table below describe the *original* positioning and are kept for
+history; §16 has the current routes, files, and rationale. Where the two
+disagree, §16 wins.
+
 ---
 
 ## 1. What this project is
 
-**Zouza.ai** — an AI-powered real estate marketing assistant and
+**Zouza** — an AI-powered real estate marketing assistant and
 verified property marketplace. Positioning: *"Professional Property
 Marketing. Powered by AI."* / *"Upload photos. Zouza creates the
 listing."*
@@ -431,15 +438,15 @@ writing (24/24 routes built, 0 lint errors).
 
 ---
 
-## 14. Rebrand: Aurora Homes → Zouza.ai (2026-07-13)
+## 14. Rebrand: Aurora Homes → Zouza (2026-07-13)
 
 The user purchased the domain **zouza.ai** and the product was renamed
-from "Aurora Homes" to **Zouza.ai** throughout — the GitHub repo was
+from "Aurora Homes" to **Zouza** throughout — the GitHub repo was
 renamed from `aurora-homes` to `zouza-ai` to match (repo:
 [Danizarg/zouza-ai](https://github.com/Danizarg/zouza-ai)).
 
 **What changed:** every user-facing occurrence of "Aurora Homes" →
-"Zouza.ai", and standalone "Aurora" (the AI persona in prose, e.g.
+"Zouza", and standalone "Aurora" (the AI persona in prose, e.g.
 "Aurora creates the listing") → "Zouza", across all pages, components,
 metadata, legal text, README, and this file. Also renamed:
 - `package.json` name: `aurora-homes` → `zouza-ai`
@@ -508,3 +515,154 @@ enough to unblock deploys going forward.
 is set to a `*.users.noreply.github.com` address, that's very likely the
 cause. Set it to the real verified primary email from
 github.com/settings/emails instead.
+
+---
+
+## 16. Product pivot: AI-first "AI Operating System for Real Estate" (2026-07-13)
+
+Same day, after the Hallmark redesign (§14) shipped and deployed
+successfully, the user requested a full pivot: not another property
+portal with AI features bolted on, but an explicit AI-chat-first product
+— "the AI is the product, not the listings." This section is the current
+source of truth for routes and architecture; §1–§13 describe the earlier
+"verified marketplace" positioning and are historical.
+
+### What changed vs. what was kept
+
+**Kept as-is:** the visual design system (`design.md` — palette,
+typography, radius, depth, CTA voice), Supabase schema and mock-mode
+pattern, `lib/types.ts`'s core `Listing` shape, the Hallmark redesign's
+navy-led/border-led voice, all legal/trust/pricing page content (adjusted
+only where copy referenced removed routes).
+
+**Rebuilt:** the homepage (now an AI-chat hero + live-analysis demo +
+natural-language search demo + property-AI demo, in that order), the
+listing-creation wizard's facts step (form → chat Q&A), the listing
+detail page's CTA hierarchy (AI chat promoted above contact/viewing
+actions), search (split into `/ai-search` for natural language and
+`/explore` for classic browsing).
+
+**Removed:** `/rent`, `/buy`, `/rent-out`, `/sell`, `/create-listing`,
+`/listings/[id]`, `/login`, `/signup`, `/forgot-password`, `/messages`
+(top-level), `/dashboard/owner`. All replaced per the route map below —
+nothing was deleted without a direct replacement covering its function.
+
+### Current route map
+
+| Old route | New route | Notes |
+|---|---|---|
+| `/` | `/` | Fully rebuilt — see §"New homepage sections" below |
+| `/rent` + `/buy` | `/explore` | Combined, mode toggle (All/Rent/Buy) added |
+| — | `/ai-search` | New — natural-language search, "Refine manually" reveals basic filters |
+| `/create-listing` | `/list-with-ai` | Same wizard, facts step is now chat-driven |
+| `/listings/[id]` | `/property/[id]` | Same component (`ListingDetail`), CTA order changed |
+| `/rent-out` + `/sell` | `/how-it-works` | Consolidated explainer page |
+| `/login` | `/auth/sign-in` | |
+| `/signup` | `/auth/sign-up` | |
+| `/forgot-password` | `/auth/forgot-password` | |
+| `/messages` | `/dashboard/messages` | Moved under the dashboard, same `Inbox` component |
+| `/dashboard/owner` | `/dashboard/listings` | Same content, renamed |
+| `/dashboard` | `/dashboard` | Unchanged |
+| `/about`, `/trust`, `/pricing`, `/contact`, `/legal/*` | unchanged | Internal links updated to new routes |
+
+### New homepage sections (in DOM order)
+
+1. **Hero** (`components/home/hero.tsx`) — headline + an embedded AI chat
+   panel (`chatRespond()` in `lib/ai/service.ts`), starter prompts from
+   `MOCK_AI_CHAT_EXAMPLES` in `lib/mock-data.ts`.
+2. **Live AI demo** (`components/home/live-demo.tsx`) — auto-cycling
+   checklist animation (uploading → feature detection → generation →
+   publish), purely presentational, loops every ~10s. Not wired to real
+   photo upload — that's `/list-with-ai`'s job.
+3. **Three simple steps**, **AI creates everything grid** — inline in
+   `app/page.tsx`, static content.
+4. **Natural-language search demo** (`components/home/nl-search-demo.tsx`)
+   — real interactive search against `MOCK_LISTINGS` via
+   `interpretSearchQuery()`.
+5. **Property AI assistant demo** (`components/home/agent-demo.tsx`,
+   restyled from the old version) — now demos the Marbella villa listing
+   with "community fees" / "beach distance" as the starter questions,
+   matching the brief's example verbatim.
+6. Featured properties, testimonials (`MOCK_TESTIMONIALS`), final CTA.
+
+### AI service additions (`lib/ai/service.ts`)
+
+- `chatRespond(message): string` — keyword-overlap match against
+  `MOCK_AI_CHAT_EXAMPLES`, generic fallback otherwise. Used by the
+  homepage hero panel only (not the property agent, which still uses
+  `answerAgentQuestion`).
+- `interpretSearchQuery(query, listings): SearchMatch[]` — parses budget
+  (see gotcha below), bedroom count, city (via `CITY_ALIASES` lookup),
+  beach/buy/rent intent from free text, scores every listing, returns the
+  top 6 with a human-readable `match_reason`. Used by both the homepage
+  search demo and the real `/ai-search` page.
+- Added `community fee` / `tax` question branches to `answerAgentQuestion`
+  and a `distance_to_beach_min`-aware beach-distance answer, so the
+  property AI assistant can answer the brief's exact example questions
+  ("Are there community fees?" / "How far is the beach?").
+
+**Gotcha already hit and fixed:** the first version of the budget parser
+in `interpretSearchQuery` stripped `.` and `,` unconditionally as
+thousands-separators before applying a unit multiplier, so `"€1.2M"`
+became `1,200,000 × 10 = 12,000,000`. Fixed by requiring either an
+explicit `k`/`m`/`million` suffix (decimal point preserved, only commas
+stripped) or a bare `€`-prefixed number (both `.` and `,` treated as
+separators). If you touch this function again, re-verify with an
+actual `"€1.2M"`-style query — it's exactly the kind of bug that looks
+fine on integer test inputs and breaks on the first decimal.
+
+### Data model additions (`lib/types.ts`, `lib/mock-data.ts`)
+
+Added to `Listing` (all optional, so Supabase rows predating them still
+type-check): `ai_summary`, `ai_highlights`, `faq`,
+`distance_to_beach_min`, `community_fees_monthly`, `taxes_note`,
+`owner_type`, `match_reason`. New top-level types: `Testimonial`,
+`AiChatExample`, `SearchMatch`.
+
+These are **derived automatically** inside `mock-data.ts`'s `listing()`
+factory function (not hand-authored per listing) from existing fields —
+e.g. `distance_to_beach_min` derives from `sea_view`/`pool`,
+`community_fees_monthly` from price × property type. If you add a new
+mock listing, these fields populate themselves; override any of them
+explicitly in the seed object if the derived value doesn't fit.
+
+### The chat-based listing-creation step
+
+`components/wizard/step-chat-facts.tsx` replaces the old
+`step-facts.tsx` form (deleted). It's a fixed sequence of 8 questions
+(location, bedrooms, bathrooms, size, furnished, pets, pool/sea/garage,
+price) with a small per-step parser (`QuestionStep.apply`) that either
+updates `ListingFacts` and advances, or re-asks with a retry message if
+the answer didn't parse. Everything else in the wizard (`wizard.tsx`,
+photo upload, AI generation, review, preview, publish) is unchanged —
+only this one step's UI paradigm changed from form fields to chat.
+
+**If you extend the question sequence:** each `QuestionStep.apply`
+returns `null` to signal "couldn't parse, re-ask" — don't throw, and
+don't skip the retry message, or the chat will silently stall on a bad
+answer.
+
+### Known limitations specific to the AI-first features (mock, by design)
+
+- `chatRespond` and `interpretSearchQuery` are deterministic keyword
+  matching, not a real model — same caveat as `generateListingContent`
+  and `answerAgentQuestion` already documented in §7. All four share the
+  same swap-in point pattern: keep the mock as a fallback, add a real
+  model call gated on `hasAiProvider()`.
+- The homepage "live AI demo" checklist animation is fully presentational
+  and loops on a timer — it does not reflect real photo analysis. Actual
+  photo upload + generation only happens in `/list-with-ai`.
+- `/ai-search`'s "Refine manually" panel is a deliberately small filter
+  set (min bedrooms, max budget) — not the full `FilterPanel` component,
+  to avoid coupling a combined-mode search page to that component's
+  rent/buy-specific field logic. Extend it directly in
+  `app/ai-search/page.tsx` if more filters are needed.
+
+### Verification performed
+
+`tsc --noEmit`, `npm run lint`, `npm run build` all clean (23/23 routes).
+Live-tested in-browser: homepage chat panel (exact canned reply
+verified), `/ai-search` example query (budget parsing bug caught and
+fixed live), full `/list-with-ai` flow including the new chat facts step
+through to a published draft, and the resulting `/property/[id]` page
+(location intelligence section, AI chat anchor).

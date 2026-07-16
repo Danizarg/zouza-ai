@@ -1,9 +1,9 @@
-# Zouza.ai
+# Zouza
 
 **Professional Property Marketing. Powered by AI.**
 Upload photos. Zouza creates the listing.
 
-Zouza.ai is an AI-powered real estate marketing assistant and verified
+Zouza is an AI-powered real estate marketing assistant and verified
 property marketplace — Spain-first, built with Next.js, TypeScript,
 Tailwind CSS and Supabase. It is a pure intermediary in this MVP: no
 payment processing, escrow, deposit management, rent guarantees, or legal
@@ -12,29 +12,40 @@ advice.
 ## What's built
 
 **Real, working features:**
-- Full site: homepage, `/rent`, `/buy`, `/rent-out`, `/sell`, `/create-listing`,
-  `/listings/[id]`, `/messages`, `/dashboard`, `/dashboard/owner`, `/login`,
-  `/signup`, `/forgot-password`, `/contact`, `/about`, `/trust`, `/pricing`,
+- Full site: AI-first homepage, `/ai-search`, `/explore`, `/list-with-ai`,
+  `/property/[id]`, `/how-it-works`, `/dashboard`, `/dashboard/listings`,
+  `/dashboard/messages`, `/auth/sign-in`, `/auth/sign-up`,
+  `/auth/forgot-password`, `/contact`, `/about`, `/trust`, `/pricing`,
   `/legal/terms`, `/legal/privacy`, `/legal/disclaimer`
-- Multi-step AI listing wizard (photo upload → facts → AI generation →
-  editable review → preview → publish)
-- Per-listing AI property agent that answers from real listing data
-- Search with working filters, sorting, and save/favourite (localStorage)
+- Homepage AI chat panel ("what would you like to do today?") and a live
+  photo-analysis demo, both interactive
+- Natural-language property search (`/ai-search`, and a demo on the
+  homepage) that parses budget/bedrooms/city/beach intent from free text
+- Multi-step AI listing wizard at `/list-with-ai` (photo upload → a short
+  **chat Q&A** for basic facts → AI generation → editable review → preview
+  → publish)
+- Per-property AI assistant that answers from real listing data
+  (availability, community fees, taxes, beach distance, pets, etc.)
+- Explore page with working filters, sorting, and save/favourite (localStorage)
 - Contact form and waitlist form (persist to Supabase when configured)
 - Supabase-ready schema (`supabase/schema.sql`) with row-level security
 - Deterministic **mock AI generation** — the whole product works with zero
   API keys configured
 
 **Mock / demo-only:**
-- AI generation is deterministic template-based mock content unless an AI
-  provider key is added (see `lib/ai/service.ts` — one function to swap in
-  a real model call)
+- All AI behaviour (listing generation, the property agent, the homepage
+  chat panel, natural-language search) is deterministic template/keyword
+  logic unless an AI provider key is added (see `lib/ai/service.ts` — each
+  function has a clear swap-in point for a real model call)
+- The homepage's live photo-analysis checklist is a presentational timer
+  loop, not real image analysis — actual generation happens in
+  `/list-with-ai`
 - Messaging, viewing requests, dashboard stats, and reviews use bundled
   demo data (`lib/mock-data.ts`)
 - Listings published via the wizard save to `localStorage` when Supabase
-  isn't configured, and the listing detail page falls back to that store
+  isn't configured, and the property page falls back to that store
 - Auth pages call Supabase Auth when configured; otherwise they simulate a
-  successful login/signup and redirect to the dashboard
+  successful sign-in/sign-up and redirect to the dashboard
 - Map and availability calendar are visual placeholders
 - Contract template download area is a placeholder
 
@@ -89,9 +100,11 @@ integration point used by the wizard's server action
 3. Keep the existing `mockGenerate` function as a fallback for missing or
    invalid keys, so the product never breaks without configuration.
 
-The per-listing AI property agent (`answerAgentQuestion` in the same file)
-can be swapped the same way — it currently does deterministic keyword
-routing over the listing's structured fields.
+The per-listing AI property agent (`answerAgentQuestion`), the homepage
+chat panel (`chatRespond`), and natural-language search
+(`interpretSearchQuery`) — all in the same file — can be swapped the same
+way; they currently do deterministic keyword routing/matching over
+structured listing fields and a small canned-example set.
 
 ## Environment variables
 

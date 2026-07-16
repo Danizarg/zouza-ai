@@ -7,7 +7,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Pricing & fees",
   description:
-    "Zouza.ai' transparent, low-fee model — every cost shown before you enquire, with no hidden charges.",
+    "Zouza's transparent, low-fee model — every cost shown before you enquire, with no hidden charges.",
 };
 
 const principles = [
@@ -28,7 +28,7 @@ export default function PricingPage() {
               Low, transparent fees. No hidden costs.
             </h1>
             <p className="mt-5 text-lg leading-relaxed text-navy-600">
-              Zouza.ai is a pure intermediary — we don&rsquo;t process
+              Zouza is a pure intermediary — we don&rsquo;t process
               payments or take a commission on your rent or sale price. We
               charge a small platform fee for the marketplace and AI tools,
               shown clearly before anyone commits to anything.
@@ -79,8 +79,8 @@ export default function PricingPage() {
             <h2 className="text-xl font-semibold text-navy-950">Ready to see it in action?</h2>
             <p className="mt-1 text-sm text-navy-600">Create a listing draft for free — no payment required.</p>
           </div>
-          <Link href="/create-listing" className={buttonClasses("primary", "md")}>
-            Start with photos
+          <Link href="/list-with-ai" className={buttonClasses("primary", "md")}>
+            Start with AI
           </Link>
         </div>
       </section>

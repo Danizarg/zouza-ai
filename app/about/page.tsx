@@ -9,9 +9,9 @@ import {
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "About Zouza.ai",
+  title: "About Zouza",
   description:
-    "Zouza.ai' mission: professional property marketing powered by AI, verified homes, transparent prices, direct owners — Spain first, global next.",
+    "Zouza' mission: professional property marketing powered by AI, verified homes, transparent prices, direct owners — Spain first, global next.",
 };
 
 const pillars = [
@@ -48,7 +48,7 @@ export default function AboutPage() {
               Property marketing, made honest and effortless.
             </h1>
             <p className="mt-5 text-lg leading-relaxed text-navy-600">
-              Zouza.ai exists because listing a property shouldn&rsquo;t
+              Zouza exists because listing a property shouldn&rsquo;t
               require an agency, a copywriter, or a second job answering the
               same questions all day. We built an AI assistant that does the
               marketing work, on top of a marketplace built around
@@ -97,7 +97,7 @@ export default function AboutPage() {
           <Reveal>
             <h2 className="text-2xl font-semibold text-navy-950">Why a pure intermediary MVP</h2>
             <p className="mt-4 leading-relaxed text-navy-600">
-              Zouza.ai is deliberately scoped as a marketing and
+              Zouza is deliberately scoped as a marketing and
               marketplace platform in this first version — listings, search,
               messaging, verification, contract template area, reviews,
               viewing requests, and AI tools. We do not process payments,

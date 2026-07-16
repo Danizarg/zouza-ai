@@ -22,7 +22,7 @@ const performance = [
   { listing: MOCK_LISTINGS[1], views: 198, enquiries: 6, aiAnswered: 14 },
 ];
 
-export default function OwnerDashboardPage() {
+export default function DashboardListingsPage() {
   const drafts = useClientSnapshot(() => listLocalListings(), []);
 
   const published = MOCK_LISTINGS.slice(0, 2);
@@ -34,10 +34,10 @@ export default function OwnerDashboardPage() {
     <div className="container-page max-w-5xl py-8 md:py-10">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-navy-950 sm:text-3xl">Owner dashboard</h1>
-          <p className="mt-1 text-sm text-navy-500">Performance across your published listings.</p>
+          <h1 className="text-2xl font-semibold text-navy-950 sm:text-3xl">My listings</h1>
+          <p className="mt-1 text-sm text-navy-500">Performance across your published listings and AI drafts.</p>
         </div>
-        <Link href="/create-listing" className={buttonClasses("primary", "md")}>
+        <Link href="/list-with-ai" className={buttonClasses("primary", "md")}>
           <Plus className="h-4 w-4" aria-hidden />
           Add new listing
         </Link>
@@ -61,7 +61,7 @@ export default function OwnerDashboardPage() {
                 <span>{p.enquiries} enquiries</span>
                 <span>{p.aiAnswered} AI answers</span>
               </div>
-              <Link href={`/listings/${p.listing.id}`} className={buttonClasses("outline", "sm")}>
+              <Link href={`/property/${p.listing.id}`} className={buttonClasses("outline", "sm")}>
                 View listing
               </Link>
             </div>
@@ -107,7 +107,7 @@ export default function OwnerDashboardPage() {
 
       {drafts.length > 0 ? (
         <section className="mt-12">
-          <h2 className="font-display text-xl font-semibold text-navy-900">Draft listings</h2>
+          <h2 className="font-display text-xl font-semibold text-navy-900">AI drafts</h2>
           <div className="mt-5 grid gap-5 sm:grid-cols-2">
             {drafts.map((l) => <ListingCard key={l.id} listing={l} />)}
           </div>

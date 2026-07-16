@@ -23,11 +23,11 @@ export function StepPublish({ listing }: { listing: Listing }) {
         answer enquiries 24/7.
       </p>
       <div className="mt-8 flex flex-wrap justify-center gap-3">
-        <Link href={`/listings/${listing.id}`} className={buttonClasses("primary", "lg")}>
+        <Link href={`/property/${listing.id}`} className={buttonClasses("primary", "lg")}>
           View live listing
         </Link>
-        <Link href="/dashboard/owner" className={buttonClasses("outline", "lg")}>
-          Go to owner dashboard
+        <Link href="/dashboard/listings" className={buttonClasses("outline", "lg")}>
+          Go to my listings
         </Link>
       </div>
     </div>

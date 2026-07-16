@@ -1,24 +1,44 @@
 "use client";
 
+import { chatRespond } from "@/lib/ai/service";
+import { MOCK_AI_CHAT_EXAMPLES } from "@/lib/mock-data";
 import { buttonClasses } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { ArrowRight, BadgeCheck, Camera, FileText, Languages, MessageCircle, Upload } from "lucide-react";
-import Image from "next/image";
+import { ArrowRight, ArrowUp, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 
-const heroImage =
-  "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1400&q=80";
+interface ChatTurn {
+  role: "user" | "ai";
+  text: string;
+}
 
-const generatedTags = [
-  { icon: FileText, label: "Exposé written" },
-  { icon: Languages, label: "6 languages" },
-  { icon: MessageCircle, label: "AI agent live" },
-  { icon: BadgeCheck, label: "FAQ generated" },
-];
+const STARTER_PROMPTS = MOCK_AI_CHAT_EXAMPLES.slice(0, 4).map((e) => e.prompt);
 
 export function Hero() {
+  const [turns, setTurns] = useState<ChatTurn[]>([]);
+  const [input, setInput] = useState("");
+  const [thinking, setThinking] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [turns, thinking]);
+
+  function ask(message: string) {
+    const text = message.trim();
+    if (!text || thinking) return;
+    setTurns((prev) => [...prev, { role: "user", text }]);
+    setInput("");
+    setThinking(true);
+    window.setTimeout(() => {
+      setTurns((prev) => [...prev, { role: "ai", text: chatRespond(text) }]);
+      setThinking(false);
+    }, 700);
+  }
+
   return (
-    <section className="container-page grid items-center gap-12 py-16 md:py-20 lg:grid-cols-[1.05fr_0.95fr]">
+    <section className="container-page grid items-center gap-12 py-16 md:py-20 lg:grid-cols-[1fr_1.05fr]">
       <div>
         <motion.p
           className="eyebrow"
@@ -26,7 +46,7 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          Verified marketplace · Spain first
+          The AI operating system for real estate
         </motion.p>
         <motion.h1
           className="mt-4 text-4xl leading-[1.08] font-semibold text-navy-950 sm:text-5xl"
@@ -34,7 +54,7 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.05 }}
         >
-          Professional property marketing. Powered by AI.
+          Your AI real estate partner.
         </motion.h1>
         <motion.p
           className="mt-5 max-w-lg text-lg leading-relaxed text-navy-600"
@@ -42,9 +62,9 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.12 }}
         >
-          Upload photos. Zouza creates the listing — exposé, FAQ, six
-          translations, and a dedicated AI assistant that answers enquiries
-          around the clock.
+          Buy, rent, sell, or list a property — tell Zouza what you want to do,
+          and the AI does the work: search, listings, pricing, and the
+          questions you&rsquo;d normally ask an agent.
         </motion.p>
         <motion.div
           className="mt-8 flex flex-wrap items-center gap-3"
@@ -52,71 +72,101 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          <Link href="/create-listing" className={buttonClasses("primary", "lg")}>
-            <Upload className="h-4.5 w-4.5" aria-hidden />
-            Upload photos
+          <Link href="/list-with-ai" className={buttonClasses("primary", "lg")}>
+            <Sparkles className="h-4.5 w-4.5" aria-hidden />
+            Start with AI
           </Link>
-          <Link href="/rent" className={buttonClasses("outline", "lg")}>
+          <Link href="/explore" className={buttonClasses("outline", "lg")}>
             Explore homes
             <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>
         </motion.div>
-        <motion.p
-          className="mt-6 text-sm text-navy-500"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-        >
-          Free to try · No agency contract · Every cost shown upfront
-        </motion.p>
       </div>
 
-      {/* Product panel — the generated listing, as a receipt */}
+      {/* AI interaction panel — the hero centerpiece */}
       <motion.div
-        className="mx-auto w-full max-w-md rounded-xl border border-line bg-white p-1.5 shadow-card"
+        className="rounded-xl border border-line bg-white shadow-card"
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, delay: 0.15 }}
       >
-        <div className="relative aspect-[16/10] overflow-hidden rounded-lg bg-sand">
-          <Image
-            src={heroImage}
-            alt="A whitewashed Mediterranean villa with a pool, presented as a Zouza listing"
-            fill
-            priority
-            sizes="(max-width: 1024px) 100vw, 40vw"
-            className="object-cover"
-          />
-          <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-lg bg-navy-950/85 px-3 py-1 text-xs font-medium text-ivory backdrop-blur">
-            <Camera className="h-3.5 w-3.5" aria-hidden />
-            7 photos uploaded
+        <div className="flex items-center gap-3 border-b border-line bg-navy-950 px-5 py-4">
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gold-500/20 text-gold-300">
+            <Sparkles className="h-4.5 w-4.5" aria-hidden />
           </span>
+          <div>
+            <p className="text-sm font-semibold text-ivory">Zouza</p>
+            <p className="text-xs text-navy-300">What would you like to do today?</p>
+          </div>
         </div>
-        <div className="p-4">
-          <p className="text-xs font-semibold tracking-[0.12em] text-gold-600 uppercase">
-            Generated by Zouza
-          </p>
-          <p className="mt-1.5 font-display text-lg leading-snug font-semibold text-navy-950">
-            Whitewashed Villa with Pool and Montgó Views, Jávea
-          </p>
-          <p className="mt-1 text-sm text-navy-500">
-            4 bed · 3 bath · 210 m² · Tosalet · €2,400/month
-          </p>
-          <ul className="mt-4 grid grid-cols-2 gap-2 border-t border-line pt-4 text-xs text-navy-700">
-            {generatedTags.map((tag, i) => (
-              <motion.li
-                key={tag.label}
-                className="flex items-center gap-1.5"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.35, delay: 0.55 + i * 0.1 }}
+
+        <div ref={scrollRef} className="h-72 space-y-3 overflow-y-auto px-5 py-4">
+          {turns.length === 0 ? (
+            <p className="text-sm text-navy-500">
+              Try one of the prompts below, or type your own — buying, renting,
+              selling, or listing a property.
+            </p>
+          ) : null}
+          {turns.map((t, i) => (
+            <div key={i} className={t.role === "user" ? "flex justify-end" : "flex justify-start"}>
+              <p
+                className={
+                  t.role === "user"
+                    ? "max-w-[85%] rounded-xl rounded-br-md bg-navy-950 px-4 py-2.5 text-sm leading-relaxed text-ivory"
+                    : "max-w-[85%] rounded-xl rounded-bl-md bg-parchment px-4 py-2.5 text-sm leading-relaxed text-navy-800"
+                }
               >
-                <tag.icon className="h-3.5 w-3.5 text-navy-400" aria-hidden />
-                {tag.label}
-              </motion.li>
-            ))}
-          </ul>
+                {t.text}
+              </p>
+            </div>
+          ))}
+          {thinking ? (
+            <div className="flex justify-start">
+              <p className="rounded-xl rounded-bl-md bg-parchment px-4 py-2.5 text-sm text-navy-400">
+                Zouza is thinking…
+              </p>
+            </div>
+          ) : null}
         </div>
+
+        {turns.length === 0 ? (
+          <div className="flex flex-wrap gap-2 border-t border-line bg-ivory px-5 pt-3">
+            {STARTER_PROMPTS.map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => ask(p)}
+                className="rounded-full border border-line bg-white px-3 py-1.5 text-left text-xs font-medium text-navy-700 transition-colors hover:border-gold-500 cursor-pointer"
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+        ) : null}
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            ask(input);
+          }}
+          className="flex items-center gap-2 border-t border-line bg-ivory px-5 py-3"
+        >
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="I'm moving to Marbella with a €900,000 budget…"
+            aria-label="Tell Zouza what you want to do"
+            className="flex-1 rounded-lg border border-line bg-white px-4 py-2 text-sm focus:border-navy-400 focus:outline-none"
+          />
+          <button
+            type="submit"
+            disabled={thinking || !input.trim()}
+            aria-label="Send"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy-950 text-ivory disabled:opacity-40 cursor-pointer"
+          >
+            <ArrowUp className="h-4 w-4" aria-hidden />
+          </button>
+        </form>
       </motion.div>
     </section>
   );

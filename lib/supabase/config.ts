@@ -1,5 +1,5 @@
 /**
- * Zouza.ai runs in two modes:
+ * Zouza runs in two modes:
  *  - Supabase mode: env vars are set, data/auth/storage go through Supabase.
  *  - Mock mode: no env vars needed, the whole app works on realistic demo data.
  */

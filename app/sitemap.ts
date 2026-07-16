@@ -3,11 +3,10 @@ import type { MetadataRoute } from "next";
 
 const STATIC_ROUTES = [
   "",
-  "/rent",
-  "/buy",
-  "/rent-out",
-  "/sell",
-  "/create-listing",
+  "/ai-search",
+  "/list-with-ai",
+  "/explore",
+  "/how-it-works",
   "/about",
   "/trust",
   "/pricing",
@@ -28,7 +27,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }));
 
   const listingEntries: MetadataRoute.Sitemap = MOCK_LISTINGS.map((listing) => ({
-    url: `${appUrl}/listings/${listing.id}`,
+    url: `${appUrl}/property/${listing.id}`,
     lastModified: new Date(listing.updated_at),
     changeFrequency: "weekly",
     priority: 0.5,

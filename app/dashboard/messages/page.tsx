@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Messages",
-  description: "Your conversations with owners and prospective tenants or buyers on Zouza.ai.",
+  description: "Your conversations with owners and prospective tenants or buyers on Zouza.",
 };
 
-export default function MessagesPage() {
+export default function DashboardMessagesPage() {
   return <Inbox />;
 }

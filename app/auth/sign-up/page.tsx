@@ -10,7 +10,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export default function SignupPage() {
+export default function SignUpPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -61,8 +61,8 @@ export default function SignupPage() {
       footer={
         <>
           Already have an account?{" "}
-          <Link href="/login" className="font-medium text-terra-600 hover:text-terra-700">
-            Log in
+          <Link href="/auth/sign-in" className="font-medium text-terra-600 hover:text-terra-700">
+            Sign in
           </Link>
         </>
       }

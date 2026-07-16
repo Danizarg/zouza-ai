@@ -1,8 +1,10 @@
 import type {
+  AiChatExample,
   Conversation,
   Listing,
   Message,
   Review,
+  Testimonial,
   ViewingRequest,
 } from "@/lib/types";
 import { totalMoveIn } from "@/lib/utils";
@@ -69,6 +71,37 @@ function listing(seed: Seed): Listing {
   if (base.mode === "rent" && base.price_monthly) {
     base.total_move_in_cost = totalMoveIn(base);
   }
+
+  // AI-first fields — deterministically derived so every mock listing has
+  // something plausible without hand-authoring 12 sets of extra data.
+  const price = base.mode === "rent" ? (base.price_monthly ?? 0) : (base.price_sale ?? 0);
+  base.ai_summary ??= `${base.bedrooms > 0 ? `${base.bedrooms}-bedroom` : "Studio"} ${base.property_type} in ${base.address_area}, ${base.city}${base.sea_view ? " with sea views" : ""}.`;
+  base.ai_highlights ??= base.features.slice(0, 3);
+  base.distance_to_beach_min ??= base.sea_view ? 5 + (base.size_m2 % 10) : base.pool ? 20 + (base.size_m2 % 15) : null;
+  base.community_fees_monthly ??= base.property_type === "villa" || base.property_type === "finca" || base.property_type === "house"
+    ? null
+    : Math.round((price * (base.mode === "rent" ? 0.02 : 0.0004)) / 5) * 5;
+  base.taxes_note ??= base.mode === "buy" ? "Estimated transfer tax/IBI not included — confirm with a local notary." : null;
+  base.owner_type ??= /\bSL\b|Estates|Soho/.test(base.owner_name) ? "agency" : "private";
+  base.faq ??= [
+    {
+      question: base.mode === "rent" ? "Is it still available?" : "Is it still on the market?",
+      answer: base.mode === "rent"
+        ? `Yes — available from ${base.available_from ? new Date(base.available_from).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "now"}.`
+        : "Yes, this listing is active and the owner is reviewing offers.",
+    },
+    {
+      question: "Are pets allowed?",
+      answer: base.pets_allowed ? "Yes, pets are welcome here." : "Not specified by the owner — ask before committing.",
+    },
+    {
+      question: "What are the community fees?",
+      answer: base.community_fees_monthly
+        ? `Around €${base.community_fees_monthly}/month.`
+        : "No community fees — this is a standalone property.",
+    },
+  ];
+
   return base;
 }
 
@@ -656,6 +689,74 @@ export const MOCK_VIEWING_REQUESTS: ViewingRequest[] = [
     status: "pending",
     note: "Video call first would be great.",
     created_at: "2026-06-30T10:15:00Z",
+  },
+];
+
+/* ------------------------------------------------------------------ */
+/* Testimonials + homepage AI chat examples                           */
+/* ------------------------------------------------------------------ */
+
+export const MOCK_TESTIMONIALS: Testimonial[] = [
+  {
+    id: "t1",
+    name: "Familie Brandt",
+    role: "Owner, listed a rental in Jávea",
+    quote:
+      "I uploaded twelve phone photos on a Sunday evening. By Monday morning Zouza had written a better description than the agency quote we'd been sitting on for weeks.",
+  },
+  {
+    id: "t2",
+    name: "Sofia N.",
+    role: "Tenant, relocated from Berlin to Valencia",
+    quote:
+      "I asked Zouza to find a place near the beach with room for a home office. It explained why each match fit and I booked a viewing before I'd even landed.",
+  },
+  {
+    id: "t3",
+    name: "Richard T.",
+    role: "Buyer, Marbella",
+    quote:
+      "The property's AI assistant answered my questions about community fees and taxes at 11pm my time. Dealing with the owner directly afterwards felt refreshingly simple.",
+  },
+  {
+    id: "t4",
+    name: "Peter & Anja K.",
+    role: "Owners, sold a beach apartment in Dénia",
+    quote:
+      "We were not trying to write a brochure. We just wanted the photos to do the talking — Zouza turned them into one anyway, and it was accurate.",
+  },
+];
+
+export const MOCK_AI_CHAT_EXAMPLES: AiChatExample[] = [
+  {
+    prompt: "I want to buy a villa in Marbella.",
+    reply:
+      "Got it. I've got 1 verified villa on the Golden Mile right now — 5 beds, infinity pool, sea views, €2.95M. Want me to show it, or narrow by budget first?",
+  },
+  {
+    prompt: "I want to rent out my apartment.",
+    reply:
+      "I can have a listing ready in minutes. Upload a few photos and I'll detect the rooms and features, then write the exposé, FAQ, and translations for you to review.",
+  },
+  {
+    prompt: "Help me find an investment property.",
+    reply:
+      "For rental yield, I'd look at Alicante or Valencia — lower entry price, strong tenant demand near the coast. I can pull verified listings with community fees and taxes already factored in.",
+  },
+  {
+    prompt: "Create my listing from photos.",
+    reply:
+      "Perfect — drag your photos in on the next screen and I'll detect bedrooms, pool, sea view and more automatically, then draft the whole listing for you to approve.",
+  },
+  {
+    prompt: "I'm moving from Germany to Marbella with a €900,000 budget.",
+    reply:
+      "Welcome! At that budget you're in range for a 3–4 bedroom villa off the Golden Mile or a new-build penthouse nearer the centre. Want family-friendly, or walkable-to-beach as the priority?",
+  },
+  {
+    prompt: "Find me a 3-bedroom home within walking distance to the beach.",
+    reply:
+      "I've got a frontline apartment in Dénia (110 m², 20 m² sea terrace, €385,000) and a townhouse two streets from the sand in Sitges. Both verified. Want the full breakdown on either?",
   },
 ];
 

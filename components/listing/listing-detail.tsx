@@ -19,6 +19,7 @@ import {
   MapPin,
   PawPrint,
   Ruler,
+  Waves,
 } from "lucide-react";
 
 export function ListingDetail({ listing }: { listing: Listing }) {
@@ -36,6 +37,9 @@ export function ListingDetail({ listing }: { listing: Listing }) {
           <h1 className="mt-1 font-display text-2xl font-semibold text-navy-950 sm:text-3xl">
             {listing.title}
           </h1>
+          {listing.ai_summary ? (
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-navy-600">{listing.ai_summary}</p>
+          ) : null}
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <Badge tone="navy">{isRent ? "For rent" : "For sale"}</Badge>
@@ -95,7 +99,19 @@ export function ListingDetail({ listing }: { listing: Listing }) {
           </section>
 
           <section>
-            <h2 className="font-display text-xl font-semibold text-navy-900">Location</h2>
+            <h2 className="flex items-center gap-2 font-display text-xl font-semibold text-navy-900">
+              <Waves className="h-5 w-5 text-gold-600" aria-hidden />
+              Location intelligence
+            </h2>
+            <ul className="mt-4 space-y-2 text-sm text-navy-700">
+              <li>
+                {listing.distance_to_beach_min
+                  ? `${listing.distance_to_beach_min} minutes ${listing.distance_to_beach_min <= 12 ? "on foot" : "by car"} to the nearest beach.`
+                  : `${listing.city} has good coastal access nearby.`}
+              </li>
+              <li>Cafés, pharmacies and daily services within walking distance of {listing.address_area}.</li>
+              {listing.taxes_note ? <li>{listing.taxes_note}</li> : null}
+            </ul>
             <div className="mt-4 flex aspect-video items-center justify-center rounded-xl border border-dashed border-line bg-parchment text-sm text-navy-500">
               Interactive map — coming soon ({listing.address_area}, {listing.city})
             </div>
@@ -145,6 +161,11 @@ export function ListingDetail({ listing }: { listing: Listing }) {
         </div>
 
         <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start">
+          <div id="ai" className="scroll-mt-24">
+            <p className="mb-2 px-1 text-sm font-semibold text-navy-900">Talk to this property&rsquo;s AI</p>
+            <AgentChat listing={listing} />
+          </div>
+
           <div className="rounded-xl border border-line bg-white p-6">
             <p className="font-display text-2xl font-semibold text-navy-900">
               {formatPrice((isRent ? listing.price_monthly : listing.price_sale) ?? 0)}
@@ -157,8 +178,6 @@ export function ListingDetail({ listing }: { listing: Listing }) {
               <ContactActions listing={listing} />
             </div>
           </div>
-
-          <AgentChat listing={listing} />
         </aside>
       </div>
     </div>

@@ -6,10 +6,10 @@ export const metadata: Metadata = { title: "Terms of use" };
 export default function TermsPage() {
   return (
     <LegalPage title="Terms of use" updated="2 July 2026">
-      <LegalSection title="1. What Zouza.ai is">
+      <LegalSection title="1. What Zouza is">
         <p>
-          Zouza.ai is an independent marketplace and AI marketing
-          platform for property listings. Zouza.ai acts as a pure
+          Zouza is an independent marketplace and AI marketing
+          platform for property listings. Zouza acts as a pure
           intermediary: we help owners present properties professionally and
           help tenants and buyers find and evaluate them. We are not a party
           to any rental or sale agreement made between users.
@@ -18,20 +18,20 @@ export default function TermsPage() {
 
       <LegalSection title="2. No affiliation">
         <p>
-          Zouza.ai is an independent concept and is not affiliated with,
+          Zouza is an independent concept and is not affiliated with,
           endorsed by, or connected to Airbnb, Idealista, ThinkSpain, Zillow,
           Booking.com, or any other rental or property platform.
         </p>
       </LegalSection>
 
-      <LegalSection title="3. What Zouza.ai does not provide">
+      <LegalSection title="3. What Zouza does not provide">
         <p>
-          In this version of the product, Zouza.ai does not provide
+          In this version of the product, Zouza does not provide
           payment processing, rent collection, escrow services, deposit
           management, rent guarantees, or legal or tax advice. Any financial
           or legal transaction — including payment of rent, deposits, or
           purchase prices — takes place directly between users, outside of
-          Zouza.ai, under agreements you are responsible for reviewing.
+          Zouza, under agreements you are responsible for reviewing.
         </p>
       </LegalSection>
 
@@ -58,7 +58,7 @@ export default function TermsPage() {
       <LegalSection title="6. User conduct">
         <p>
           Users must provide accurate information, respect other users, and
-          must not use Zouza.ai to post fraudulent, misleading, or
+          must not use Zouza to post fraudulent, misleading, or
           illegal listings. We may remove listings or suspend accounts that
           violate these terms or are reported and confirmed as problematic.
         </p>
@@ -66,9 +66,9 @@ export default function TermsPage() {
 
       <LegalSection title="7. Limitation of liability">
         <p>
-          Zouza.ai is provided on an &ldquo;as is&rdquo; basis during this
+          Zouza is provided on an &ldquo;as is&rdquo; basis during this
           early stage of the product. To the maximum extent permitted by
-          law, Zouza.ai is not liable for losses arising from
+          law, Zouza is not liable for losses arising from
           transactions between users, inaccurate listing content, or
           reliance on AI-generated information.
         </p>
@@ -77,7 +77,7 @@ export default function TermsPage() {
       <LegalSection title="8. Changes">
         <p>
           We may update these terms as the product evolves. Continued use of
-          Zouza.ai after changes constitutes acceptance of the updated
+          Zouza after changes constitutes acceptance of the updated
           terms.
         </p>
       </LegalSection>

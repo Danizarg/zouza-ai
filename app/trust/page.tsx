@@ -13,7 +13,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Trust & verification",
   description:
-    "How Zouza.ai verifies owners and properties, fights fake listings, and keeps verification status transparent for every home.",
+    "How Zouza verifies owners and properties, fights fake listings, and keeps verification status transparent for every home.",
 };
 
 const steps = [
@@ -95,7 +95,7 @@ export default function TrustPage() {
                   Verification reduces risk — it does not guarantee outcomes
                 </h2>
                 <p className="mt-2 text-sm leading-relaxed text-navy-700">
-                  Zouza.ai verification is a best-effort trust signal, not
+                  Zouza verification is a best-effort trust signal, not
                   a legal or financial guarantee. We do not guarantee that a
                   property is free of undisclosed issues, that a tenant or
                   buyer will complete a transaction, or that any listing is

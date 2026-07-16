@@ -1,7 +1,9 @@
+import { MOCK_AI_CHAT_EXAMPLES } from "@/lib/mock-data";
 import type {
   GeneratedListingContent,
   Listing,
   ListingFacts,
+  SearchMatch,
   TranslationLanguage,
 } from "@/lib/types";
 import { TRANSLATION_LANGUAGES } from "@/lib/types";
@@ -211,6 +213,16 @@ export function answerAgentQuestion(listing: Listing, question: string): string 
       ? "Good news — pets are allowed here. Just mention your pet when you contact the owner."
       : "Pets are not accepted by default for this property, but you can ask the owner about your specific situation.";
   }
+  if (/(community fee|hoa|service charge)/.test(q)) {
+    return listing.community_fees_monthly
+      ? `Yes. The current listed community fee is ${formatPrice(listing.community_fees_monthly)}/month. I can also show what's included and help you compare total monthly costs.`
+      : "This property doesn't have community fees — it's a standalone home with no shared building costs.";
+  }
+  if (/(tax|ibi|notary)/.test(q)) {
+    return listing.taxes_note
+      ? listing.taxes_note
+      : "Utilities and platform fees are shown in the price breakdown above; for purchase taxes, always confirm with an independent notary.";
+  }
   if (/(includ|price|cost|fee|total|how much|utilities|deposit)/.test(q)) {
     if (rentMode) {
       const total = totalMoveIn(listing);
@@ -230,6 +242,9 @@ export function answerAgentQuestion(listing: Listing, question: string): string 
     return `${listing.bedrooms > 1 ? "Yes — one of the bedrooms works well as a home office, and fibre" : "Fibre"} internet is available in ${listing.city}. Many residents in ${listing.address_area} work remotely.`;
   }
   if (/(beach|sea|coast|swim)/.test(q)) {
+    if (listing.distance_to_beach_min) {
+      return `The property is approximately ${listing.distance_to_beach_min} minutes ${listing.distance_to_beach_min <= 12 ? "walking" : "driving"} distance from the beach, based on the location data provided by the owner.`;
+    }
     return listing.sea_view
       ? `The home has open sea views, and the beach is a short walk or drive from ${listing.address_area}.`
       : `The nearest beaches are a short drive from ${listing.address_area} — ${listing.city} has good coastal access.`;
@@ -259,8 +274,138 @@ export const SUGGESTED_AGENT_QUESTIONS = [
   "Is the property still available?",
   "Are dogs allowed?",
   "What is included in the price?",
+  "Are there community fees?",
   "When can I visit?",
   "Is there a garage?",
   "Is it suitable for remote work?",
   "How far is it from the beach?",
 ];
+
+/* ------------------------------------------------------------------ */
+/* Homepage AI panel (mock)                                            */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Deterministic reply for the homepage "what would you like to do today?"
+ * panel. Matches against a small canned set by keyword overlap; falls back
+ * to a generic but useful reply. Swap for a real model call — same
+ * signature — once a provider is connected.
+ */
+export function chatRespond(message: string): string {
+  const words = new Set(
+    message
+      .toLowerCase()
+      .split(/[^a-z0-9€]+/)
+      .filter((w) => w.length > 2),
+  );
+
+  let best: { reply: string; score: number } | null = null;
+  for (const example of MOCK_AI_CHAT_EXAMPLES) {
+    const exampleWords = example.prompt.toLowerCase().split(/[^a-z0-9€]+/).filter((w) => w.length > 2);
+    const score = exampleWords.filter((w) => words.has(w)).length;
+    if (score > 0 && (!best || score > best.score)) {
+      best = { reply: example.reply, score };
+    }
+  }
+  if (best) return best.reply;
+
+  if (/rent/.test(message.toLowerCase())) {
+    return "I can help you rent or list a rental — tell me the city and budget, or upload photos if you're the owner, and I'll take it from there.";
+  }
+  if (/(buy|sell|invest)/.test(message.toLowerCase())) {
+    return "Tell me the location and budget you have in mind, or upload photos if you're selling, and I'll match or draft accordingly.";
+  }
+  return "Tell me what you're trying to do — buy, rent, sell, list a property, or find an investment — and I'll take it from there.";
+}
+
+/* ------------------------------------------------------------------ */
+/* Natural-language search (mock)                                      */
+/* ------------------------------------------------------------------ */
+
+const CITY_ALIASES: Record<string, string[]> = {
+  Marbella: ["marbella", "golden mile", "costa del sol"],
+  Valencia: ["valencia", "el cabanyal"],
+  Jávea: ["javea", "jávea", "costa blanca"],
+  Barcelona: ["barcelona", "eixample", "sitges"],
+  Sitges: ["sitges"],
+  Málaga: ["malaga", "málaga", "soho"],
+  Dénia: ["denia", "dénia"],
+  Granada: ["granada", "albaicin", "albaicín"],
+  Sóller: ["soller", "sóller", "mallorca"],
+  Alicante: ["alicante", "san juan"],
+  Seville: ["seville", "sevilla", "triana"],
+  "Palma de Mallorca": ["palma", "mallorca"],
+};
+
+/**
+ * Interprets a free-text query against the given listings and returns
+ * ranked matches with a one-line reason each. Pure keyword/heuristic
+ * scoring — deterministic, and structured so a real model can replace the
+ * scoring step while keeping the same { listing, match_reason } shape.
+ */
+export function interpretSearchQuery(query: string, listings: Listing[]): SearchMatch[] {
+  const q = query.toLowerCase();
+  // Require an explicit k/m/million suffix OR a € sign — otherwise a plain
+  // number (e.g. "3 bedrooms") would be misread as a budget.
+  const unitMatch = q.match(/(\d[\d.,]*)\s*(k|m|million)\b/);
+  const euroMatch = q.match(/€\s*(\d[\d.,]*)/);
+  const budgetMatch = unitMatch ?? euroMatch;
+  let budget: number | null = null;
+  if (budgetMatch) {
+    const unit = unitMatch ? unitMatch[2] : undefined;
+    // With a k/m/million suffix, "." is a real decimal point (e.g. "1.2m");
+    // without one, both "." and "," are thousands separators (e.g. "900,000").
+    const raw = unit
+      ? parseFloat(budgetMatch[1].replace(/,/g, ""))
+      : Number(budgetMatch[1].replace(/[.,]/g, ""));
+    budget = unit === "m" || unit === "million" ? raw * 1_000_000 : unit === "k" ? raw * 1_000 : raw;
+    if (budget < 1000) budget = null; // too small to be a real budget mention
+  }
+  const bedroomsMatch = q.match(/(\d+)\s*[- ]?bed/);
+  const wantBedrooms = bedroomsMatch ? Number(bedroomsMatch[1]) : null;
+  const wantsBeach = /(beach|sea|coast)/.test(q);
+  const wantsBuy = /(buy|purchase|invest)/.test(q);
+  const wantsRent = /(rent|renting)/.test(q);
+  const wantedCity = Object.entries(CITY_ALIASES).find(([, aliases]) => aliases.some((a) => q.includes(a)))?.[0];
+
+  const scored = listings.map((listing) => {
+    let score = 0;
+    const reasons: string[] = [];
+    const price = listing.mode === "rent" ? (listing.price_monthly ?? 0) : (listing.price_sale ?? 0);
+
+    if (wantedCity && listing.city === wantedCity) {
+      score += 4;
+      reasons.push(`it's located in ${listing.city}`);
+    }
+    if (wantBedrooms && listing.bedrooms >= wantBedrooms) {
+      score += 3;
+      reasons.push(`it has ${listing.bedrooms} bedrooms`);
+    }
+    if (wantsBeach && (listing.sea_view || (listing.distance_to_beach_min ?? 999) <= 15)) {
+      score += 2;
+      reasons.push(listing.sea_view ? "it has sea views" : `it's ${listing.distance_to_beach_min} min from the beach`);
+    }
+    if (wantsBuy && listing.mode === "buy") score += 2;
+    if (wantsRent && listing.mode === "rent") score += 2;
+    if (budget && price > 0) {
+      const ratio = price / budget;
+      if (ratio <= 1.05) {
+        score += 2;
+        reasons.push(`it's within your ${formatPrice(budget)} budget`);
+      } else if (ratio <= 1.3) {
+        score += 1;
+        reasons.push("it's close to your budget");
+      }
+    }
+    return { listing, score, reasons };
+  });
+
+  return scored
+    .filter((s) => s.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 6)
+    .map((s) => ({
+      listing: s.listing,
+      match_reason: s.reasons.length > 0 ? `Matches because ${s.reasons.join(", and ")}.` : "A strong general match for your search.",
+    }));
+}

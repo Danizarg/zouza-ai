@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Contact Zouza.ai",
+  title: "Contact Zouza",
   description: "Get in touch about renting, listing, selling or buying a property, or ask about partnerships and support.",
 };
 
@@ -15,7 +15,7 @@ export default function ContactPage() {
       <Reveal>
         <p className="eyebrow">Contact</p>
         <h1 className="mt-3 text-3xl font-semibold text-navy-950 sm:text-4xl">
-          Talk to Zouza.ai
+          Talk to Zouza
         </h1>
         <p className="mt-4 max-w-sm text-navy-600">
           Whether you want to rent, list a property, sell, buy, or explore a
@@ -34,7 +34,7 @@ export default function ContactPage() {
         </div>
 
         <p className="mt-8 max-w-sm text-xs leading-relaxed text-navy-500">
-          Zouza.ai is an independent concept and is not affiliated with
+          Zouza is an independent concept and is not affiliated with
           Airbnb, Idealista, ThinkSpain, Zillow, Booking, or any other
           rental/property platform. See our{" "}
           <Link href="/legal/disclaimer" className="underline hover:text-navy-700">

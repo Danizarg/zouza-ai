@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { VerificationBadges } from "@/components/verification-badge";
 import type { Listing } from "@/lib/types";
 import { formatPrice, totalMoveIn } from "@/lib/utils";
-import { Bath, BedDouble, MapPin, Ruler } from "lucide-react";
+import { Bath, BedDouble, MapPin, MessageCircle, Ruler } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -14,7 +14,7 @@ export function ListingCard({ listing }: { listing: Listing }) {
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-xl border border-line bg-white transition-colors duration-200 hover:border-navy-300">
       <Link
-        href={`/listings/${listing.id}`}
+        href={`/property/${listing.id}`}
         className="absolute inset-0 z-10"
         aria-label={listing.title}
       />
@@ -34,6 +34,10 @@ export function ListingCard({ listing }: { listing: Listing }) {
       </div>
 
       <div className="flex flex-1 flex-col gap-3 p-5">
+        {listing.match_reason ? (
+          <p className="text-xs font-medium text-gold-700">{listing.match_reason}</p>
+        ) : null}
+
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="font-display text-xl font-semibold text-navy-900">
@@ -78,8 +82,15 @@ export function ListingCard({ listing }: { listing: Listing }) {
           </span>
         </div>
 
-        <div className="mt-auto pt-1">
+        <div className="mt-auto flex items-center justify-between gap-2 pt-1">
           <VerificationBadges listing={listing} compact />
+          <Link
+            href={`/property/${listing.id}#ai`}
+            className="relative z-20 inline-flex shrink-0 items-center gap-1 text-xs font-medium text-navy-700 hover:text-navy-950"
+          >
+            <MessageCircle className="h-3.5 w-3.5" aria-hidden />
+            Talk to AI
+          </Link>
         </div>
       </div>
     </article>

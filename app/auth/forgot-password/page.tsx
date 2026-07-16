@@ -19,7 +19,7 @@ export default function ForgotPasswordPage() {
     const supabase = getSupabaseBrowserClient();
     if (supabase) {
       await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/login`,
+        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/auth/sign-in`,
       });
     }
     setStatus("sent");
@@ -30,8 +30,8 @@ export default function ForgotPasswordPage() {
       title="Reset your password"
       subtitle={isSupabaseConfigured() ? "We'll email you a reset link." : "Demo mode — no email is actually sent."}
       footer={
-        <Link href="/login" className="font-medium text-terra-600 hover:text-terra-700">
-          Back to login
+        <Link href="/auth/sign-in" className="font-medium text-terra-600 hover:text-terra-700">
+          Back to sign in
         </Link>
       }
     >

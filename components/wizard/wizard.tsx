@@ -1,7 +1,7 @@
 "use client";
 
 import { generateListingAction } from "@/app/actions";
-import { StepFacts } from "@/components/wizard/step-facts";
+import { StepChatFacts } from "@/components/wizard/step-chat-facts";
 import { StepGenerating } from "@/components/wizard/step-generating";
 import { StepIntent } from "@/components/wizard/step-intent";
 import { StepPhotos, type WizardPhoto } from "@/components/wizard/step-photos";
@@ -214,7 +214,7 @@ export function Wizard() {
       ) : null}
 
       {step === 3 ? (
-        <StepFacts
+        <StepChatFacts
           facts={facts}
           onChange={setFacts}
           onBack={() => setStep(2)}

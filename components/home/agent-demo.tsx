@@ -6,13 +6,13 @@ import { cn } from "@/lib/utils";
 import { Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-const demoListing = MOCK_LISTINGS[0];
+const demoListing = MOCK_LISTINGS.find((l) => l.id === "l-marbella-villa") ?? MOCK_LISTINGS[0];
 
 const starterQuestions = [
-  "Is the property still available?",
+  "Are there community fees?",
+  "How far is it from the beach?",
   "Are dogs allowed?",
   "What is included in the price?",
-  "How far is it from the beach?",
 ];
 
 interface DemoMessage {
@@ -55,9 +55,9 @@ export function AgentDemo() {
           <Sparkles className="h-4.5 w-4.5" aria-hidden />
         </span>
         <div>
-          <p className="text-sm font-semibold text-ivory">Property AI Agent</p>
+          <p className="text-sm font-semibold text-ivory">Talk to this property&rsquo;s AI</p>
           <p className="text-xs text-navy-300">
-            Penthouse, El Cabanyal · answers 24/7 from listing data
+            {demoListing.title.split(",")[0]} · answers 24/7 from listing data
           </p>
         </div>
       </div>

@@ -1,5 +1,5 @@
 /**
- * Domain types for Zouza.ai.
+ * Domain types for Zouza.
  * These mirror the Supabase schema in `supabase/schema.sql`.
  */
 
@@ -87,6 +87,20 @@ export interface Listing {
   features: string[];
   created_at: string;
   updated_at: string;
+
+  /* AI-first product fields — optional so DB rows predating them still type-check. */
+  /** One-line AI-authored summary shown on cards ("why this property"). */
+  ai_summary?: string;
+  /** Short AI-detected highlight tags, distinct from the longer `features` list. */
+  ai_highlights?: string[];
+  /** Pre-built FAQ shown on the property page and fed to the property AI assistant. */
+  faq?: GeneratedFaqItem[];
+  distance_to_beach_min?: number | null;
+  community_fees_monthly?: number | null;
+  taxes_note?: string | null;
+  owner_type?: "private" | "agency";
+  /** Populated only on AI search results — why this specific query matched. */
+  match_reason?: string;
 }
 
 export interface Review {
@@ -209,4 +223,26 @@ export interface ListingFacts {
   owner_rules: string;
   notes: string;
   photo_count: number;
+}
+
+/* ---------------------------------------------------------------- */
+/* Homepage AI demos                                                  */
+/* ---------------------------------------------------------------- */
+
+export interface Testimonial {
+  id: string;
+  name: string;
+  role: string;
+  quote: string;
+}
+
+/** A canned prompt shown in the homepage AI panel, with a deterministic mock reply. */
+export interface AiChatExample {
+  prompt: string;
+  reply: string;
+}
+
+export interface SearchMatch {
+  listing: Listing;
+  match_reason: string;
 }

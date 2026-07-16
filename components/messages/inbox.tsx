@@ -36,7 +36,7 @@ export function Inbox() {
   }
 
   return (
-    <div className="grid h-[calc(100vh-4rem)] grid-cols-1 md:grid-cols-[320px_1fr]">
+    <div className="grid h-[calc(100vh-3.5rem)] grid-cols-1 md:grid-cols-[320px_1fr]">
       <div className={cn("overflow-y-auto border-r border-line", active ? "hidden md:block" : "block")}>
         <div className="border-b border-line p-4">
           <h1 className="font-display text-lg font-semibold text-navy-900">Messages</h1>
