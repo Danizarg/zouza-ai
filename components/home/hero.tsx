@@ -1,8 +1,11 @@
 "use client";
 
+import { ThinkingDots } from "@/components/motion/thinking-dots";
+import { TypewriterText } from "@/components/motion/typewriter-text";
+import { buttonClasses } from "@/components/ui/button";
 import { chatRespond } from "@/lib/ai/service";
 import { MOCK_AI_CHAT_EXAMPLES } from "@/lib/mock-data";
-import { buttonClasses } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { ArrowRight, ArrowUp, Sparkles } from "lucide-react";
 import Link from "next/link";
@@ -19,6 +22,7 @@ export function Hero() {
   const [turns, setTurns] = useState<ChatTurn[]>([]);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
+  const [typingIndex, setTypingIndex] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -32,10 +36,16 @@ export function Hero() {
     setInput("");
     setThinking(true);
     window.setTimeout(() => {
-      setTurns((prev) => [...prev, { role: "ai", text: chatRespond(text) }]);
+      setTurns((prev) => {
+        const next = [...prev, { role: "ai" as const, text: chatRespond(text) }];
+        setTypingIndex(next.length - 1);
+        return next;
+      });
       setThinking(false);
     }, 700);
   }
+
+  const active = thinking || typingIndex !== null;
 
   return (
     <section className="container-page grid items-center gap-12 py-16 md:py-20 lg:grid-cols-[1fr_1.05fr]">
@@ -72,7 +82,7 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          <Link href="/list-with-ai" className={buttonClasses("primary", "lg")}>
+          <Link href="/list-with-ai" className={buttonClasses("primary", "lg", "glow-cta")}>
             <Sparkles className="h-4.5 w-4.5" aria-hidden />
             Start with AI
           </Link>
@@ -85,7 +95,10 @@ export function Hero() {
 
       {/* AI interaction panel — the hero centerpiece */}
       <motion.div
-        className="rounded-xl border border-line bg-white shadow-card"
+        className={cn(
+          "rounded-xl border bg-white shadow-card transition-shadow duration-500",
+          active ? "border-gold-300 shadow-[0_0_0_4px_rgba(179,148,90,0.12)]" : "border-line",
+        )}
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, delay: 0.15 }}
@@ -116,14 +129,18 @@ export function Hero() {
                     : "max-w-[85%] rounded-xl rounded-bl-md bg-parchment px-4 py-2.5 text-sm leading-relaxed text-navy-800"
                 }
               >
-                {t.text}
+                {t.role === "ai" && i === typingIndex ? (
+                  <TypewriterText text={t.text} onDone={() => setTypingIndex(null)} />
+                ) : (
+                  t.text
+                )}
               </p>
             </div>
           ))}
           {thinking ? (
             <div className="flex justify-start">
-              <p className="rounded-xl rounded-bl-md bg-parchment px-4 py-2.5 text-sm text-navy-400">
-                Zouza is thinking…
+              <p className="flex items-center gap-2 rounded-xl rounded-bl-md bg-parchment px-4 py-2.5 text-sm text-navy-500">
+                Zouza is thinking <ThinkingDots />
               </p>
             </div>
           ) : null}

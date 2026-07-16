@@ -242,7 +242,16 @@ export interface AiChatExample {
   reply: string;
 }
 
+export interface SearchMatchReason {
+  label: string;
+  detail: string;
+}
+
 export interface SearchMatch {
   listing: Listing;
   match_reason: string;
+  /** 0–100, relative to the criteria actually present in the query. */
+  match_percent: number;
+  /** Structured breakdown (budget fit, beach distance, location, etc.) for display as separate lines/badges. */
+  reasons: SearchMatchReason[];
 }

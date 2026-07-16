@@ -62,7 +62,7 @@ export function SiteHeader() {
           <Link href="/auth/sign-in" className="text-sm font-medium text-navy-700 hover:text-navy-950">
             Sign in
           </Link>
-          <Link href="/list-with-ai" className={buttonClasses("primary", "sm")}>
+          <Link href="/list-with-ai" className={buttonClasses("primary", "sm", "glow-cta")}>
             <Sparkles className="h-3.5 w-3.5" aria-hidden />
             Start with AI
           </Link>

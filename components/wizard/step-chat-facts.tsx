@@ -1,5 +1,7 @@
 "use client";
 
+import { ThinkingDots } from "@/components/motion/thinking-dots";
+import { TypewriterText } from "@/components/motion/typewriter-text";
 import { Button } from "@/components/ui/button";
 import type { ListingFacts } from "@/lib/types";
 import { Send } from "lucide-react";
@@ -117,39 +119,53 @@ export function StepChatFacts({
   const [stepIndex, setStepIndex] = useState(0);
   const [turns, setTurns] = useState<ChatTurn[]>(() => [{ role: "ai", text: steps[0].ask }]);
   const [input, setInput] = useState("");
+  const [thinking, setThinking] = useState(false);
+  const [typingIndex, setTypingIndex] = useState<number | null>(null);
   const [done, setDone] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [turns]);
+  }, [turns, thinking]);
 
   function submit() {
     const answer = input.trim();
-    if (!answer || done) return;
+    if (!answer || done || thinking) return;
     setInput("");
     const step = steps[stepIndex];
     const next = step.apply(answer, facts);
 
-    if (!next) {
-      setTurns((prev) => [...prev, { role: "user", text: answer }, { role: "ai", text: step.retry }]);
-      return;
-    }
+    setTurns((prev) => [...prev, { role: "user", text: answer }]);
+    setThinking(true);
 
-    onChange(next);
-    const isLast = stepIndex === steps.length - 1;
-    setTurns((prev) => [
-      ...prev,
-      { role: "user", text: answer },
-      { role: "ai", text: isLast ? "Perfect — I'll include all of that. Generating your listing now…" : steps[stepIndex + 1].ask },
-    ]);
+    window.setTimeout(() => {
+      if (!next) {
+        setTurns((prev) => {
+          const nextTurns = [...prev, { role: "ai" as const, text: step.retry }];
+          setTypingIndex(nextTurns.length - 1);
+          return nextTurns;
+        });
+        setThinking(false);
+        return;
+      }
 
-    if (isLast) {
-      setDone(true);
-      window.setTimeout(onContinue, 900);
-    } else {
-      setStepIndex((i) => i + 1);
-    }
+      onChange(next);
+      const isLast = stepIndex === steps.length - 1;
+      const reply = isLast ? "Perfect — I'll include all of that. Generating your listing now…" : steps[stepIndex + 1].ask;
+      setTurns((prev) => {
+        const nextTurns = [...prev, { role: "ai" as const, text: reply }];
+        setTypingIndex(nextTurns.length - 1);
+        return nextTurns;
+      });
+      setThinking(false);
+
+      if (isLast) {
+        setDone(true);
+        window.setTimeout(onContinue, 1400);
+      } else {
+        setStepIndex((i) => i + 1);
+      }
+    }, 550);
   }
 
   return (
@@ -170,10 +186,21 @@ export function StepChatFacts({
                     : "max-w-[80%] rounded-xl rounded-bl-md bg-parchment px-4 py-2.5 text-sm leading-relaxed text-navy-800"
                 }
               >
-                {t.text}
+                {t.role === "ai" && i === typingIndex ? (
+                  <TypewriterText text={t.text} onDone={() => setTypingIndex(null)} />
+                ) : (
+                  t.text
+                )}
               </p>
             </div>
           ))}
+          {thinking ? (
+            <div className="flex justify-start">
+              <p className="flex items-center gap-2 rounded-xl rounded-bl-md bg-parchment px-4 py-2.5 text-sm text-navy-500">
+                Zouza is thinking <ThinkingDots />
+              </p>
+            </div>
+          ) : null}
         </div>
 
         <form
@@ -187,14 +214,14 @@ export function StepChatFacts({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={done ? "" : "Type your answer…"}
-            disabled={done}
+            disabled={done || thinking}
             aria-label="Your answer"
             autoFocus
             className="flex-1 rounded-lg border border-line bg-white px-4 py-2 text-sm focus:border-navy-400 focus:outline-none disabled:opacity-50"
           />
           <button
             type="submit"
-            disabled={done || !input.trim()}
+            disabled={done || thinking || !input.trim()}
             aria-label="Send"
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy-950 text-ivory disabled:opacity-40 cursor-pointer"
           >

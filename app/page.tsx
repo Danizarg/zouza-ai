@@ -1,6 +1,7 @@
 import { AgentDemo } from "@/components/home/agent-demo";
 import { Hero } from "@/components/home/hero";
 import { LiveDemo } from "@/components/home/live-demo";
+import { MiniAiPrompt } from "@/components/home/mini-ai-prompt";
 import { NlSearchDemo } from "@/components/home/nl-search-demo";
 import { ListingCard } from "@/components/listing-card";
 import { Reveal } from "@/components/reveal";
@@ -29,16 +30,16 @@ const steps = [
 ] as const;
 
 const aiCreates = [
-  { icon: FileText, label: "Property title" },
-  { icon: FileText, label: "Description" },
-  { icon: Sparkles, label: "Lifestyle text" },
-  { icon: MessageCircle, label: "Buyer FAQ" },
-  { icon: Tag, label: "Property highlights" },
-  { icon: Gauge, label: "Price estimation" },
-  { icon: Globe, label: "SEO text" },
-  { icon: Languages, label: "Multiple languages" },
-  { icon: MessageCircle, label: "AI assistant" },
-  { icon: Rocket, label: "Listing publication" },
+  { icon: FileText, label: "Property title", example: "“Sea-view villa with private pool in Marbella”" },
+  { icon: FileText, label: "Description", example: "A full agency-style write-up from your photos and facts" },
+  { icon: Sparkles, label: "Lifestyle text", example: "Mornings on the terrace, five minutes from the beach" },
+  { icon: MessageCircle, label: "Buyer FAQ", example: "“Are pets allowed? Is parking included?”" },
+  { icon: Tag, label: "Property highlights", example: "Pool · sea view · garage · 3 bedrooms" },
+  { icon: Gauge, label: "Price estimation", example: "Estimated range based on area, size, and features" },
+  { icon: Globe, label: "SEO text", example: "Optimised so the listing is found, not just published" },
+  { icon: Languages, label: "Multiple languages", example: "EN / ES / DE / FR / IT / NL" },
+  { icon: MessageCircle, label: "AI assistant", example: "Answers questions about this home, 24/7" },
+  { icon: Rocket, label: "Listing publication", example: "Live the moment you approve it" },
 ] as const;
 
 export default function HomePage() {
@@ -88,7 +89,7 @@ export default function HomePage() {
         </div>
         <Reveal delay={0.2}>
           <div className="mt-10">
-            <Link href="/list-with-ai" className={buttonClasses("primary", "md")}>
+            <Link href="/list-with-ai" className={buttonClasses("primary", "md", "glow-cta")}>
               <Upload className="h-4 w-4" aria-hidden />
               Start with AI
             </Link>
@@ -108,9 +109,12 @@ export default function HomePage() {
           <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
             {aiCreates.map((item, i) => (
               <Reveal key={item.label} delay={i * 0.04} className="h-full">
-                <div className="flex h-full flex-col items-start gap-3 rounded-xl border border-navy-700 bg-navy-900 p-4">
+                <div className="group flex h-full flex-col items-start gap-3 rounded-xl border border-navy-700 bg-navy-900 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-gold-500/50">
                   <item.icon className="h-4.5 w-4.5 text-gold-300" aria-hidden />
                   <p className="text-sm font-medium text-ivory">{item.label}</p>
+                  <p className="text-xs leading-snug text-navy-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                    {item.example}
+                  </p>
                 </div>
               </Reveal>
             ))}
@@ -209,26 +213,29 @@ export default function HomePage() {
 
       {/* Final CTA */}
       <section className="border-t border-line bg-navy-950 py-16 text-ivory md:py-20">
-        <div className="container-page flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="container-page grid gap-10 lg:grid-cols-2 lg:items-center">
           <div>
             <h2 className="font-display text-3xl font-semibold sm:text-4xl">Start with AI.</h2>
             <p className="mt-2 max-w-md text-navy-300">
               Tell Zouza what you want to do — buying, renting, selling, or
               listing — and the AI guides the rest.
             </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link href="/list-with-ai" className={buttonClasses("primary", "lg", "glow-cta")}>
+                <Sparkles className="h-4.5 w-4.5" aria-hidden />
+                Start with AI
+              </Link>
+              <Link
+                href="/explore"
+                className="inline-flex items-center gap-2 rounded-lg border border-ivory/25 px-7 py-3 text-base font-medium text-ivory transition-colors hover:border-ivory/50"
+              >
+                Explore homes
+                <ArrowRight className="h-4 w-4" aria-hidden />
+              </Link>
+            </div>
           </div>
-          <div className="flex shrink-0 flex-wrap gap-3">
-            <Link href="/list-with-ai" className={buttonClasses("primary", "lg")}>
-              <Sparkles className="h-4.5 w-4.5" aria-hidden />
-              Start with AI
-            </Link>
-            <Link
-              href="/explore"
-              className="inline-flex items-center gap-2 rounded-lg border border-ivory/25 px-7 py-3 text-base font-medium text-ivory transition-colors hover:border-ivory/50"
-            >
-              Explore homes
-              <ArrowRight className="h-4 w-4" aria-hidden />
-            </Link>
+          <div className="flex lg:justify-end">
+            <MiniAiPrompt />
           </div>
         </div>
       </section>
@@ -237,7 +244,7 @@ export default function HomePage() {
       <div className="sticky bottom-4 z-40 px-4 lg:hidden">
         <Link
           href="/list-with-ai"
-          className={buttonClasses("primary", "lg", "w-full shadow-card")}
+          className={buttonClasses("primary", "lg", "w-full shadow-card glow-cta")}
         >
           <Sparkles className="h-4.5 w-4.5" aria-hidden />
           Start with AI

@@ -666,3 +666,113 @@ verified), `/ai-search` example query (budget parsing bug caught and
 fixed live), full `/list-with-ai` flow including the new chat facts step
 through to a published draft, and the resulting `/property/[id]` page
 (location intelligence section, AI chat anchor).
+
+---
+
+## 17. Motion/interaction pass — "feel alive" (2026-07-13, later same day)
+
+Follow-up brief: keep the AI-first structure from §16, but make it feel
+like an OpenAI/Linear/Apple-grade product — cursor reacts, cards move,
+AI visibly thinks and types, buttons glow — rather than a static page
+with AI copy. This was an enhancement pass over existing components, not
+a rebuild.
+
+**New primitives** (`components/motion/`):
+- `thinking-dots.tsx` — three-dot pulse, used everywhere Zouza is
+  composing a reply.
+- `typewriter-text.tsx` — character-by-character reveal for AI replies.
+  Respects `prefers-reduced-motion` (renders instantly). Caller passes
+  `onDone`; internally the callback is stashed in a ref **updated inside
+  its own effect** (not during render) so the typing effect only
+  restarts when `text` itself changes, not on every parent re-render.
+- `cursor-glow.tsx` — a soft radial light following the pointer, mounted
+  once in `app/layout.tsx`. Desktop-with-precise-pointer only, disabled
+  under reduced motion, `pointer-events-none`.
+
+**Wired into every AI chat surface:** the homepage hero panel
+(`components/home/hero.tsx`), the homepage property-AI demo
+(`components/home/agent-demo.tsx`), the real property-page chat
+(`components/listing/agent-chat.tsx`), and the `/list-with-ai` chat facts
+step (`components/wizard/step-chat-facts.tsx`) — each now shows
+`ThinkingDots` while "thinking" and types out the reply via
+`TypewriterText`. The hero panel also gets a subtle gold ring/glow while
+active (thinking or typing).
+
+**`app/globals.css` gained a `glow-cta` utility** — a slow pulsing radial
+glow reserved for the primary "Start with AI" buttons only (header, hero,
+three-steps section, final CTA, mobile sticky CTA). Not applied to
+buttons generally — design.md's border-led depth rule still holds
+everywhere else.
+
+**Live AI demo rebuilt** (`components/home/live-demo.tsx`): expanded from
+11 to 20 stages matching the brief's exact checklist (uploading →
+per-image "Analysing image N of 3…" → 7 feature-detection checkmarks →
+generation pipeline → publish), added a top progress bar, and a scanning
+overlay (an animated gradient sweep + gold ring) on whichever photo is
+currently "being analysed".
+
+**AI-creates-everything cards** (`app/page.tsx`) now reveal a one-line
+example on hover (e.g. Property title → "Sea-view villa with private
+pool in Marbella") via `group-hover:opacity-100` — the example text is
+always in the DOM (reserving its layout space) so hover never reflows
+the grid.
+
+**AI search gained real scoring structure.** `SearchMatch` (`lib/types.ts`)
+now carries `match_percent: number` and `reasons: SearchMatchReason[]`
+(structured `{label, detail}` pairs — Location / Lifestyle fit / Beach
+distance / Budget fit) alongside the original prose `match_reason`.
+`interpretSearchQuery` in `lib/ai/service.ts` computes the percentage
+**relative to which criteria the query actually mentioned** (so a query
+with no budget doesn't cap every result's score) and now surfaces both a
+"X% match" badge and the structured breakdown on the homepage demo
+(`components/home/nl-search-demo.tsx`); `/ai-search`'s card-based results
+show the percentage inlined into the existing `match_reason` string
+rather than duplicating the structured breakdown UI.
+
+**New:** `components/home/mini-ai-prompt.tsx` — a compact single-turn
+version of the hero panel, added to the homepage's final CTA section so
+it echoes the hero's "talk to Zouza" affordance at the bottom of the page
+too.
+
+**Property card interactions** (`components/listing-card.tsx`): hover now
+lifts the card (`-translate-y-1`), adds a gold glow ring
+(`hover:shadow-[...]`), and pulses the "Talk to AI" message icon
+(`group-hover:animate-pulse`).
+
+### Two real bugs caught and fixed during this pass
+
+1. **`chatRespond` keyword scoring false-positive.** The homepage/mini
+   chat panel matched canned examples by raw word overlap with no
+   stopword filtering — a query like *"I want to sell my house"* tied
+   with *"I want to buy a villa in Marbella"* purely on the shared filler
+   word "want", and (since ties keep the first-found example) always
+   answered with the Marbella villa reply regardless of what was
+   actually asked. Fixed by adding a `CHAT_STOPWORDS` set (want, need,
+   help, find, with, from, have, this, that, will, are, the, for, and,
+   your) that both the query and every example prompt are filtered
+   through before scoring. **If you add new `MOCK_AI_CHAT_EXAMPLES`,
+   sanity-check a clearly-unrelated query still falls through to the
+   generic fallback** rather than tying on connective words.
+2. **Two lint errors from the new `react-hooks/set-state-in-effect` rule**
+   in the new motion primitives (same rule category documented in §11):
+   `cursor-glow.tsx`'s capability-detection state was rewritten with
+   `useClientSnapshot` (the existing hook from `lib/use-client-snapshot.ts`
+   — a perfect fit, since it's literally "read a browser-only capability
+   once"). `typewriter-text.tsx` needed the initial `setShown("")` reset
+   removed entirely (relying on the `useState("")` default, since in
+   every real usage a fresh `TypewriterText` is mounted per message
+   rather than reusing one instance across different `text` values) and
+   the reduced-motion instant-set wrapped in a zero-delay `setTimeout` so
+   the state update happens inside a callback, not the effect's
+   synchronous top level.
+
+### Verification performed
+
+`tsc --noEmit`, `npm run lint`, `npm run build` all clean (23/23 routes).
+Live-tested in-browser: confirmed the hero panel's reply renders
+progressively (4 → 17 → 37 → 63 → 96 → 149 characters over ~2.5s, not
+instantly), the live AI demo's expanded stage list plays through, the
+`/ai-search` match-percent badges render, `/property/[id]`'s AI chat and
+verification badge render — and caught + fixed the `chatRespond` scoring
+bug live by deliberately testing an adversarial query ("sell my house"
+against a chat panel whose only canned examples start with "buy").

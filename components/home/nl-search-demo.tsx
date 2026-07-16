@@ -4,7 +4,7 @@ import { interpretSearchQuery } from "@/lib/ai/service";
 import { MOCK_LISTINGS } from "@/lib/mock-data";
 import type { SearchMatch } from "@/lib/types";
 import { formatPrice } from "@/lib/utils";
-import { ArrowRight, Search } from "lucide-react";
+import { ArrowRight, MessageCircle, Search } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -55,21 +55,39 @@ export function NlSearchDemo() {
             results.slice(0, 3).map((r) => {
               const price = r.listing.mode === "rent" ? r.listing.price_monthly : r.listing.price_sale;
               return (
-                <Link
-                  key={r.listing.id}
-                  href={`/property/${r.listing.id}`}
-                  className="group flex items-center justify-between gap-4 rounded-xl border border-line bg-white p-4 transition-colors hover:border-navy-300"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-navy-950">{r.listing.title}</p>
-                    <p className="mt-1 text-xs text-navy-500">
-                      {r.listing.city} · {formatPrice(price ?? 0)}
-                      {r.listing.mode === "rent" ? "/month" : ""}
-                    </p>
-                    <p className="mt-1.5 text-xs text-gold-700">{r.match_reason}</p>
+                <div key={r.listing.id} className="rounded-xl border border-line bg-white p-4 transition-colors hover:border-navy-300">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-navy-950">{r.listing.title}</p>
+                      <p className="mt-1 text-xs text-navy-500">
+                        {r.listing.city} · {formatPrice(price ?? 0)}
+                        {r.listing.mode === "rent" ? "/month" : ""}
+                      </p>
+                    </div>
+                    <span className="shrink-0 rounded-full bg-gold-100 px-2.5 py-1 text-xs font-semibold text-gold-700">
+                      {r.match_percent}% match
+                    </span>
                   </div>
-                  <ArrowRight className="h-4 w-4 shrink-0 text-navy-300 transition-transform group-hover:translate-x-0.5 group-hover:text-navy-600" aria-hidden />
-                </Link>
+
+                  {r.reasons.length > 0 ? (
+                    <ul className="mt-3 grid gap-1.5 sm:grid-cols-2">
+                      {r.reasons.map((reason) => (
+                        <li key={reason.label} className="text-xs text-navy-600">
+                          <span className="font-medium text-navy-900">{reason.label}:</span> {reason.detail}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+
+                  <Link
+                    href={`/property/${r.listing.id}#ai`}
+                    className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-terra-600 hover:text-terra-700"
+                  >
+                    <MessageCircle className="h-3.5 w-3.5" aria-hidden />
+                    Talk to this property&rsquo;s AI
+                    <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+                  </Link>
+                </div>
               );
             })
           )}

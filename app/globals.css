@@ -93,3 +93,39 @@
   text-transform: uppercase;
   color: var(--color-gold-600);
 }
+
+/* Reserved for the primary "Start with AI" CTA — a slow, subtle pulse,
+   not a generic glow-everything effect. Disabled under reduced motion. */
+@utility glow-cta {
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: inherit;
+    background: radial-gradient(circle, var(--color-gold-500) 0%, transparent 72%);
+    opacity: 0.35;
+    z-index: -1;
+    animation: glow-pulse 2.8s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &::after {
+      animation: none;
+      opacity: 0.2;
+    }
+  }
+}
+
+@keyframes glow-pulse {
+  0%,
+  100% {
+    opacity: 0.22;
+    transform: scale(0.97);
+  }
+  50% {
+    opacity: 0.42;
+    transform: scale(1.04);
+  }
+}

@@ -29,7 +29,7 @@ export default function AiSearchPage() {
 
   const refined = useMemo(() => {
     const base: (Listing & { match_reason?: string })[] = submitted
-      ? results.map((r) => ({ ...r.listing, match_reason: r.match_reason }))
+      ? results.map((r) => ({ ...r.listing, match_reason: `${r.match_percent}% match — ${r.match_reason}` }))
       : MOCK_LISTINGS;
     return base.filter((l) => {
       if (minBeds > 0 && l.bedrooms < minBeds) return false;

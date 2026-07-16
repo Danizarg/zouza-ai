@@ -12,7 +12,7 @@ export function ListingCard({ listing }: { listing: Listing }) {
   const price = isRent ? listing.price_monthly : listing.price_sale;
 
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-xl border border-line bg-white transition-colors duration-200 hover:border-navy-300">
+    <article className="group relative flex flex-col overflow-hidden rounded-xl border border-line bg-white transition-all duration-300 hover:-translate-y-1 hover:border-gold-400 hover:shadow-[0_0_0_3px_rgba(179,148,90,0.14)]">
       <Link
         href={`/property/${listing.id}`}
         className="absolute inset-0 z-10"
@@ -88,7 +88,7 @@ export function ListingCard({ listing }: { listing: Listing }) {
             href={`/property/${listing.id}#ai`}
             className="relative z-20 inline-flex shrink-0 items-center gap-1 text-xs font-medium text-navy-700 hover:text-navy-950"
           >
-            <MessageCircle className="h-3.5 w-3.5" aria-hidden />
+            <MessageCircle className="h-3.5 w-3.5 group-hover:animate-pulse" aria-hidden />
             Talk to AI
           </Link>
         </div>

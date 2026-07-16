@@ -4,6 +4,7 @@ import type {
   Listing,
   ListingFacts,
   SearchMatch,
+  SearchMatchReason,
   TranslationLanguage,
 } from "@/lib/types";
 import { TRANSLATION_LANGUAGES } from "@/lib/types";
@@ -230,8 +231,8 @@ export function answerAgentQuestion(listing: Listing, question: string): string 
     }
     return `The asking price is ${formatPrice(listing.price_sale ?? 0)}, direct from the owner with no agency commission on top. Purchase taxes and notary fees depend on the region and your situation.`;
   }
-  if (/(visit|viewing|see it|tour|appointment|when can i)/.test(q)) {
-    return "You can propose a viewing with the “Request viewing” button — the owner usually confirms within a day. Video viewings are also possible if you are abroad.";
+  if (/(book|schedule).*(viewing|visit|tour)/.test(q) || /(visit|viewing|see it|tour|appointment|when can i)/.test(q)) {
+    return "Yes. I can help request a viewing. The owner currently has slots available Thursday afternoon and Saturday morning — use the “Request viewing” button and I'll pass your preferred time along.";
   }
   if (/(garage|park)/.test(q)) {
     return listing.garage
@@ -291,17 +292,27 @@ export const SUGGESTED_AGENT_QUESTIONS = [
  * to a generic but useful reply. Swap for a real model call — same
  * signature — once a provider is connected.
  */
+// Common connective words that appear across nearly every example prompt
+// ("I want to...", "I need...", "help me...") — excluding them stops
+// unrelated prompts from tying on filler words alone.
+const CHAT_STOPWORDS = new Set([
+  "want", "need", "help", "find", "with", "from", "have", "this", "that",
+  "will", "are", "the", "for", "and", "your", "you're",
+]);
+
+function meaningfulWords(text: string): string[] {
+  return text
+    .toLowerCase()
+    .split(/[^a-z0-9€]+/)
+    .filter((w) => w.length > 2 && !CHAT_STOPWORDS.has(w));
+}
+
 export function chatRespond(message: string): string {
-  const words = new Set(
-    message
-      .toLowerCase()
-      .split(/[^a-z0-9€]+/)
-      .filter((w) => w.length > 2),
-  );
+  const words = new Set(meaningfulWords(message));
 
   let best: { reply: string; score: number } | null = null;
   for (const example of MOCK_AI_CHAT_EXAMPLES) {
-    const exampleWords = example.prompt.toLowerCase().split(/[^a-z0-9€]+/).filter((w) => w.length > 2);
+    const exampleWords = meaningfulWords(example.prompt);
     const score = exampleWords.filter((w) => words.has(w)).length;
     if (score > 0 && (!best || score > best.score)) {
       best = { reply: example.reply, score };
@@ -368,22 +379,38 @@ export function interpretSearchQuery(query: string, listings: Listing[]): Search
   const wantsRent = /(rent|renting)/.test(q);
   const wantedCity = Object.entries(CITY_ALIASES).find(([, aliases]) => aliases.some((a) => q.includes(a)))?.[0];
 
+  // Relative to what the query actually asked for, so "no budget mentioned"
+  // doesn't silently cap every match's percentage.
+  const maxPossibleScore =
+    (wantedCity ? 4 : 0) +
+    (wantBedrooms ? 3 : 0) +
+    (wantsBeach ? 2 : 0) +
+    (wantsBuy || wantsRent ? 2 : 0) +
+    (budget ? 2 : 0);
+
   const scored = listings.map((listing) => {
     let score = 0;
-    const reasons: string[] = [];
+    const proseReasons: string[] = [];
+    const reasons: SearchMatchReason[] = [];
     const price = listing.mode === "rent" ? (listing.price_monthly ?? 0) : (listing.price_sale ?? 0);
 
     if (wantedCity && listing.city === wantedCity) {
       score += 4;
-      reasons.push(`it's located in ${listing.city}`);
+      proseReasons.push(`it's located in ${listing.city}`);
+      reasons.push({ label: "Location", detail: `${listing.city} — matches what you asked for` });
     }
     if (wantBedrooms && listing.bedrooms >= wantBedrooms) {
       score += 3;
-      reasons.push(`it has ${listing.bedrooms} bedrooms`);
+      proseReasons.push(`it has ${listing.bedrooms} bedrooms`);
+      reasons.push({ label: "Lifestyle fit", detail: `${listing.bedrooms} bedrooms — meets your ${wantBedrooms}+ requirement` });
     }
     if (wantsBeach && (listing.sea_view || (listing.distance_to_beach_min ?? 999) <= 15)) {
       score += 2;
-      reasons.push(listing.sea_view ? "it has sea views" : `it's ${listing.distance_to_beach_min} min from the beach`);
+      const detail = listing.sea_view
+        ? "Sea views from the property"
+        : `${listing.distance_to_beach_min} min from the beach`;
+      proseReasons.push(listing.sea_view ? "it has sea views" : `it's ${listing.distance_to_beach_min} min from the beach`);
+      reasons.push({ label: "Beach distance", detail });
     }
     if (wantsBuy && listing.mode === "buy") score += 2;
     if (wantsRent && listing.mode === "rent") score += 2;
@@ -391,13 +418,15 @@ export function interpretSearchQuery(query: string, listings: Listing[]): Search
       const ratio = price / budget;
       if (ratio <= 1.05) {
         score += 2;
-        reasons.push(`it's within your ${formatPrice(budget)} budget`);
+        proseReasons.push(`it's within your ${formatPrice(budget)} budget`);
+        reasons.push({ label: "Budget fit", detail: `${formatPrice(price)} — within your ${formatPrice(budget)} budget` });
       } else if (ratio <= 1.3) {
         score += 1;
-        reasons.push("it's close to your budget");
+        proseReasons.push("it's close to your budget");
+        reasons.push({ label: "Budget fit", detail: `${formatPrice(price)} — slightly above your ${formatPrice(budget)} budget` });
       }
     }
-    return { listing, score, reasons };
+    return { listing, score, proseReasons, reasons };
   });
 
   return scored
@@ -406,6 +435,8 @@ export function interpretSearchQuery(query: string, listings: Listing[]): Search
     .slice(0, 6)
     .map((s) => ({
       listing: s.listing,
-      match_reason: s.reasons.length > 0 ? `Matches because ${s.reasons.join(", and ")}.` : "A strong general match for your search.",
+      match_reason: s.proseReasons.length > 0 ? `Matches because ${s.proseReasons.join(", and ")}.` : "A strong general match for your search.",
+      match_percent: Math.max(55, Math.min(100, Math.round((s.score / Math.max(maxPossibleScore, 1)) * 100))),
+      reasons: s.reasons,
     }));
 }
