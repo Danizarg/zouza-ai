@@ -43,3 +43,5 @@ next-env.d.ts
 
 # claude code (local tool config, machine-specific paths)
 .claude/
+
+.vercel
