@@ -739,6 +739,16 @@ export const MOCK_AI_CHAT_EXAMPLES: AiChatExample[] = [
       "I can have your listing ready in minutes. Upload a few photos and I'll detect the rooms and features, then draft the title, description and a price estimate for you to review.",
   },
   {
+    prompt: "Apartment for rent in Madrid.",
+    reply:
+      "We're growing fastest along Spain's coast right now, so I don't have verified Madrid listings yet — tell me your budget and I'll notify you the moment a strong match appears.",
+  },
+  {
+    prompt: "Investment opportunities.",
+    reply:
+      "For rental yield, I'd look at Alicante or Valencia — lower entry price, strong tenant demand near the coast. Want me to pull verified listings with the numbers worked out?",
+  },
+  {
     prompt: "I want to rent out my apartment.",
     reply:
       "I can have a listing ready in minutes. Upload a few photos and I'll detect the rooms and features, then write the exposé, FAQ, and translations for you to review.",

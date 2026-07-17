@@ -32,7 +32,7 @@ import Link from "next/link";
 
 const howItWorks = [
   { icon: MessageCircle, title: "Tell Suzi", text: "Speak or type what you need — buying, renting, selling, or listing." },
-  { icon: Sparkles, title: "Suzi understands", text: "She reads your intent, budget, and priorities — no filters to configure first." },
+  { icon: Sparkles, title: "Suzi finds it", text: "Our AI searches, filters and understands what actually matters to you." },
   { icon: Search, title: "Get matches", text: "Verified homes, or a ready listing, with the reasoning behind every result." },
   { icon: Handshake, title: "Make it happen", text: "Message owners directly, book a viewing, or publish — Suzi handles the details." },
 ] as const;
@@ -75,7 +75,7 @@ export default function HomePage() {
       <Hero />
 
       {/* Value strip */}
-      <section className="border-y border-line bg-parchment py-8">
+      <section className="border-y border-line bg-parchment py-10 md:py-12">
         <div className="container-page">
           <ValueStrip />
         </div>
@@ -91,7 +91,7 @@ export default function HomePage() {
         </Reveal>
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {howItWorks.map((step, i) => (
-            <Reveal key={step.title} delay={i * 0.06} className="h-full">
+            <Reveal key={step.title} delay={i * 0.06} className="relative h-full">
               <div className="h-full border-t-2 border-navy-950 pt-4">
                 <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy-950 text-gold-300">
                   <step.icon className="h-5 w-5" aria-hidden />
@@ -99,9 +99,23 @@ export default function HomePage() {
                 <h3 className="mt-4 text-base font-semibold text-navy-950">{step.title}</h3>
                 <p className="mt-1.5 text-sm leading-relaxed text-navy-600">{step.text}</p>
               </div>
+              {i < howItWorks.length - 1 ? (
+                <span className="absolute top-4 -right-3 hidden h-5 w-5 items-center justify-center text-navy-300 lg:flex">
+                  <ArrowRight className="h-4 w-4" aria-hidden />
+                </span>
+              ) : null}
             </Reveal>
           ))}
         </div>
+        <Reveal delay={0.2}>
+          <Link
+            href="/how-it-works"
+            className="mt-10 inline-flex items-center gap-2 text-sm font-medium text-navy-700 hover:text-navy-950"
+          >
+            See how it works
+            <ArrowRight className="h-4 w-4" aria-hidden />
+          </Link>
+        </Reveal>
       </section>
 
       {/* Interactive AI conversation showcase */}
@@ -132,11 +146,11 @@ export default function HomePage() {
             <div>
               <p className="eyebrow">Verified this month</p>
               <h2 className="mt-3 text-3xl font-semibold text-navy-950 sm:text-4xl">
-                Featured properties
+                Handpicked for you
               </h2>
             </div>
             <Link href="/explore" className={buttonClasses("outline", "sm")}>
-              Explore all homes
+              View all properties
             </Link>
           </div>
         </Reveal>

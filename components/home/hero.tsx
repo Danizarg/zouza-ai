@@ -1,17 +1,14 @@
 "use client";
 
+import { HeroPortraitPanel } from "@/components/home/hero-portrait-panel";
 import { SuziIntroCard } from "@/components/home/suzi-intro-card";
 import { SuziPromptInput } from "@/components/home/suzi-prompt-input";
 import { ThinkingDots } from "@/components/motion/thinking-dots";
 import { TypewriterText } from "@/components/motion/typewriter-text";
-import { buttonClasses } from "@/components/ui/button";
 import { chatRespond } from "@/lib/ai/service";
-import { MOCK_AI_CHAT_EXAMPLES } from "@/lib/mock-data";
 import { useClientSnapshot } from "@/lib/use-client-snapshot";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { ArrowRight, BadgeCheck, ShieldCheck, Upload } from "lucide-react";
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 interface ChatTurn {
@@ -19,12 +16,12 @@ interface ChatTurn {
   text: string;
 }
 
-const STARTER_PROMPTS = MOCK_AI_CHAT_EXAMPLES.slice(0, 4).map((e) => e.prompt);
-
-const TRUST_POINTS = [
-  { icon: ShieldCheck, text: "Verified owners & properties" },
-  { icon: BadgeCheck, text: "Direct from sellers — no agency markup" },
-] as const;
+const STARTER_PROMPTS = [
+  "Villa in Marbella with sea view",
+  "Apartment for rent in Madrid",
+  "Sell my property",
+  "Investment opportunities",
+];
 
 function isTouchDevice(): boolean {
   if (typeof window === "undefined") return false;
@@ -131,17 +128,20 @@ export function Hero() {
               ) : null}
             </div>
           ) : (
-            <div className="flex flex-wrap gap-2 px-5 pt-4">
-              {STARTER_PROMPTS.map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => ask(p)}
-                  className="rounded-full border border-line bg-parchment px-3 py-1.5 text-left text-xs font-medium text-navy-700 transition-colors hover:border-gold-500 cursor-pointer"
-                >
-                  {p}
-                </button>
-              ))}
+            <div className="px-5 pt-4">
+              <p className="text-xs font-medium tracking-wide text-navy-400 uppercase">Try something like</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {STARTER_PROMPTS.map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => ask(p)}
+                    className="rounded-full border border-line bg-parchment px-3 py-1.5 text-left text-xs font-medium text-navy-700 transition-colors hover:border-gold-500 cursor-pointer"
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
@@ -158,30 +158,16 @@ export function Hero() {
         </motion.div>
       </div>
 
-      {/* Meet Suzi */}
+      {/* Meet Suzi — portrait with the intro card floating on top */}
       <motion.div
+        className="relative lg:pt-10 lg:pl-10"
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, delay: 0.2 }}
       >
-        <SuziIntroCard />
-        <div className="mt-4 space-y-2.5 rounded-xl border border-line bg-parchment p-5">
-          {TRUST_POINTS.map((t) => (
-            <p key={t.text} className="flex items-center gap-2.5 text-xs font-medium text-navy-700">
-              <t.icon className="h-4 w-4 shrink-0 text-navy-500" aria-hidden />
-              {t.text}
-            </p>
-          ))}
-        </div>
-        <div className="mt-4 flex flex-wrap gap-3">
-          <Link href="/list-with-ai" className={buttonClasses("primary", "md", "glow-cta")}>
-            <Upload className="h-4 w-4" aria-hidden />
-            List with Suzi
-          </Link>
-          <Link href="/explore" className={buttonClasses("outline", "md")}>
-            Explore homes
-            <ArrowRight className="h-4 w-4" aria-hidden />
-          </Link>
+        <HeroPortraitPanel />
+        <div className="mt-4 lg:absolute lg:top-0 lg:left-0 lg:mt-0 lg:w-[300px]">
+          <SuziIntroCard />
         </div>
       </motion.div>
     </section>
