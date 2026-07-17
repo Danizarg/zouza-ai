@@ -165,7 +165,7 @@ export function Hero() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, delay: 0.2 }}
       >
-        <HeroPortraitPanel />
+        <HeroPortraitPanel src="/images/suzi-portrait.png" />
         <div className="mt-4 lg:absolute lg:top-0 lg:left-0 lg:mt-0 lg:w-[300px]">
           <SuziIntroCard />
         </div>
