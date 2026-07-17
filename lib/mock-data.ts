@@ -524,7 +524,7 @@ export const MOCK_REVIEWS: Review[] = [
     author_name: "Sofia",
     rating: 5,
     comment:
-      "The listing matched reality exactly — photos, costs, everything. The AI assistant answered my questions at midnight and the owner confirmed a viewing the next morning.",
+      "The listing matched reality exactly — photos, costs, everything. Suzi answered my questions at midnight and the owner confirmed a viewing the next morning.",
     created_at: "2026-05-28T00:00:00Z",
   },
   {
@@ -551,7 +551,7 @@ export const MOCK_REVIEWS: Review[] = [
     author_name: "Richard",
     rating: 5,
     comment:
-      "Dealt with the owner directly. The AI exposé was more complete than most agency brochures I have paid for.",
+      "Dealt with the owner directly. Suzi's exposé was more complete than most agency brochures I have paid for.",
     created_at: "2026-05-19T00:00:00Z",
   },
 ];
@@ -615,7 +615,7 @@ export const MOCK_MESSAGES: Message[] = [
     id: "m2",
     conversation_id: "c1",
     sender: "zouza_ai",
-    body: "Zouza pre-check: this enquiry matches the listing — availability from 1 Aug ✓, pets allowed ✓, budget confirmed ✓. Passed to the owner as a qualified lead.",
+    body: "Suzi pre-check: this enquiry matches the listing — availability from 1 Aug ✓, pets allowed ✓, budget confirmed ✓. Passed to the owner as a qualified lead.",
     created_at: "2026-07-01T17:55:30Z",
   },
   {
@@ -716,7 +716,7 @@ export const MOCK_TESTIMONIALS: Testimonial[] = [
     name: "Richard T.",
     role: "Buyer, Marbella",
     quote:
-      "The property's AI assistant answered my questions about community fees and taxes at 11pm my time. Dealing with the owner directly afterwards felt refreshingly simple.",
+      "Suzi answered my questions about community fees and taxes at 11pm my time. Dealing with the owner directly afterwards felt refreshingly simple.",
   },
   {
     id: "t4",
@@ -732,6 +732,11 @@ export const MOCK_AI_CHAT_EXAMPLES: AiChatExample[] = [
     prompt: "I want to buy a villa in Marbella.",
     reply:
       "Got it. I've got 1 verified villa on the Golden Mile right now — 5 beds, infinity pool, sea views, €2.95M. Want me to show it, or narrow by budget first?",
+  },
+  {
+    prompt: "Sell my property.",
+    reply:
+      "I can have your listing ready in minutes. Upload a few photos and I'll detect the rooms and features, then draft the title, description and a price estimate for you to review.",
   },
   {
     prompt: "I want to rent out my apartment.",

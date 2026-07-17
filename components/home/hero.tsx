@@ -1,13 +1,16 @@
 "use client";
 
+import { SuziIntroCard } from "@/components/home/suzi-intro-card";
+import { SuziPromptInput } from "@/components/home/suzi-prompt-input";
 import { ThinkingDots } from "@/components/motion/thinking-dots";
 import { TypewriterText } from "@/components/motion/typewriter-text";
 import { buttonClasses } from "@/components/ui/button";
 import { chatRespond } from "@/lib/ai/service";
 import { MOCK_AI_CHAT_EXAMPLES } from "@/lib/mock-data";
+import { useClientSnapshot } from "@/lib/use-client-snapshot";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { ArrowRight, ArrowUp, Sparkles } from "lucide-react";
+import { ArrowRight, BadgeCheck, ShieldCheck, Upload } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
@@ -18,7 +21,18 @@ interface ChatTurn {
 
 const STARTER_PROMPTS = MOCK_AI_CHAT_EXAMPLES.slice(0, 4).map((e) => e.prompt);
 
+const TRUST_POINTS = [
+  { icon: ShieldCheck, text: "Verified owners & properties" },
+  { icon: BadgeCheck, text: "Direct from sellers — no agency markup" },
+] as const;
+
+function isTouchDevice(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(pointer: coarse)").matches;
+}
+
 export function Hero() {
+  const micFirst = useClientSnapshot(isTouchDevice, false);
   const [turns, setTurns] = useState<ChatTurn[]>([]);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
@@ -48,7 +62,7 @@ export function Hero() {
   const active = thinking || typingIndex !== null;
 
   return (
-    <section className="container-page grid items-center gap-12 py-16 md:py-20 lg:grid-cols-[1fr_1.05fr]">
+    <section className="container-page grid items-start gap-12 py-16 md:py-20 lg:grid-cols-[1.05fr_0.85fr]">
       <div>
         <motion.p
           className="eyebrow"
@@ -56,7 +70,7 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          The AI operating system for real estate
+          AI-powered real estate platform
         </motion.p>
         <motion.h1
           className="mt-4 text-4xl leading-[1.08] font-semibold text-navy-950 sm:text-5xl"
@@ -64,7 +78,9 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.05 }}
         >
-          Your AI real estate partner.
+          Just tell Suzi what you need.
+          <br />
+          She&rsquo;ll do the rest.
         </motion.h1>
         <motion.p
           className="mt-5 max-w-lg text-lg leading-relaxed text-navy-600"
@@ -72,118 +88,101 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.12 }}
         >
-          Buy, rent, sell, or list a property — tell Zouza what you want to do,
-          and the AI does the work: search, listings, pricing, and the
-          questions you&rsquo;d normally ask an agent.
+          The easy way to buy, rent, sell or list a property. Suzi helps you
+          find the right home or sell yours faster — simply by talking or
+          typing.
         </motion.p>
+
+        {/* Suzi conversation — the interaction entry point, not a search bar */}
         <motion.div
-          className="mt-8 flex flex-wrap items-center gap-3"
-          initial={{ opacity: 0, y: 14 }}
+          className={cn(
+            "mt-8 rounded-xl border bg-white shadow-card transition-shadow duration-500",
+            active ? "border-gold-300 shadow-[0_0_0_4px_rgba(179,148,90,0.12)]" : "border-line",
+          )}
+          initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          transition={{ duration: 0.7, delay: 0.15 }}
         >
-          <Link href="/list-with-ai" className={buttonClasses("primary", "lg", "glow-cta")}>
-            <Sparkles className="h-4.5 w-4.5" aria-hidden />
-            Start with AI
-          </Link>
-          <Link href="/explore" className={buttonClasses("outline", "lg")}>
-            Explore homes
-            <ArrowRight className="h-4 w-4" aria-hidden />
-          </Link>
+          {turns.length > 0 || thinking ? (
+            <div ref={scrollRef} className="max-h-72 space-y-3 overflow-y-auto px-5 py-4">
+              {turns.map((t, i) => (
+                <div key={i} className={t.role === "user" ? "flex justify-end" : "flex justify-start"}>
+                  <p
+                    className={
+                      t.role === "user"
+                        ? "max-w-[85%] rounded-xl rounded-br-md bg-navy-950 px-4 py-2.5 text-sm leading-relaxed text-ivory"
+                        : "max-w-[85%] rounded-xl rounded-bl-md bg-parchment px-4 py-2.5 text-sm leading-relaxed text-navy-800"
+                    }
+                  >
+                    {t.role === "ai" && i === typingIndex ? (
+                      <TypewriterText text={t.text} onDone={() => setTypingIndex(null)} />
+                    ) : (
+                      t.text
+                    )}
+                  </p>
+                </div>
+              ))}
+              {thinking ? (
+                <div className="flex justify-start">
+                  <p className="flex items-center gap-2 rounded-xl rounded-bl-md bg-parchment px-4 py-2.5 text-sm text-navy-500">
+                    Suzi is thinking <ThinkingDots />
+                  </p>
+                </div>
+              ) : null}
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-2 px-5 pt-4">
+              {STARTER_PROMPTS.map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => ask(p)}
+                  className="rounded-full border border-line bg-parchment px-3 py-1.5 text-left text-xs font-medium text-navy-700 transition-colors hover:border-gold-500 cursor-pointer"
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="p-3">
+            <SuziPromptInput
+              value={input}
+              onChange={setInput}
+              onSubmit={ask}
+              disabled={thinking}
+              micFirst={micFirst}
+              placeholder="I'm moving to Marbella with a €900,000 budget…"
+            />
+          </div>
         </motion.div>
       </div>
 
-      {/* AI interaction panel — the hero centerpiece */}
+      {/* Meet Suzi */}
       <motion.div
-        className={cn(
-          "rounded-xl border bg-white shadow-card transition-shadow duration-500",
-          active ? "border-gold-300 shadow-[0_0_0_4px_rgba(179,148,90,0.12)]" : "border-line",
-        )}
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7, delay: 0.15 }}
+        transition={{ duration: 0.7, delay: 0.2 }}
       >
-        <div className="flex items-center gap-3 border-b border-line bg-navy-950 px-5 py-4">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gold-500/20 text-gold-300">
-            <Sparkles className="h-4.5 w-4.5" aria-hidden />
-          </span>
-          <div>
-            <p className="text-sm font-semibold text-ivory">Zouza</p>
-            <p className="text-xs text-navy-300">What would you like to do today?</p>
-          </div>
-        </div>
-
-        <div ref={scrollRef} className="h-72 space-y-3 overflow-y-auto px-5 py-4">
-          {turns.length === 0 ? (
-            <p className="text-sm text-navy-500">
-              Try one of the prompts below, or type your own — buying, renting,
-              selling, or listing a property.
+        <SuziIntroCard />
+        <div className="mt-4 space-y-2.5 rounded-xl border border-line bg-parchment p-5">
+          {TRUST_POINTS.map((t) => (
+            <p key={t.text} className="flex items-center gap-2.5 text-xs font-medium text-navy-700">
+              <t.icon className="h-4 w-4 shrink-0 text-navy-500" aria-hidden />
+              {t.text}
             </p>
-          ) : null}
-          {turns.map((t, i) => (
-            <div key={i} className={t.role === "user" ? "flex justify-end" : "flex justify-start"}>
-              <p
-                className={
-                  t.role === "user"
-                    ? "max-w-[85%] rounded-xl rounded-br-md bg-navy-950 px-4 py-2.5 text-sm leading-relaxed text-ivory"
-                    : "max-w-[85%] rounded-xl rounded-bl-md bg-parchment px-4 py-2.5 text-sm leading-relaxed text-navy-800"
-                }
-              >
-                {t.role === "ai" && i === typingIndex ? (
-                  <TypewriterText text={t.text} onDone={() => setTypingIndex(null)} />
-                ) : (
-                  t.text
-                )}
-              </p>
-            </div>
           ))}
-          {thinking ? (
-            <div className="flex justify-start">
-              <p className="flex items-center gap-2 rounded-xl rounded-bl-md bg-parchment px-4 py-2.5 text-sm text-navy-500">
-                Zouza is thinking <ThinkingDots />
-              </p>
-            </div>
-          ) : null}
         </div>
-
-        {turns.length === 0 ? (
-          <div className="flex flex-wrap gap-2 border-t border-line bg-ivory px-5 pt-3">
-            {STARTER_PROMPTS.map((p) => (
-              <button
-                key={p}
-                type="button"
-                onClick={() => ask(p)}
-                className="rounded-full border border-line bg-white px-3 py-1.5 text-left text-xs font-medium text-navy-700 transition-colors hover:border-gold-500 cursor-pointer"
-              >
-                {p}
-              </button>
-            ))}
-          </div>
-        ) : null}
-
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            ask(input);
-          }}
-          className="flex items-center gap-2 border-t border-line bg-ivory px-5 py-3"
-        >
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="I'm moving to Marbella with a €900,000 budget…"
-            aria-label="Tell Zouza what you want to do"
-            className="flex-1 rounded-lg border border-line bg-white px-4 py-2 text-sm focus:border-navy-400 focus:outline-none"
-          />
-          <button
-            type="submit"
-            disabled={thinking || !input.trim()}
-            aria-label="Send"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy-950 text-ivory disabled:opacity-40 cursor-pointer"
-          >
-            <ArrowUp className="h-4 w-4" aria-hidden />
-          </button>
-        </form>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <Link href="/list-with-ai" className={buttonClasses("primary", "md", "glow-cta")}>
+            <Upload className="h-4 w-4" aria-hidden />
+            List with Suzi
+          </Link>
+          <Link href="/explore" className={buttonClasses("outline", "md")}>
+            Explore homes
+            <ArrowRight className="h-4 w-4" aria-hidden />
+          </Link>
+        </div>
       </motion.div>
     </section>
   );

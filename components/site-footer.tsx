@@ -3,7 +3,7 @@ import Link from "next/link";
 
 const links = [
   { href: "/ai-search", label: "AI Search" },
-  { href: "/list-with-ai", label: "List with AI" },
+  { href: "/list-with-ai", label: "List with Suzi" },
   { href: "/explore", label: "Explore Homes" },
   { href: "/how-it-works", label: "How it works" },
   { href: "/pricing", label: "Pricing" },
@@ -26,6 +26,7 @@ export function SiteFooter() {
           <span className="font-display text-lg font-semibold tracking-tight text-navy-950">
             Zouza
           </span>
+          <span className="ml-1 hidden text-xs text-navy-400 sm:inline">Powered by AI. Guided by Suzi.</span>
         </div>
         <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-navy-600" aria-label="Footer">
           {links.map((link) => (

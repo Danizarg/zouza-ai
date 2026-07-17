@@ -1,6 +1,7 @@
 import { CursorGlow } from "@/components/motion/cursor-glow";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { SuziAvatarAssistant } from "@/components/suzi/suzi-avatar-assistant";
 import type { Metadata } from "next";
 import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
@@ -54,6 +55,7 @@ export default function RootLayout({
         <SiteHeader />
         <main className="flex-1">{children}</main>
         <SiteFooter />
+        <SuziAvatarAssistant />
       </body>
     </html>
   );

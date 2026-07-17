@@ -89,7 +89,7 @@ export function ListingCard({ listing }: { listing: Listing }) {
             className="relative z-20 inline-flex shrink-0 items-center gap-1 text-xs font-medium text-navy-700 hover:text-navy-950"
           >
             <MessageCircle className="h-3.5 w-3.5 group-hover:animate-pulse" aria-hidden />
-            Talk to AI
+            Talk to Suzi
           </Link>
         </div>
       </div>

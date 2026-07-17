@@ -172,7 +172,7 @@ export function StepChatFacts({
     <div>
       <h1 className="text-2xl font-semibold text-navy-950 sm:text-3xl">A few quick questions</h1>
       <p className="mt-2 text-navy-600">
-        Answer like you would in a chat — Zouza fills in the rest.
+        Answer like you would in a chat — Suzi fills in the rest.
       </p>
 
       <div className="mt-8 overflow-hidden rounded-xl border border-line bg-white">
@@ -197,7 +197,7 @@ export function StepChatFacts({
           {thinking ? (
             <div className="flex justify-start">
               <p className="flex items-center gap-2 rounded-xl rounded-bl-md bg-parchment px-4 py-2.5 text-sm text-navy-500">
-                Zouza is thinking <ThinkingDots />
+                Suzi is thinking <ThinkingDots />
               </p>
             </div>
           ) : null}

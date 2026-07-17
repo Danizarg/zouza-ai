@@ -9,7 +9,7 @@ import { useState } from "react";
 
 const NAV_LINKS = [
   { href: "/ai-search", label: "AI Search" },
-  { href: "/list-with-ai", label: "List with AI" },
+  { href: "/list-with-ai", label: "List with Suzi" },
   { href: "/explore", label: "Explore Homes" },
   { href: "/how-it-works", label: "How it works" },
   { href: "/pricing", label: "Pricing" },
@@ -19,7 +19,7 @@ const MOBILE_LINKS = [
   { href: "/", label: "Home" },
   { href: "/ai-search", label: "AI Search" },
   { href: "/explore", label: "Explore" },
-  { href: "/list-with-ai", label: "List with AI" },
+  { href: "/list-with-ai", label: "List with Suzi" },
   { href: "/how-it-works", label: "How it works" },
   { href: "/pricing", label: "Pricing" },
   { href: "/contact", label: "Contact" },
@@ -64,7 +64,7 @@ export function SiteHeader() {
           </Link>
           <Link href="/list-with-ai" className={buttonClasses("primary", "sm", "glow-cta")}>
             <Sparkles className="h-3.5 w-3.5" aria-hidden />
-            Start with AI
+            Talk to Suzi
           </Link>
         </div>
 
@@ -102,7 +102,7 @@ export function SiteHeader() {
                 Sign in
               </Link>
               <Link href="/list-with-ai" onClick={() => setOpen(false)} className={buttonClasses("primary", "md", "flex-1")}>
-                Start with AI
+                Talk to Suzi
               </Link>
             </div>
           </nav>

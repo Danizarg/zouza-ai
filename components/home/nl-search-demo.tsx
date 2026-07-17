@@ -34,7 +34,7 @@ export function NlSearchDemo() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Tell Zouza what you're looking for…"
+            placeholder="Tell Suzi what you're looking for…"
             aria-label="Natural language property search"
             className="w-full rounded-lg border border-line bg-white py-3 pr-4 pl-10 text-sm focus:border-navy-400 focus:outline-none"
           />
@@ -84,7 +84,7 @@ export function NlSearchDemo() {
                     className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-terra-600 hover:text-terra-700"
                   >
                     <MessageCircle className="h-3.5 w-3.5" aria-hidden />
-                    Talk to this property&rsquo;s AI
+                    Talk to Suzi about this property
                     <ArrowRight className="h-3.5 w-3.5" aria-hidden />
                   </Link>
                 </div>

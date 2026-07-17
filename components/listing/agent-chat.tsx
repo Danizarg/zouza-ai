@@ -18,7 +18,7 @@ export function AgentChat({ listing }: { listing: Listing }) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "agent",
-      text: `Hola! I'm the AI assistant for “${listing.title}”. Ask me about availability, real costs, pets, parking, or the neighbourhood — I answer from this listing's verified facts.`,
+      text: `Hola! I'm Suzi, your AI real estate partner for “${listing.title}”. Ask me about availability, real costs, pets, parking, or the neighbourhood — I answer from this listing's verified facts.`,
     },
   ]);
   const [input, setInput] = useState("");
@@ -57,7 +57,7 @@ export function AgentChat({ listing }: { listing: Listing }) {
           <Sparkles className="h-4.5 w-4.5" aria-hidden />
         </motion.span>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-ivory">Property AI Agent</p>
+          <p className="text-sm font-semibold text-ivory">Ask Suzi about this home</p>
           <p className="text-xs text-navy-300">Answers 24/7 from this listing&rsquo;s data</p>
         </div>
         {listing.verified_property ? (
@@ -88,7 +88,7 @@ export function AgentChat({ listing }: { listing: Listing }) {
         {thinking ? (
           <div className="flex justify-start">
             <p className="flex items-center gap-2 rounded-xl rounded-bl-md bg-parchment px-4 py-2.5 text-sm text-navy-500">
-              Zouza is typing <ThinkingDots />
+              Suzi is typing <ThinkingDots />
             </p>
           </div>
         ) : null}
@@ -118,8 +118,8 @@ export function AgentChat({ listing }: { listing: Listing }) {
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask about this property…"
-          aria-label="Ask the property AI agent"
+          placeholder="Ask Suzi about this property…"
+          aria-label="Ask Suzi about this property"
           className="flex-1 rounded-lg border border-line bg-white px-4 py-2 text-sm focus:border-navy-400 focus:outline-none"
         />
         <button

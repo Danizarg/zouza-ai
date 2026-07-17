@@ -28,7 +28,7 @@ export function AgentDemo() {
   const [messages, setMessages] = useState<DemoMessage[]>([
     {
       role: "agent",
-      text: `Hola! I'm the Zouza assistant for “${demoListing.title}”. Ask me anything about this home — availability, costs, pets, the neighbourhood.`,
+      text: `Hola! I'm Suzi, your AI real estate partner for “${demoListing.title}”. Ask me anything about this home — availability, costs, pets, the neighbourhood.`,
     },
   ]);
   const [thinking, setThinking] = useState(false);
@@ -64,7 +64,7 @@ export function AgentDemo() {
           <Sparkles className="h-4.5 w-4.5" aria-hidden />
         </motion.span>
         <div>
-          <p className="text-sm font-semibold text-ivory">Talk to this property&rsquo;s AI</p>
+          <p className="text-sm font-semibold text-ivory">Talk to Suzi about this property</p>
           <p className="text-xs text-navy-300">
             {demoListing.title.split(",")[0]} · answers 24/7 from listing data
           </p>
@@ -96,7 +96,7 @@ export function AgentDemo() {
         {thinking ? (
           <div className="flex justify-start">
             <p className="flex items-center gap-2 rounded-xl rounded-bl-md bg-parchment px-4 py-2.5 text-sm text-navy-500">
-              Zouza is typing <ThinkingDots />
+              Suzi is typing <ThinkingDots />
             </p>
           </div>
         ) : null}

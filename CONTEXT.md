@@ -4,7 +4,7 @@ This file is a handover/continuation document for anyone (human or AI) picking
 up this project. It records what exists, why it was built this way, what is
 real vs. mock, and what's left to do. Keep it updated as the project evolves.
 
-Last updated: 2026-07-13.
+Last updated: 2026-07-17 (see §18 — Suzi persona rebrand + global avatar assistant).
 
 **⚠ Read §16 first.** Later on 2026-07-13 the product pivoted from a
 "verified marketplace with AI tools" positioning to an AI-chat-first
@@ -776,3 +776,171 @@ instantly), the live AI demo's expanded stage list plays through, the
 verification badge render — and caught + fixed the `chatRespond` scoring
 bug live by deliberately testing an adversarial query ("sell my house"
 against a chat panel whose only canned examples start with "buy").
+
+---
+
+## 18. Suzi rebrand + global AI avatar assistant (2026-07-17)
+
+Two-part brief, same day: (1) rename the AI persona from generic
+"Zouza AI" to a named partner, **Suzi**, across the homepage and chat
+surfaces, with a redesigned Suzi-first hero; (2) build a **global
+floating Suzi avatar widget** — a site-wide, page-aware guide distinct
+from the per-property chat, available on every route via `app/layout.tsx`.
+
+### Part 1 — Suzi persona + hero rebuild
+
+**Brand rule enforced throughout:** never label the AI "AI Assistant",
+"Bot", or "Chat" as the primary label — always "Suzi" / "Talk to Suzi" /
+"Ask Suzi" / "List with Suzi". Zouza remains the platform name; Suzi is
+the AI persona ("Powered by AI. Guided by Suzi.").
+
+**New components** (`components/home/`):
+- `suzi-prompt-input.tsx` — the shared conversational input row (not a
+  search bar): typing plus native browser speech-to-text, no server, no
+  API key. `micFirst` prop shifts visual emphasis — larger, filled mic
+  button on touch devices, compact secondary mic on desktop with
+  pointer/mouse — computed once via `lib/use-speech-recognition.ts`
+  (wraps `SpeechRecognition`/`webkitSpeechRecognition`, `supported` read
+  through the existing `useClientSnapshot` pattern so it never causes a
+  hydration mismatch or an SSR/client capability flash).
+- `suzi-intro-card.tsx` — the personality/trust panel ("Hi, I'm Suzi. 👋
+  Your AI Real Estate Partner. I'm here to help you: …").
+- `value-strip.tsx` — the 4-item "Just talk to Suzi / AI that
+  understands you / Saves you time / You're in control" row.
+- `conversation-showcase.tsx` — tabbed (Buy/Rent/Sell/List/Invest)
+  scripted exchange demo, alternating voice/type mode icons per example.
+  Each tab remounts a fresh `ExchangeBubble` child keyed by the active
+  tab (not manual `setState` resets in an effect) so thinking/typing
+  state resets for free on tab switch — the same "remount instead of
+  reset" pattern used by `TypewriterText` elsewhere in this codebase.
+- `components/motion/voice-waveform.tsx` — small animated bar waveform
+  shown in the mic button while actively listening.
+
+**Hero rebuilt** (`components/home/hero.tsx`): new headline "Just tell
+Suzi what you need. She'll do the rest.", left column now holds the
+conversation (starter prompts + transcript + `SuziPromptInput`) instead
+of a boxed panel, right column holds `SuziIntroCard` + a small trust
+strip (verified owners, no agency markup) + List with Suzi / Explore
+homes buttons. Device-aware mic emphasis computed via
+`window.matchMedia("(pointer: coarse)")` through `useClientSnapshot`.
+
+**Homepage restructured** (`app/page.tsx`) to the brief's order: Hero →
+ValueStrip → How it works (Tell Suzi / Suzi understands / Get matches /
+Make it happen, 4 steps not 3) → ConversationShowcase → Featured
+properties → **Why Suzi is different** (new capability grid — finds
+homes, estimates prices, writes exposés, organises viewings, recommends
+schools, calculates beach distance, explains financing, reviews
+documents — deliberately distinct content from the pre-existing
+"Everything Suzi creates from your photos" grid below, which stayed
+where it was as part of the seller flow rather than being merged, since
+the two lists answer different questions) → property-AI demo → List
+with Suzi seller flow (existing `LiveDemo` + 3-step + creates-grid,
+copy updated to Suzi) → NL search → testimonials → final CTA.
+
+**Renamed everywhere** (site-header/footer nav + CTAs, listing card,
+contact-actions success copy, nl-search-demo, live-demo, step-chat-facts,
+agent-demo, agent-chat headers, mock testimonials/messages): "Zouza is
+thinking/typing" → "Suzi is …", "Property AI Agent" → "Ask Suzi about
+this home", "Talk to AI" → "Talk to Suzi", "List with AI" nav label →
+"List with Suzi" (route itself unchanged: `/list-with-ai`).
+
+### Part 2 — Global Suzi avatar assistant
+
+**`lib/ai/suzi-assistant.ts`** — a second, distinct mock AI service from
+`lib/ai/service.ts` (reuses `answerAgentQuestion` / `chatRespond` rather
+than duplicating logic). Exports `getSuziResponse`, `getPageSuggestions`,
+`getQuickActions`, `detectNavigationIntent`, `getPropertyAnswer`,
+`getGreetingForPage` — all deterministic keyword routing, no API key.
+`getSuziResponse` checks for legal/tax/financial-advice-seeking phrasing
+first (refuses per the same business-boundary rule as the rest of the
+product), then answers from listing data if a property is in context,
+then tries navigation-intent detection ("sell my property" →
+`/list-with-ai`), then falls back to the general `chatRespond` reply.
+
+**`components/suzi/`** — the widget itself: `suzi-avatar-button.tsx`
+(pulsing collapsed orb trigger, pulse disabled under
+`prefers-reduced-motion`), `suzi-greeting-bubble.tsx` (one proactive
+nudge, dismissible), `suzi-panel.tsx` (expanded shell,
+`role="dialog"`, `tabIndex={-1}` so it can receive programmatic focus),
+`suzi-message-list.tsx`, `suzi-quick-actions.tsx`,
+`suzi-property-context-card.tsx`, `suzi-thinking-indicator.tsx`. The
+input row reuses `SuziPromptInput` from Part 1 rather than a duplicate
+`SuziInput` component — same mic/type/device-aware behaviour, one
+implementation.
+
+**`suzi-avatar-assistant.tsx`** — the orchestrator, mounted once in
+`app/layout.tsx` after `<SiteFooter />`. Page-aware via `usePathname()`:
+different greeting, suggestion chips, and quick actions per route
+(home/explore/ai-search/list-with-ai/pricing/contact vs. a generic
+fallback). Property-aware on `/property/[id]` routes: parses the id from
+the pathname and looks it up via the existing `getMockListing` (the same
+canonical mock data source the property page itself renders from — no
+separate/parallel data layer to keep in sync), swapping the greeting,
+context card, and Q&A routing to that listing's real facts.
+**localStorage** (read via `useClientSnapshot`, written directly in
+event handlers — never inside an effect body) remembers whether the
+greeting bubble was dismissed and whether the panel was ever opened, so
+the proactive 5-second greeting only nudges once per browser.
+Navigation intents auto-route after a short delay
+(`router.push` ~900ms after the reply renders, giving the user time to
+read "I can help with that — tap below and I'll take you there." first).
+
+**Accessibility:** ESC closes the panel (`window` `keydown` listener,
+attached only while `open`), the panel receives focus on open
+(`panelRef.current?.focus()` inside the open-effect, not during render —
+compliant with the `react-hooks/refs` rule), Enter submits via the
+input's native `<form>`, the avatar's pulse animation is skipped under
+`prefers-reduced-motion`, and the fixed container adds
+`env(safe-area-inset-bottom)` padding for notched phones. Positioned at
+`bottom-24` on mobile / `bottom-6` on `sm:` and up specifically to clear
+the homepage's separate mobile sticky "Talk to Suzi" CTA bar.
+
+**Legal/business boundaries preserved:** the panel always shows a
+one-line footer disclaimer ("Suzi guides you, but doesn't give legal,
+tax, or financial advice — and doesn't handle payments."), and
+`getSuziResponse` intercepts advice-seeking phrasing before any other
+routing. Legal pages (`app/legal/*`, `/trust`) were **not** touched in
+this pass — they were already reviewed/edited by the user in a prior
+session.
+
+### One real bug caught and fixed during this pass
+
+**`AnimatePresence` exit never actually unmounted the panel.** The
+initial implementation wrapped the panel/greeting-bubble ternary in
+`<AnimatePresence>` for a fade-out-on-close transition. Live-testing
+(clicking Close, pressing Escape, clicking the avatar to toggle) showed
+the panel's `role="dialog"` node staying in the DOM indefinitely —
+`getComputedStyle` showed the exit animation *had* run
+(`opacity: 0`, but `display: flex` / `visibility: visible`, node still
+present with all its children), meaning React's state update and
+Framer Motion's exit-animation-target both fired correctly, but
+`AnimatePresence` never called through to actually remove the old
+child and swap in the new one — the widget was effectively impossible
+to close once opened. This is the first use of `AnimatePresence` in
+this codebase (every other `motion.div` here only does mount
+animations via `initial`/`animate`, never exit). Fixed by dropping
+`AnimatePresence` entirely and switching to a plain conditional render
+(`{open ? <SuziPanel>… : showGreeting ? <SuziGreetingBubble /> : null}`)
+— loses the fade-out-on-close transition but is provably correct
+(verified: Close button, Escape key, and re-opening all confirmed via
+`document.querySelectorAll('[role="dialog"]').length` before/after each
+action). **If exit animations are wanted later, treat `AnimatePresence`
+here as unverified/risky in this Next 16 + React 19 + Framer Motion
+combination and test the unmount path explicitly before relying on it
+anywhere else in the app.**
+
+### Verification performed
+
+`tsc --noEmit`, `npm run lint`, `npm run build` all clean (23/23 routes,
+unchanged route count — this pass added no new routes, only components).
+Live-tested in-browser: homepage renders the full new Suzi structure
+(confirmed via page-text extraction, not just visual inspection);
+floating avatar opens with page-aware greeting/suggestions on `/`;
+navigating to `/property/l-marbella-villa` and opening the avatar shows
+the property context card and a listing-specific greeting; asking "How
+far is it from the beach?" inside the avatar correctly answered from
+that listing's real `distance_to_beach_min` data (not a generic
+fallback); typing "I want to sell my property" into the avatar on the
+homepage correctly detected the sell intent and auto-navigated to
+`/list-with-ai`; Close button, Escape key, and re-open all confirmed
+working after the `AnimatePresence` fix above.

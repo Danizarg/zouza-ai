@@ -1,32 +1,57 @@
 import { AgentDemo } from "@/components/home/agent-demo";
+import { ConversationShowcase } from "@/components/home/conversation-showcase";
 import { Hero } from "@/components/home/hero";
 import { LiveDemo } from "@/components/home/live-demo";
 import { MiniAiPrompt } from "@/components/home/mini-ai-prompt";
 import { NlSearchDemo } from "@/components/home/nl-search-demo";
+import { ValueStrip } from "@/components/home/value-strip";
 import { ListingCard } from "@/components/listing-card";
 import { Reveal } from "@/components/reveal";
 import { buttonClasses } from "@/components/ui/button";
 import { MOCK_LISTINGS, MOCK_TESTIMONIALS } from "@/lib/mock-data";
 import {
   ArrowRight,
+  CalendarCheck,
   Camera,
   FileText,
   Gauge,
-  Globe,
+  GraduationCap,
+  Handshake,
+  Landmark,
   Languages,
   MessageCircle,
   Rocket,
+  Search,
   Sparkles,
   Tag,
   Upload,
   Wand2,
+  Waves,
 } from "lucide-react";
 import Link from "next/link";
 
+const howItWorks = [
+  { icon: MessageCircle, title: "Tell Suzi", text: "Speak or type what you need — buying, renting, selling, or listing." },
+  { icon: Sparkles, title: "Suzi understands", text: "She reads your intent, budget, and priorities — no filters to configure first." },
+  { icon: Search, title: "Get matches", text: "Verified homes, or a ready listing, with the reasoning behind every result." },
+  { icon: Handshake, title: "Make it happen", text: "Message owners directly, book a viewing, or publish — Suzi handles the details." },
+] as const;
+
+const whySuzi = [
+  { icon: Search, label: "Finds homes", example: "Matches from plain language, not filters" },
+  { icon: Gauge, label: "Estimates prices", example: "Real market value from comparable homes" },
+  { icon: FileText, label: "Writes exposés", example: "Agency-grade descriptions from your photos" },
+  { icon: CalendarCheck, label: "Organises viewings", example: "Proposes times, confirms with the owner" },
+  { icon: GraduationCap, label: "Recommends schools", example: "Local schools near any listing" },
+  { icon: Waves, label: "Calculates beach distance", example: "Walking or driving time to the coast" },
+  { icon: Landmark, label: "Explains financing", example: "Mortgage basics, taxes, and notary fees" },
+  { icon: MessageCircle, label: "Reviews documents", example: "Flags anything that looks off before you sign" },
+] as const;
+
 const steps = [
   { icon: Camera, title: "Upload photos", text: "Drag in the photos you already have on your phone." },
-  { icon: Wand2, title: "AI creates everything", text: "Title, description, FAQ, pricing, translations — done automatically." },
-  { icon: Rocket, title: "Publish", text: "Review, then go live with a dedicated AI assistant answering enquiries." },
+  { icon: Wand2, title: "Suzi asks a few questions", text: "Only what she couldn't detect — pets, parking, that kind of thing." },
+  { icon: Rocket, title: "Publish", text: "Review, then go live with Suzi answering enquiries for you." },
 ] as const;
 
 const aiCreates = [
@@ -36,9 +61,9 @@ const aiCreates = [
   { icon: MessageCircle, label: "Buyer FAQ", example: "“Are pets allowed? Is parking included?”" },
   { icon: Tag, label: "Property highlights", example: "Pool · sea view · garage · 3 bedrooms" },
   { icon: Gauge, label: "Price estimation", example: "Estimated range based on area, size, and features" },
-  { icon: Globe, label: "SEO text", example: "Optimised so the listing is found, not just published" },
+  { icon: Rocket, label: "SEO text", example: "Optimised so the listing is found, not just published" },
   { icon: Languages, label: "Multiple languages", example: "EN / ES / DE / FR / IT / NL" },
-  { icon: MessageCircle, label: "AI assistant", example: "Answers questions about this home, 24/7" },
+  { icon: MessageCircle, label: "Suzi for this listing", example: "Answers questions about this home, 24/7" },
   { icon: Rocket, label: "Listing publication", example: "Live the moment you approve it" },
 ] as const;
 
@@ -49,34 +74,24 @@ export default function HomePage() {
     <>
       <Hero />
 
-      {/* Live AI demo */}
-      <section className="border-y border-line bg-parchment py-16 md:py-20">
+      {/* Value strip */}
+      <section className="border-y border-line bg-parchment py-8">
         <div className="container-page">
-          <Reveal>
-            <p className="eyebrow">See it happen</p>
-            <h2 className="mt-3 max-w-xl text-3xl font-semibold text-navy-950 sm:text-4xl">
-              Upload photos. Zouza does the rest.
-            </h2>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <div className="mt-10">
-              <LiveDemo />
-            </div>
-          </Reveal>
+          <ValueStrip />
         </div>
       </section>
 
-      {/* Three simple steps */}
+      {/* How Zouza works */}
       <section className="container-page py-16 md:py-20">
         <Reveal>
           <p className="eyebrow">How it works</p>
           <h2 className="mt-3 text-3xl font-semibold text-navy-950 sm:text-4xl">
-            From photos to a published listing in three steps
+            From your words to the perfect match
           </h2>
         </Reveal>
-        <div className="mt-10 grid gap-5 sm:grid-cols-3">
-          {steps.map((step, i) => (
-            <Reveal key={step.title} delay={i * 0.08} className="h-full">
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {howItWorks.map((step, i) => (
+            <Reveal key={step.title} delay={i * 0.06} className="h-full">
               <div className="h-full border-t-2 border-navy-950 pt-4">
                 <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy-950 text-gold-300">
                   <step.icon className="h-5 w-5" aria-hidden />
@@ -87,77 +102,25 @@ export default function HomePage() {
             </Reveal>
           ))}
         </div>
-        <Reveal delay={0.2}>
-          <div className="mt-10">
-            <Link href="/list-with-ai" className={buttonClasses("primary", "md", "glow-cta")}>
-              <Upload className="h-4 w-4" aria-hidden />
-              Start with AI
-            </Link>
-          </div>
-        </Reveal>
       </section>
 
-      {/* AI creates everything */}
-      <section className="border-y border-line bg-navy-950 py-16 text-ivory md:py-20">
+      {/* Interactive AI conversation showcase */}
+      <section className="border-y border-line bg-parchment py-16 md:py-20">
         <div className="container-page">
           <Reveal>
-            <p className="eyebrow text-gold-300">One upload, one pipeline</p>
-            <h2 className="mt-3 max-w-xl text-3xl font-semibold sm:text-4xl">
-              Everything Zouza creates from your photos
+            <p className="eyebrow">Talk to Suzi</p>
+            <h2 className="mt-3 max-w-xl text-3xl font-semibold text-navy-950 sm:text-4xl">
+              One partner, every intent
             </h2>
-          </Reveal>
-          <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            {aiCreates.map((item, i) => (
-              <Reveal key={item.label} delay={i * 0.04} className="h-full">
-                <div className="group flex h-full flex-col items-start gap-3 rounded-xl border border-navy-700 bg-navy-900 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-gold-500/50">
-                  <item.icon className="h-4.5 w-4.5 text-gold-300" aria-hidden />
-                  <p className="text-sm font-medium text-ivory">{item.label}</p>
-                  <p className="text-xs leading-snug text-navy-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                    {item.example}
-                  </p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Natural language search */}
-      <section className="container-page py-16 md:py-20">
-        <Reveal>
-          <p className="eyebrow">Search, reinvented</p>
-          <h2 className="mt-3 max-w-xl text-3xl font-semibold text-navy-950 sm:text-4xl">
-            Tell Zouza what you&rsquo;re looking for
-          </h2>
-          <p className="mt-3 max-w-lg text-navy-600">
-            No filters to configure first — describe the home you want in
-            plain language, and Zouza explains why each result matches.
-          </p>
-        </Reveal>
-        <Reveal delay={0.1}>
-          <div className="mt-10">
-            <NlSearchDemo />
-          </div>
-        </Reveal>
-      </section>
-
-      {/* Property AI assistant demo */}
-      <section className="border-y border-line bg-parchment py-16 md:py-20">
-        <div className="container-page grid gap-10 lg:grid-cols-2 lg:items-center">
-          <Reveal>
-            <p className="eyebrow">Every property gets its own AI</p>
-            <h2 className="mt-3 text-3xl font-semibold text-navy-950 sm:text-4xl">
-              Talk to this property&rsquo;s AI
-            </h2>
-            <p className="mt-4 max-w-md text-navy-600">
-              Not &ldquo;Contact Agent.&rdquo; Every listing answers its own
-              questions — community fees, distance to the beach, schools,
-              taxes, availability — 24 hours a day, from the listing&rsquo;s
-              real data.
+            <p className="mt-3 max-w-lg text-navy-600">
+              Buy, rent, sell, list, or invest — Suzi handles the conversation,
+              by voice or by typing.
             </p>
           </Reveal>
           <Reveal delay={0.1}>
-            <AgentDemo />
+            <div className="mt-10">
+              <ConversationShowcase />
+            </div>
           </Reveal>
         </div>
       </section>
@@ -184,6 +147,147 @@ export default function HomePage() {
             </Reveal>
           ))}
         </div>
+      </section>
+
+      {/* Why Suzi is different */}
+      <section className="border-y border-line bg-navy-950 py-16 text-ivory md:py-20">
+        <div className="container-page">
+          <Reveal>
+            <p className="eyebrow text-gold-300">Not a general chatbot</p>
+            <h2 className="mt-3 max-w-xl text-3xl font-semibold sm:text-4xl">
+              Why Suzi is different
+            </h2>
+            <p className="mt-4 max-w-lg text-navy-300">
+              Suzi knows only real estate — trained on one job, not a thousand.
+              Ask her anything about buying, renting, selling or listing a home.
+            </p>
+          </Reveal>
+          <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {whySuzi.map((item, i) => (
+              <Reveal key={item.label} delay={i * 0.04} className="h-full">
+                <div className="group flex h-full flex-col items-start gap-3 rounded-xl border border-navy-700 bg-navy-900 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-gold-500/50">
+                  <item.icon className="h-4.5 w-4.5 text-gold-300" aria-hidden />
+                  <p className="text-sm font-medium text-ivory">{item.label}</p>
+                  <p className="text-xs leading-snug text-navy-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                    {item.example}
+                  </p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Property AI assistant demo */}
+      <section className="border-b border-line bg-white py-16 md:py-20">
+        <div className="container-page grid gap-10 lg:grid-cols-2 lg:items-center">
+          <Reveal>
+            <p className="eyebrow">Every property gets its own Suzi</p>
+            <h2 className="mt-3 text-3xl font-semibold text-navy-950 sm:text-4xl">
+              Ask Suzi about this property
+            </h2>
+            <p className="mt-4 max-w-md text-navy-600">
+              Not &ldquo;Contact Agent.&rdquo; Every listing answers its own
+              questions — community fees, distance to the beach, schools,
+              taxes, availability — 24 hours a day, from the listing&rsquo;s
+              real data.
+            </p>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <AgentDemo />
+          </Reveal>
+        </div>
+      </section>
+
+      {/* Seller flow: List with Suzi */}
+      <section className="border-b border-line bg-parchment py-16 md:py-20">
+        <div className="container-page">
+          <Reveal>
+            <p className="eyebrow">Step 1: upload photos. That&rsquo;s it.</p>
+            <h2 className="mt-3 max-w-xl text-3xl font-semibold text-navy-950 sm:text-4xl">
+              List with Suzi
+            </h2>
+            <p className="mt-3 max-w-lg text-navy-600">
+              No forms to fill in. Suzi detects bedrooms, bathrooms, pool, sea
+              view and more from your photos, then asks only what she
+              couldn&rsquo;t see for herself.
+            </p>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <div className="mt-10">
+              <LiveDemo />
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* Three simple steps */}
+      <section className="container-page py-16 md:py-20">
+        <div className="grid gap-5 sm:grid-cols-3">
+          {steps.map((step, i) => (
+            <Reveal key={step.title} delay={i * 0.08} className="h-full">
+              <div className="h-full border-t-2 border-navy-950 pt-4">
+                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy-950 text-gold-300">
+                  <step.icon className="h-5 w-5" aria-hidden />
+                </span>
+                <h3 className="mt-4 text-base font-semibold text-navy-950">{step.title}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-navy-600">{step.text}</p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+        <Reveal delay={0.2}>
+          <div className="mt-10">
+            <Link href="/list-with-ai" className={buttonClasses("primary", "md", "glow-cta")}>
+              <Upload className="h-4 w-4" aria-hidden />
+              List with Suzi
+            </Link>
+          </div>
+        </Reveal>
+      </section>
+
+      {/* AI creates everything */}
+      <section className="border-y border-line bg-navy-950 py-16 text-ivory md:py-20">
+        <div className="container-page">
+          <Reveal>
+            <p className="eyebrow text-gold-300">One upload, one pipeline</p>
+            <h2 className="mt-3 max-w-xl text-3xl font-semibold sm:text-4xl">
+              Everything Suzi creates from your photos
+            </h2>
+          </Reveal>
+          <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            {aiCreates.map((item, i) => (
+              <Reveal key={item.label} delay={i * 0.04} className="h-full">
+                <div className="group flex h-full flex-col items-start gap-3 rounded-xl border border-navy-700 bg-navy-900 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-gold-500/50">
+                  <item.icon className="h-4.5 w-4.5 text-gold-300" aria-hidden />
+                  <p className="text-sm font-medium text-ivory">{item.label}</p>
+                  <p className="text-xs leading-snug text-navy-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                    {item.example}
+                  </p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Natural language search */}
+      <section className="container-page py-16 md:py-20">
+        <Reveal>
+          <p className="eyebrow">Search, reinvented</p>
+          <h2 className="mt-3 max-w-xl text-3xl font-semibold text-navy-950 sm:text-4xl">
+            Tell Suzi what you&rsquo;re looking for
+          </h2>
+          <p className="mt-3 max-w-lg text-navy-600">
+            No filters to configure first — describe the home you want in
+            plain language, and Suzi explains why each result matches.
+          </p>
+        </Reveal>
+        <Reveal delay={0.1}>
+          <div className="mt-10">
+            <NlSearchDemo />
+          </div>
+        </Reveal>
       </section>
 
       {/* Testimonials */}
@@ -215,15 +319,15 @@ export default function HomePage() {
       <section className="border-t border-line bg-navy-950 py-16 text-ivory md:py-20">
         <div className="container-page grid gap-10 lg:grid-cols-2 lg:items-center">
           <div>
-            <h2 className="font-display text-3xl font-semibold sm:text-4xl">Start with AI.</h2>
+            <h2 className="font-display text-3xl font-semibold sm:text-4xl">Tell Suzi what you need.</h2>
             <p className="mt-2 max-w-md text-navy-300">
-              Tell Zouza what you want to do — buying, renting, selling, or
-              listing — and the AI guides the rest.
+              Buying, renting, selling, or listing — say it, or type it, and
+              Suzi takes care of the rest.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link href="/list-with-ai" className={buttonClasses("primary", "lg", "glow-cta")}>
                 <Sparkles className="h-4.5 w-4.5" aria-hidden />
-                Start with AI
+                Talk to Suzi
               </Link>
               <Link
                 href="/explore"
@@ -247,7 +351,7 @@ export default function HomePage() {
           className={buttonClasses("primary", "lg", "w-full shadow-card glow-cta")}
         >
           <Sparkles className="h-4.5 w-4.5" aria-hidden />
-          Start with AI
+          Talk to Suzi
         </Link>
       </div>
     </>

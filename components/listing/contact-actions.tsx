@@ -28,7 +28,7 @@ export function ContactActions({ listing }: { listing: Listing }) {
 
       {panel === "message" ? (
         sentMessage ? (
-          <SuccessNote text={`Your message to ${listing.owner_name} has been sent. Zouza will pre-check it and notify you when they reply.`} />
+          <SuccessNote text={`Your message to ${listing.owner_name} has been sent. Suzi will pre-check it and notify you when they reply.`} />
         ) : (
           <form
             onSubmit={(e) => {
