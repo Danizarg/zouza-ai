@@ -14,9 +14,10 @@ import {
   getSuziResponse,
 } from "@/lib/ai/suzi-assistant";
 import { getMockListing } from "@/lib/mock-data";
+import { SUZI_OPEN_EVENT } from "@/lib/suzi-events";
 import { useClientSnapshot } from "@/lib/use-client-snapshot";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const DISMISSED_KEY = "suzi_greeting_dismissed";
 const OPENED_KEY = "suzi_opened_before";
@@ -75,7 +76,7 @@ export function SuziAvatarAssistant() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, thinking]);
 
-  function openPanel() {
+  const openPanel = useCallback(() => {
     setOpen(true);
     setShowGreeting(false);
     window.localStorage.setItem(OPENED_KEY, "1");
@@ -83,12 +84,17 @@ export function SuziAvatarAssistant() {
       setMessages([{ role: "suzi", text: getGreetingForPage(pathname, listing) }]);
       setTypingIndex(0);
     }
-  }
+  }, [pathname, listing, messages.length]);
 
   function dismissGreeting() {
     setShowGreeting(false);
     window.localStorage.setItem(DISMISSED_KEY, "1");
   }
+
+  useEffect(() => {
+    window.addEventListener(SUZI_OPEN_EVENT, openPanel);
+    return () => window.removeEventListener(SUZI_OPEN_EVENT, openPanel);
+  }, [openPanel]);
 
   function send(message: string) {
     const text = message.trim();

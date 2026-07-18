@@ -1,6 +1,7 @@
 "use client";
 
 import { buttonClasses } from "@/components/ui/button";
+import { openSuziPanel } from "@/lib/suzi-events";
 import { cn } from "@/lib/utils";
 import { Menu, Sparkles, X } from "lucide-react";
 import Link from "next/link";
@@ -62,10 +63,10 @@ export function SiteHeader() {
           <Link href="/auth/sign-in" className="text-sm font-medium text-navy-700 hover:text-navy-950">
             Sign in
           </Link>
-          <Link href="/list-with-ai" className={buttonClasses("primary", "sm", "glow-cta")}>
+          <button type="button" onClick={openSuziPanel} className={buttonClasses("primary", "sm", "glow-cta")}>
             <Sparkles className="h-3.5 w-3.5" aria-hidden />
             Talk to Suzi
-          </Link>
+          </button>
         </div>
 
         <button
@@ -101,9 +102,16 @@ export function SiteHeader() {
               <Link href="/auth/sign-in" onClick={() => setOpen(false)} className={buttonClasses("outline", "md", "flex-1")}>
                 Sign in
               </Link>
-              <Link href="/list-with-ai" onClick={() => setOpen(false)} className={buttonClasses("primary", "md", "flex-1")}>
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  openSuziPanel();
+                }}
+                className={buttonClasses("primary", "md", "flex-1")}
+              >
                 Talk to Suzi
-              </Link>
+              </button>
             </div>
           </nav>
         </div>
