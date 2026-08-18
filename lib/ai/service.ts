@@ -13,11 +13,11 @@ import { formatPrice, totalMoveIn } from "@/lib/utils";
 /**
  * AI service abstraction.
  *
- * When OPENAI_API_KEY or ANTHROPIC_API_KEY is set, `generateListingContent`
- * is the single integration point to swap in a real model call: build a
- * prompt from `facts`, request JSON matching `GeneratedListingContent`, and
- * return it. Until then, deterministic mock generation keeps the entire
- * product flow working with zero configuration.
+ * `generateListingContent` calls a real model when ANTHROPIC_API_KEY is set
+ * (§4/§7 of CLAUDE.md — going fully live also needs the business owner's
+ * sign-off + budget, so this stays inert without a key). Any failure —
+ * missing key, network error, malformed model output — falls back to the
+ * deterministic mock generator so the wizard never breaks.
  */
 export function hasAiProvider(): boolean {
   return Boolean(process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY);
@@ -26,9 +26,84 @@ export function hasAiProvider(): boolean {
 export async function generateListingContent(
   facts: ListingFacts,
 ): Promise<GeneratedListingContent> {
-  // Integration point for a real model. Keep the mock as fallback so a
-  // missing/invalid key never breaks the product flow.
+  if (process.env.ANTHROPIC_API_KEY) {
+    try {
+      return await modelGenerate(facts);
+    } catch (err) {
+      console.error("[ai/service] model generation failed, falling back to mock:", err);
+    }
+  }
   return mockGenerate(facts);
+}
+
+/* ------------------------------------------------------------------ */
+/* Real model generation (Anthropic)                                   */
+/* ------------------------------------------------------------------ */
+
+async function modelGenerate(facts: ListingFacts): Promise<GeneratedListingContent> {
+  const { default: Anthropic } = await import("@anthropic-ai/sdk");
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+  const forRent = facts.intent === "rent_out";
+  const fallback = mockGenerate(facts);
+
+  const prompt = `You are Suzi, Zouza's AI real-estate marketing assistant. Write a compelling, honest listing exposé for a property with these facts (Spain-first platform, pure intermediary — never mention payment processing, escrow, or give tax/legal advice):
+
+${JSON.stringify(facts, null, 2)}
+
+This is a ${forRent ? "long-term rental" : "sale"} listing. Return ONLY a JSON object with exactly these keys (no markdown fences, no commentary):
+- title (string)
+- summary (string, one line)
+- description (string, 2-4 short paragraphs)
+- featureBullets (string[])
+- lifestyleParagraph (string)
+- locationParagraph (string)
+- idealProfile (string)
+- priceExplanation (string)
+- ownerRulesSummary (string)
+- verificationChecklist (string[])
+- faq (array of {question, answer}, 5-7 items)
+- agentKnowledgeBase (string[], short factual bullet points a property-chat agent can quote from)
+- translations (object with keys ${TRANSLATION_LANGUAGES.map((l) => `"${l}"`).join(", ")}, each value "ready" or "pending")`;
+
+  const response = await client.messages.create({
+    model: "claude-sonnet-5",
+    max_tokens: 4096,
+    messages: [{ role: "user", content: prompt }],
+  });
+
+  const text = response.content.find((block) => block.type === "text")?.text;
+  if (!text) throw new Error("No text content in model response");
+
+  const parsed = JSON.parse(text) as Partial<GeneratedListingContent>;
+
+  // Validate the shape rather than trusting the model blindly — any missing
+  // field falls back to the deterministic mock's value for that field so a
+  // partially-malformed response still renders a complete, sane listing.
+  return {
+    title: typeof parsed.title === "string" ? parsed.title : fallback.title,
+    summary: typeof parsed.summary === "string" ? parsed.summary : fallback.summary,
+    description: typeof parsed.description === "string" ? parsed.description : fallback.description,
+    featureBullets: Array.isArray(parsed.featureBullets) ? parsed.featureBullets : fallback.featureBullets,
+    lifestyleParagraph:
+      typeof parsed.lifestyleParagraph === "string" ? parsed.lifestyleParagraph : fallback.lifestyleParagraph,
+    locationParagraph:
+      typeof parsed.locationParagraph === "string" ? parsed.locationParagraph : fallback.locationParagraph,
+    idealProfile: typeof parsed.idealProfile === "string" ? parsed.idealProfile : fallback.idealProfile,
+    priceExplanation:
+      typeof parsed.priceExplanation === "string" ? parsed.priceExplanation : fallback.priceExplanation,
+    ownerRulesSummary:
+      typeof parsed.ownerRulesSummary === "string" ? parsed.ownerRulesSummary : fallback.ownerRulesSummary,
+    verificationChecklist: Array.isArray(parsed.verificationChecklist)
+      ? parsed.verificationChecklist
+      : fallback.verificationChecklist,
+    faq: Array.isArray(parsed.faq) && parsed.faq.length > 0 ? parsed.faq : fallback.faq,
+    agentKnowledgeBase: Array.isArray(parsed.agentKnowledgeBase)
+      ? parsed.agentKnowledgeBase
+      : fallback.agentKnowledgeBase,
+    translations:
+      parsed.translations && typeof parsed.translations === "object" ? parsed.translations as GeneratedListingContent["translations"] : fallback.translations,
+  };
 }
 
 /* ------------------------------------------------------------------ */
