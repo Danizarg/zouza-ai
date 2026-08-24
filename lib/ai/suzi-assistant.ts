@@ -1,4 +1,5 @@
 import { answerAgentQuestion, chatRespond } from "@/lib/ai/service";
+import type { ProtocolActionId } from "@/lib/ai/protocol";
 import type { Listing } from "@/lib/types";
 
 /**
@@ -157,6 +158,11 @@ export function detectNavigationIntent(message: string): NavigationIntent | null
 
 const ADVICE_PATTERN = /(legal advice|tax advice|financial advice|should i invest|is this a good investment|guarantee)/;
 
+const ADVICE_REFUSAL_TEXT =
+  "I can explain general property information, but I can't provide legal, tax, or financial advice. For that, please speak with a qualified professional.";
+
+const NAVIGATION_REPLY_TEXT = "I can help with that — tap below and I'll take you there.";
+
 export interface SuziReply {
   text: string;
   navigation: NavigationIntent | null;
@@ -167,6 +173,13 @@ export function getPropertyAnswer(message: string, listing: Listing): string {
   return answerAgentQuestion(listing, message);
 }
 
+/**
+ * Deterministic, keyword-based classification — no API key required. This
+ * is both the original behavior and the fallback used whenever the real AI
+ * classifier (lib/ai/protocol-classifier.ts) is unavailable or fails, so
+ * the product works identically with or without a configured/funded
+ * OPENAI_API_KEY.
+ */
 export function getSuziResponse(message: string, context: SuziContext): SuziReply {
   const trimmed = message.trim();
   if (!trimmed) {
@@ -175,10 +188,7 @@ export function getSuziResponse(message: string, context: SuziContext): SuziRepl
 
   const lower = trimmed.toLowerCase();
   if (ADVICE_PATTERN.test(lower)) {
-    return {
-      text: "I can explain general property information, but I can't provide legal, tax, or financial advice. For that, please speak with a qualified professional.",
-      navigation: null,
-    };
+    return { text: ADVICE_REFUSAL_TEXT, navigation: null };
   }
 
   if (context.listing) {
@@ -187,8 +197,46 @@ export function getSuziResponse(message: string, context: SuziContext): SuziRepl
 
   const navigation = detectNavigationIntent(trimmed);
   if (navigation) {
-    return { text: "I can help with that — tap below and I'll take you there.", navigation };
+    return { text: NAVIGATION_REPLY_TEXT, navigation };
   }
 
   return { text: chatRespond(trimmed), navigation: null };
+}
+
+/** Every navigable protocol action's fixed destination — the AI classifier only ever picks the ID; this is the deterministic destination it maps to. */
+const PROTOCOL_NAVIGATION: Partial<Record<ProtocolActionId, NavigationIntent>> = {
+  navigate_rent: { href: "/explore", label: "Explore Homes" },
+  navigate_buy: { href: "/ai-search", label: "Go to AI Search" },
+  navigate_list_property: { href: "/list-with-ai", label: "Start listing with Suzi" },
+  navigate_pricing: { href: "/pricing", label: "View pricing" },
+  navigate_how_it_works: { href: "/how-it-works", label: "How it works" },
+  navigate_contact: { href: "/contact", label: "Contact support" },
+};
+
+/**
+ * Turns a protocol action ID (chosen by the AI classifier) into a concrete
+ * reply. This function — not the model — owns every word Suzi says and
+ * every navigation she offers: the model's only input to the outcome is
+ * which of the fixed action IDs it picked. `general_chat`, and any action
+ * that doesn't apply to the current context (e.g. `answer_property_question`
+ * with no listing in view — the classifier is scoped to prevent this, but
+ * stay safe), falls back to the deterministic keyword path so a reply is
+ * never empty.
+ */
+export function resolveProtocolAction(
+  action: ProtocolActionId,
+  message: string,
+  context: SuziContext,
+): SuziReply {
+  const navigation = PROTOCOL_NAVIGATION[action];
+  if (navigation) {
+    return { text: NAVIGATION_REPLY_TEXT, navigation };
+  }
+  if (action === "answer_property_question" && context.listing) {
+    return { text: getPropertyAnswer(message, context.listing), navigation: null };
+  }
+  if (action === "refuse_advice") {
+    return { text: ADVICE_REFUSAL_TEXT, navigation: null };
+  }
+  return getSuziResponse(message, context);
 }

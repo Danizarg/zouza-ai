@@ -1,6 +1,9 @@
 "use server";
 
-import { generateListingContent } from "@/lib/ai/service";
+import { chatRespond, generateListingContent } from "@/lib/ai/service";
+import { classifyProtocolAction } from "@/lib/ai/protocol-classifier";
+import { getSuziResponse, resolveProtocolAction } from "@/lib/ai/suzi-assistant";
+import type { SuziContext, SuziReply } from "@/lib/ai/suzi-assistant";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { GeneratedListingContent, ListingFacts } from "@/lib/types";
 import { z } from "zod";
@@ -14,6 +17,36 @@ export async function generateListingAction(
   facts: ListingFacts,
 ): Promise<GeneratedListingContent> {
   return generateListingContent(facts);
+}
+
+/**
+ * Runs the full Suzi protocol for a visitor message: the AI (when
+ * OPENAI_API_KEY is set and has credit) classifies the message into one of
+ * the fixed actions in lib/ai/protocol.ts, then `resolveProtocolAction`
+ * deterministically turns that classification into a reply — the model
+ * never generates the reply text itself. If the classifier is unavailable
+ * or fails for any reason (no key, no credits, network error), this falls
+ * back to the original deterministic keyword classifier, so the assistant
+ * behaves identically either way. Runs server-side so OPENAI_API_KEY is
+ * never sent to the browser.
+ */
+export async function suziReplyAction(message: string, context: SuziContext): Promise<SuziReply> {
+  const trimmed = message.trim();
+  if (!trimmed) {
+    return { text: "Tell me what you're looking for and I'll take it from there.", navigation: null };
+  }
+  const action = await classifyProtocolAction(trimmed, Boolean(context.listing));
+  if (!action) return getSuziResponse(trimmed, context);
+  return resolveProtocolAction(action, trimmed, context);
+}
+
+/** Same protocol as suziReplyAction, for the homepage demo chat panels — no listing/navigation UI there, just the reply text. */
+export async function homeChatAction(message: string): Promise<string> {
+  const trimmed = message.trim();
+  if (!trimmed) return chatRespond(trimmed);
+  const action = await classifyProtocolAction(trimmed, false);
+  if (!action) return chatRespond(trimmed);
+  return resolveProtocolAction(action, trimmed, { route: "/" }).text;
 }
 
 const contactSchema = z.object({

@@ -7,12 +7,8 @@ import { SuziMessageList, type SuziMessage } from "@/components/suzi/suzi-messag
 import { SuziPanel } from "@/components/suzi/suzi-panel";
 import { SuziPropertyContextCard } from "@/components/suzi/suzi-property-context-card";
 import { SuziQuickActions } from "@/components/suzi/suzi-quick-actions";
-import {
-  getGreetingForPage,
-  getPageSuggestions,
-  getQuickActions,
-  getSuziResponse,
-} from "@/lib/ai/suzi-assistant";
+import { suziReplyAction } from "@/app/actions";
+import { getGreetingForPage, getPageSuggestions, getQuickActions } from "@/lib/ai/suzi-assistant";
 import { getMockListing } from "@/lib/mock-data";
 import { SUZI_OPEN_EVENT } from "@/lib/suzi-events";
 import { useClientSnapshot } from "@/lib/use-client-snapshot";
@@ -96,25 +92,23 @@ export function SuziAvatarAssistant() {
     return () => window.removeEventListener(SUZI_OPEN_EVENT, openPanel);
   }, [openPanel]);
 
-  function send(message: string) {
+  async function send(message: string) {
     const text = message.trim();
     if (!text || thinking) return;
     setMessages((prev) => [...prev, { role: "user", text }]);
     setInput("");
     setThinking(true);
-    window.setTimeout(() => {
-      const reply = getSuziResponse(text, { route: pathname, listing });
-      setMessages((prev) => {
-        const next = [...prev, { role: "suzi" as const, text: reply.text }];
-        setTypingIndex(next.length - 1);
-        return next;
-      });
-      setThinking(false);
-      const nav = reply.navigation;
-      if (nav) {
-        window.setTimeout(() => router.push(nav.href), 900);
-      }
-    }, 650);
+    const reply = await suziReplyAction(text, { route: pathname, listing });
+    setMessages((prev) => {
+      const next = [...prev, { role: "suzi" as const, text: reply.text }];
+      setTypingIndex(next.length - 1);
+      return next;
+    });
+    setThinking(false);
+    const nav = reply.navigation;
+    if (nav) {
+      window.setTimeout(() => router.push(nav.href), 900);
+    }
   }
 
   const suggestions = getPageSuggestions(pathname);

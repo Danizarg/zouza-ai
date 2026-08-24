@@ -98,9 +98,15 @@ you need. She'll do the rest."*
   (`components/suzi/*` = global assistant widget, `components/dashboard/*`,
   `components/home/*`, `components/auth/*`, `components/ui/*` = shared
   primitives).
-- `lib/ai/service.ts` + `lib/ai/suzi-assistant.ts` — **the entire AI
-  system**. `suzi-assistant.ts` wraps `service.ts` for the global widget
-  rather than duplicating logic — always extend `service.ts` first.
+- `lib/ai/service.ts` + `lib/ai/suzi-assistant.ts` — the deterministic AI
+  logic (templates, keyword matching) and per-message reply construction.
+  `lib/ai/protocol.ts` + `lib/ai/protocol-classifier.ts` — the real-AI
+  layer added 2026-08-24 (§4): a fixed, owner-editable list of allowed
+  actions and an OpenAI-backed classifier constrained to it. `app/actions.ts`
+  is where classification and deterministic execution are wired together
+  (`suziReplyAction`, `homeChatAction`) — **all AI entry points for the
+  browser go through here**, never call `protocol-classifier.ts` directly
+  from a Client Component (it reads `OPENAI_API_KEY`).
 - `lib/supabase/` — `config.ts` (mode detection), `client.ts` (browser),
   `server.ts` (server, cookie-based).
 - `lib/mock-data.ts` — 12 seeded Spain listings + canned AI chat examples.
@@ -131,7 +137,7 @@ you need. She'll do the rest."*
 | **Dashboard auth gate** | **FIXED 2026-08-18** (this session) | See §6 — was the single most important pre-launch gap |
 | Dashboard (`/dashboard*`) | **COMPLETE UI, all mock/localStorage data** | Messaging is local-state only, never persists |
 | Marketing/legal pages | **COMPLETE (content), legally UNREVIEWED** | See §7 — needs real lawyer sign-off before real users, per the business owner's own requirements doc |
-| Real AI model calls | **PARTIAL — wired for `generateListingContent` only** | See §4. Live path unverified (no API key in this environment); mock fallback verified |
+| Real AI model calls | **PARTIAL — protocol classifier live (OpenAI, no credits yet); `generateListingContent` wired (Anthropic, untested)** | See §4 |
 | Real map integration | **PLANNED** | Currently a static placeholder |
 | Contract-template library | **PLANNED** | Placeholder with disclaimer only |
 | Payments/monetization | **PLANNED — business decision not yet made** | Intentionally out of scope until the owner picks a model |
@@ -142,44 +148,93 @@ you need. She'll do the rest."*
 
 ## 4. AI system — how it actually works
 
-Single integration surface: `lib/ai/service.ts` (+ `lib/ai/suzi-assistant.ts`
-wrapping it for the global widget). **Everything today is deterministic
-mock/template logic — zero live model calls anywhere in the repo.**
+Two layers: the **deterministic layer** (templates + keyword matching,
+zero API calls, was the entire product until 2026-08-24) and the
+**protocol layer** (real AI, added 2026-08-24) that sits in front of it.
+The deterministic layer never went away — it's now both the classifier's
+execution engine and its fallback, so the product behaves identically with
+no key, an unfunded key, or a working key.
 
-| Function | Used by | Behavior |
-|---|---|---|
-| `generateListingContent(facts)` | wizard step 4 via `generateListingAction` server action | Template generator: title/summary/description/features/FAQ/etc. built from `ListingFacts` fields (city, amenities, price…) |
-| `answerAgentQuestion(listing, question)` | property-page chat, homepage demo | Regex/keyword routing over structured listing fields |
-| `chatRespond(message)` | homepage hero panel, mini CTA prompt | Keyword-overlap match against `MOCK_AI_CHAT_EXAMPLES` in `lib/mock-data.ts`, with a stopword filter |
-| `interpretSearchQuery(query, listings)` | `/ai-search`, homepage NL-search demo | Parses budget/beds/city/beach/buy-rent intent via regex, scores + ranks listings, returns `match_percent` + `reasons[]` |
-| `getSuziResponse` / `getPageSuggestions` / `getQuickActions` / `detectNavigationIntent` / `getPropertyAnswer` / `getGreetingForPage` | global avatar widget (`lib/ai/suzi-assistant.ts`) | Refuses legal/tax/financial-advice phrasing first (**preserve this guardrail**), then answers from listing context, then navigation intent, then falls back to `chatRespond` |
+### 4a. The protocol design — deliberately not a freeform chatbot
 
-**`hasAiProvider()`** checks `OPENAI_API_KEY`/`ANTHROPIC_API_KEY` env vars.
-**As of 2026-08-18, `generateListingContent` calls a real Anthropic model**
-(`claude-sonnet-5`, via `@anthropic-ai/sdk`, added this session) when
+The business owner's explicit requirement: Suzi must never "think for
+herself" — every reply and every action must trace back to a fixed list
+the owner controls, with the model doing classification only, never
+open-ended generation or decision-making. Concretely:
+
+1. **`lib/ai/protocol.ts`** — the fixed, owner-editable list of actions
+   Suzi is allowed to take (`PROTOCOL_ACTIONS`): navigate to rent/buy/list
+   /pricing/how-it-works/contact, answer a property question from listing
+   data, refuse advice, or general chat. **To change what Suzi can do, edit
+   this file** — nothing else needs to change.
+2. **`lib/ai/protocol-classifier.ts`** (server-only) — sends the visitor's
+   message to OpenAI (`gpt-5-nano`) with the protocol's action list, using
+   **structured outputs** (`response_format: json_schema`, `strict: true`)
+   whose `action` field is a strict enum of the protocol's IDs. The model
+   physically cannot return an action outside the list — this is enforced
+   by the API's schema validation, not just prompting. Returns `null` on
+   *any* failure (missing key, no credits, network error, timeout,
+   malformed response) — this call is never load-bearing.
+3. **`resolveProtocolAction()`** in `lib/ai/suzi-assistant.ts` — turns the
+   classified action ID into the actual reply. **The model never writes
+   Suzi's words.** Every navigation action returns a fixed copy string and
+   a fixed href from `PROTOCOL_NAVIGATION`; `refuse_advice` returns the
+   fixed `ADVICE_REFUSAL_TEXT`; `answer_property_question` calls the
+   existing deterministic `getPropertyAnswer` (reads real listing fields,
+   still template-based); `general_chat` falls through to the existing
+   deterministic `chatRespond`/`getSuziResponse` path. So even when the AI
+   *is* working, 100% of user-facing text still comes from code the owner
+   controls — the AI's only degree of freedom is which of nine fixed
+   buckets a message falls into.
+4. **`app/actions.ts` server actions** (`suziReplyAction`, `homeChatAction`)
+   — the only entry points the browser calls. Each: classify → if `null`,
+   run the original deterministic `getSuziResponse`/`chatRespond` path
+   unchanged → else `resolveProtocolAction`. **Never call
+   `classifyProtocolAction` from a Client Component** — it reads
+   `OPENAI_API_KEY` server-side; doing so from the browser would ship the
+   key to every visitor.
+
+All three AI-driven client surfaces were migrated from synchronous local
+calls to `await`ing these server actions: `components/suzi/suzi-avatar-assistant.tsx`
+(global widget), `components/home/hero.tsx` (homepage chat demo),
+`components/home/mini-ai-prompt.tsx` (homepage CTA demo).
+
+### 4b. Listing generation (separate integration point, unchanged from 2026-08-18)
+
+`generateListingContent(facts)` (wizard step 4, via `generateListingAction`)
+is a **separate** AI integration, not part of the protocol classifier —
+it's a content-generation task (write the exposé), not an intent
+classification task, so it doesn't fit the protocol shape. Calls a real
+Anthropic model (`claude-sonnet-5`, via `@anthropic-ai/sdk`) when
 `ANTHROPIC_API_KEY` is set — see `modelGenerate()` in `lib/ai/service.ts`.
-It prompts for a JSON object matching `GeneratedListingContent`, then
-field-by-field validates the parsed response and substitutes the
-deterministic mock's value for any missing/malformed field, so a partial or
-broken model response still renders a complete listing. Any failure
-(missing key, network error, bad JSON) is caught and falls back to
-`mockGenerate()` entirely. **This live path has not been tested against a
-real API call** — no key is configured in this environment — only the
-"key absent → mock path unchanged" branch was verified (build + dev-server
-smoke test). Test the live branch before relying on it in production.
+Field-by-field validates the parsed response against the deterministic
+mock's output, falls back to `mockGenerate()` entirely on any failure.
+**Untested against a real key** — only the "key absent" branch is verified.
 
-The other four AI functions (`answerAgentQuestion`, `chatRespond`,
-`interpretSearchQuery`, and the `lib/ai/suzi-assistant.ts` widget functions)
-are **still mock-only** — same swap-in pattern, not yet done. Natural next
-step in §8 P1.
+### 4c. Functions still fully deterministic (no AI involved)
 
-Per the business owner's own requirements doc (`Zouza_Was_wir_brauchen.docx`,
-§7 below), going live with real AI needs (a) her sign-off to create an
-OpenAI/Anthropic account under the company name, and (b) an approved
-monthly budget — this is a **business decision, not a blocked engineering
-task**. The code-side wiring can and should be built ahead of that
-decision (branch on `hasAiProvider()`, ship with mock fallback) so flipping
-it on later is just adding an env var.
+`interpretSearchQuery` (`/ai-search`, homepage NL-search demo — regex
+parsing + scoring) has no AI wiring yet; not in scope for the protocol
+classifier as designed (it's a structured-data ranking task, would need
+its own integration point if ever made AI-driven).
+
+### 4d. Live-tested 2026-08-24
+
+An OpenAI key (`sk-proj-…`) is configured in `.env.local` (git-ignored,
+never committed) but the account has **no credits** — confirmed by
+actually exercising the classifier in the dev server: both the homepage
+hero chat and the Suzi widget's navigation-intent message triggered a real
+call to `https://api.openai.com/v1/chat/completions`, which returned
+`429 insufficient_quota` / `credit_balance_exhausted`, and the fallback
+caught it cleanly — the UI never broke, replies came from the original
+deterministic path exactly as before this session. **This confirms the
+fallback works correctly; it does not confirm the live classification
+path** — that still needs testing once the OpenAI account has credit (see
+§8 P1).
+
+Per the business owner's requirements doc (`Zouza_Was_wir_brauchen.docx`,
+§7), the credits/budget decision is hers — the code-side wiring is built
+ahead of it so funding the account is the only remaining step to go live.
 
 ---
 
@@ -311,30 +366,39 @@ system before item 8 is decided.
 
 **P1 — turning mock AI into real AI (the core product promise), code-ready
 ahead of the business decision to fund it:**
-4. ~~Wire `hasAiProvider()`/`ANTHROPIC_API_KEY` into `generateListingContent`~~
-   — **DONE 2026-08-18** (§4). Still to do: `answerAgentQuestion`,
-   `chatRespond`, `interpretSearchQuery`, and the Suzi-assistant functions,
-   same pattern (mock fallback on any failure). Test the live
-   `generateListingContent` branch against a real key before shipping —
-   only the mock-fallback branch has been verified so far.
-5. Confirm listing photo uploads still persist correctly to Supabase
+4. ~~Wire `ANTHROPIC_API_KEY` into `generateListingContent`~~ — **DONE
+   2026-08-18** (§4b). Still untested against a real key.
+5. ~~Build the protocol-driven intent classifier for Suzi (navigation,
+   advice refusal, property Q&A routing, general chat)~~ — **DONE
+   2026-08-24** (§4a). `OPENAI_API_KEY` is set in `.env.local` but the
+   account has no credits — **fund the OpenAI account, then test the live
+   classification branch** (currently only the fallback-on-failure branch
+   is verified). Once funded, spot-check: does it correctly route a
+   "sell my villa" message to `/list-with-ai`, refuse an
+   "is this a good investment" message, and answer a property question
+   from real listing data — same checks as the mock path, against the
+   live model this time.
+6. Confirm listing photo uploads still persist correctly to Supabase
    Storage once configured (currently correct in the wizard's publish step
    per last verification, but re-check after any future hero/wizard
    changes).
 
 **P2 — product completeness:**
-6. Real messaging persistence (`/dashboard/messages` is local-state only).
-7. Real map integration + availability calendar (currently placeholders).
-8. Contract-template library + download flow.
-9. Rate limiting/spam protection on `submitContact` / `joinWaitlist`.
-10. Verification workflow backend (document upload + review queue) — schema
+7. Real messaging persistence (`/dashboard/messages` is local-state only).
+8. Real map integration + availability calendar (currently placeholders).
+9. Contract-template library + download flow.
+10. Rate limiting/spam protection on `submitContact` / `joinWaitlist`, and
+    on the new `suziReplyAction`/`homeChatAction` server actions once the
+    OpenAI account has credits — an unrated visitor could otherwise trigger
+    unbounded classification calls.
+11. Verification workflow backend (document upload + review queue) — schema
     already models this (`verification_records`).
-11. `middleware.ts` for Supabase session-cookie refresh, once Supabase auth
+12. `middleware.ts` for Supabase session-cookie refresh, once Supabase auth
     is actually live in production (see §6).
 
 **P3 — polish/hygiene:**
-12. Automated test suite (none exists).
-13. Rename the Vercel project from `aurora-homes` to something matching
+13. Automated test suite (none exists).
+14. Rename the Vercel project from `aurora-homes` to something matching
     `zouza-ai` (cosmetic only).
 
 ---
@@ -360,6 +424,17 @@ ahead of the business decision to fund it:**
   Chat" in UI copy.
 - **No payment code anywhere** — keep it that way until §7 item 8 is
   decided by the business owner.
+- **The protocol classifier is the only sanctioned path for AI-driven
+  replies.** Do not add a second code path that calls OpenAI/Anthropic
+  directly for open-ended generation of user-facing Suzi text — the
+  business owner's explicit requirement is that every reply traces back to
+  `lib/ai/protocol.ts`'s fixed action list via `resolveProtocolAction()`,
+  never freeform model output. If a new capability is needed, add it as a
+  new protocol action, not a bypass.
+- **Never import `lib/ai/protocol-classifier.ts` from a Client Component**
+  — it reads `OPENAI_API_KEY`. All AI calls must go through the
+  `"use server"` actions in `app/actions.ts` (`suziReplyAction`,
+  `homeChatAction`).
 
 ---
 
@@ -370,18 +445,40 @@ with none set)
 NEXT_PUBLIC_SUPABASE_URL=          # Supabase project URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY=     # Supabase anon/public key
 SUPABASE_SERVICE_ROLE_KEY=         # server-only, reserved for future admin tasks — not currently read anywhere
-OPENAI_API_KEY=                    # checked by hasAiProvider(), not yet used to make any call
-ANTHROPIC_API_KEY=                 # checked by hasAiProvider(), not yet used to make any call
+OPENAI_API_KEY=                    # powers the protocol classifier (lib/ai/protocol-classifier.ts) — set locally, account has no credits yet (§4d)
+ANTHROPIC_API_KEY=                 # powers generateListingContent (lib/ai/service.ts) — not currently set
 NEXT_PUBLIC_APP_URL=               # used for metadata/OG/sitemap; defaults to http://localhost:3000
 ```
 
-No `.env.local` exists in this checkout (git-ignored). No secrets are
-committed anywhere in tracked source — verified.
+**`.env.local` exists in this checkout as of 2026-08-24** (git-ignored,
+confirmed via `git check-ignore -v` — never committed) with a real
+`OPENAI_API_KEY`. No secrets are committed anywhere in tracked source.
+Remember to add the same variables in **Vercel → Project Settings →
+Environment Variables** before they'll work in production — local
+`.env.local` and Vercel's env config are entirely separate.
 
 ---
 
 ## 11. Verification log
 
+- **2026-08-24:** Built the protocol-driven AI layer (§4a): `lib/ai/protocol.ts`,
+  `lib/ai/protocol-classifier.ts` (OpenAI `gpt-5-nano`, structured outputs),
+  `resolveProtocolAction()` in `lib/ai/suzi-assistant.ts`, and
+  `suziReplyAction`/`homeChatAction` server actions in `app/actions.ts`.
+  Migrated all three client-side AI call sites to `await` these server
+  actions instead of calling local sync functions directly (`openai`
+  package installed as a dependency for this). `npx tsc --noEmit`,
+  `npm run lint`, `npm run build` all clean (still 20 routes, same
+  static/dynamic split as before). Live-tested in the dev server with a
+  real `OPENAI_API_KEY` (account has no credits): both the homepage hero
+  chat and the Suzi widget correctly triggered a real call to OpenAI,
+  received `429 insufficient_quota`, and fell back to the exact
+  pre-existing deterministic behavior with no UI breakage — confirmed via
+  `preview_logs` showing the real request/error and via `get_page_text`
+  showing the correct fallback reply and correct navigation
+  (`/list-with-ai`) in the browser. The live (credited) classification path
+  itself remains untested — that's the next verification step once the
+  OpenAI account is funded.
 - **2026-08-18:** Full repo audit + takeover session. `npx tsc --noEmit`,
   `npm run lint`, `npm run build` all clean throughout (20 routes;
   `/dashboard*` correctly `ƒ Dynamic`). Changes made and verified:

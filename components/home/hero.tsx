@@ -1,10 +1,10 @@
 "use client";
 
+import { homeChatAction } from "@/app/actions";
 import { SuziHeroVisual } from "@/components/home/suzi-hero-visual";
 import { SuziPromptInput } from "@/components/home/suzi-prompt-input";
 import { ThinkingDots } from "@/components/motion/thinking-dots";
 import { TypewriterText } from "@/components/motion/typewriter-text";
-import { chatRespond } from "@/lib/ai/service";
 import { useClientSnapshot } from "@/lib/use-client-snapshot";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -39,20 +39,19 @@ export function Hero() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [turns, thinking]);
 
-  function ask(message: string) {
+  async function ask(message: string) {
     const text = message.trim();
     if (!text || thinking) return;
     setTurns((prev) => [...prev, { role: "user", text }]);
     setInput("");
     setThinking(true);
-    window.setTimeout(() => {
-      setTurns((prev) => {
-        const next = [...prev, { role: "ai" as const, text: chatRespond(text) }];
-        setTypingIndex(next.length - 1);
-        return next;
-      });
-      setThinking(false);
-    }, 700);
+    const reply = await homeChatAction(text);
+    setTurns((prev) => {
+      const next = [...prev, { role: "ai" as const, text: reply }];
+      setTypingIndex(next.length - 1);
+      return next;
+    });
+    setThinking(false);
   }
 
   const active = thinking || typingIndex !== null;
