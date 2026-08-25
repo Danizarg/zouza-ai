@@ -1,10 +1,11 @@
 "use client";
 
+import { askSuziSearch } from "@/app/actions";
 import { ListingCard } from "@/components/listing-card";
+import { ThinkingDots } from "@/components/motion/thinking-dots";
 import { Input } from "@/components/ui/field";
-import { interpretSearchQuery } from "@/lib/ai/service";
 import { MOCK_LISTINGS } from "@/lib/mock-data";
-import type { Listing } from "@/lib/types";
+import type { Listing, SearchMatch } from "@/lib/types";
 import { ArrowRight, Search, SlidersHorizontal, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -22,10 +23,8 @@ export default function AiSearchPage() {
   const [minBeds, setMinBeds] = useState(0);
   const [maxBudget, setMaxBudget] = useState<number | "">("");
 
-  const results = useMemo(() => {
-    if (!submitted) return [];
-    return interpretSearchQuery(submitted, MOCK_LISTINGS);
-  }, [submitted]);
+  const [results, setResults] = useState<SearchMatch[]>([]);
+  const [searching, setSearching] = useState(false);
 
   const refined = useMemo(() => {
     const base: (Listing & { match_reason?: string })[] = submitted
@@ -41,9 +40,15 @@ export default function AiSearchPage() {
     });
   }, [submitted, results, minBeds, maxBudget]);
 
-  function runSearch(q: string) {
-    setQuery(q);
-    setSubmitted(q);
+  async function runSearch(q: string) {
+    const trimmed = q.trim();
+    if (!trimmed || searching) return;
+    setQuery(trimmed);
+    setSubmitted(trimmed);
+    setSearching(true);
+    const result = await askSuziSearch(trimmed).catch(() => null);
+    setResults(result?.matches ?? []);
+    setSearching(false);
   }
 
   return (
@@ -76,7 +81,8 @@ export default function AiSearchPage() {
         </div>
         <button
           type="submit"
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-navy-950 px-6 py-3.5 text-sm font-medium text-ivory transition-colors hover:bg-navy-800"
+          disabled={searching}
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-navy-950 px-6 py-3.5 text-sm font-medium text-ivory transition-colors hover:bg-navy-800 disabled:opacity-60"
         >
           <Sparkles className="h-4 w-4" aria-hidden />
           Search with AI
@@ -99,8 +105,12 @@ export default function AiSearchPage() {
       ) : null}
 
       <div className="mt-8 flex items-center justify-between border-t border-line pt-6">
-        <p className="text-sm text-navy-600">
-          {submitted ? (
+        <p className="flex items-center gap-2 text-sm text-navy-600">
+          {searching ? (
+            <>
+              Suzi is reading your request <ThinkingDots />
+            </>
+          ) : submitted ? (
             <>
               <span className="font-semibold text-navy-900">{refined.length}</span> match
               {refined.length === 1 ? "" : "es"}
@@ -149,7 +159,7 @@ export default function AiSearchPage() {
       ) : null}
 
       <div className="mt-8 grid gap-6 sm:grid-cols-2">
-        {refined.length === 0 && submitted ? (
+        {refined.length === 0 && submitted && !searching ? (
           <div className="col-span-full flex flex-col items-center gap-2 rounded-xl border border-dashed border-line bg-parchment py-16 text-center">
             <p className="font-display text-lg font-semibold text-navy-900">No strong matches yet</p>
             <p className="max-w-sm text-sm text-navy-600">

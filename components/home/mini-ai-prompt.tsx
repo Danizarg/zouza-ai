@@ -2,7 +2,7 @@
 
 import { ThinkingDots } from "@/components/motion/thinking-dots";
 import { TypewriterText } from "@/components/motion/typewriter-text";
-import { chatRespond } from "@/lib/ai/service";
+import { askSuzi } from "@/app/actions";
 import { ArrowUp, Sparkles } from "lucide-react";
 import { useState } from "react";
 
@@ -13,17 +13,24 @@ export function MiniAiPrompt() {
   const [thinking, setThinking] = useState(false);
   const [typing, setTyping] = useState(false);
 
-  function ask(e: React.FormEvent) {
+  async function ask(e: React.FormEvent) {
     e.preventDefault();
     const text = input.trim();
     if (!text || thinking) return;
     setThinking(true);
     setReply(null);
-    window.setTimeout(() => {
-      setThinking(false);
-      setTyping(true);
-      setReply(chatRespond(text));
-    }, 650);
+
+    const [result] = await Promise.all([
+      askSuzi({ message: text, route: "/" }).catch(() => null),
+      new Promise((resolve) => window.setTimeout(resolve, 450)),
+    ]);
+
+    setThinking(false);
+    setTyping(true);
+    setReply(
+      result?.text ??
+        "Sorry — I couldn't reach my brain just then. Try asking me again?",
+    );
   }
 
   return (

@@ -4,7 +4,7 @@ import { SuziHeroVisual } from "@/components/home/suzi-hero-visual";
 import { SuziPromptInput } from "@/components/home/suzi-prompt-input";
 import { ThinkingDots } from "@/components/motion/thinking-dots";
 import { TypewriterText } from "@/components/motion/typewriter-text";
-import { chatRespond } from "@/lib/ai/service";
+import { askSuzi } from "@/app/actions";
 import { useClientSnapshot } from "@/lib/use-client-snapshot";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -39,20 +39,40 @@ export function Hero() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [turns, thinking]);
 
-  function ask(message: string) {
+  async function ask(message: string) {
     const text = message.trim();
     if (!text || thinking) return;
+
+    const history = turns.map((t) => ({
+      role: t.role === "user" ? ("user" as const) : ("assistant" as const),
+      content: t.text,
+    }));
+    // The AI turn lands two entries after the current end: this user turn,
+    // then Suzi's reply.
+    const replyIndex = turns.length + 1;
+
     setTurns((prev) => [...prev, { role: "user", text }]);
     setInput("");
     setThinking(true);
-    window.setTimeout(() => {
-      setTurns((prev) => {
-        const next = [...prev, { role: "ai" as const, text: chatRespond(text) }];
-        setTypingIndex(next.length - 1);
-        return next;
-      });
-      setThinking(false);
-    }, 700);
+
+    // A floor on the thinking pause so the deterministic fallback (which
+    // returns instantly) still reads as Suzi composing a reply.
+    const [reply] = await Promise.all([
+      askSuzi({ message: text, route: "/", history }).catch(() => null),
+      new Promise((resolve) => window.setTimeout(resolve, 450)),
+    ]);
+
+    setTurns((prev) => [
+      ...prev,
+      {
+        role: "ai" as const,
+        text:
+          reply?.text ??
+          "Sorry — I couldn't reach my brain just then. Try asking me again?",
+      },
+    ]);
+    setTypingIndex(replyIndex);
+    setThinking(false);
   }
 
   const active = thinking || typingIndex !== null;

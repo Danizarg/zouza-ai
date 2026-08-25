@@ -1,5 +1,7 @@
 "use client";
 
+import { askSuziSearch } from "@/app/actions";
+import { ThinkingDots } from "@/components/motion/thinking-dots";
 import { interpretSearchQuery } from "@/lib/ai/service";
 import { MOCK_LISTINGS } from "@/lib/mock-data";
 import type { SearchMatch } from "@/lib/types";
@@ -12,12 +14,20 @@ const DEFAULT_QUERY = "I'm moving from Germany to Marbella. Budget €900,000. N
 
 export function NlSearchDemo() {
   const [query, setQuery] = useState(DEFAULT_QUERY);
+  // Seeded locally so the demo renders results immediately on first paint;
+  // every actual search goes through the server action, which uses the model
+  // when one is configured.
   const [results, setResults] = useState<SearchMatch[]>(() => interpretSearchQuery(DEFAULT_QUERY, MOCK_LISTINGS));
   const [searched, setSearched] = useState(true);
+  const [searching, setSearching] = useState(false);
 
-  function runSearch(q: string) {
-    setResults(interpretSearchQuery(q, MOCK_LISTINGS));
+  async function runSearch(q: string) {
+    if (searching) return;
+    setSearching(true);
+    const result = await askSuziSearch(q).catch(() => null);
+    setResults(result?.matches ?? interpretSearchQuery(q, MOCK_LISTINGS));
     setSearched(true);
+    setSearching(false);
   }
 
   return (
@@ -41,13 +51,18 @@ export function NlSearchDemo() {
         </div>
         <button
           type="submit"
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-navy-950 px-6 py-3 text-sm font-medium text-ivory transition-colors hover:bg-navy-800"
+          disabled={searching}
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-navy-950 px-6 py-3 text-sm font-medium text-ivory transition-colors hover:bg-navy-800 disabled:opacity-60"
         >
           Search with AI
         </button>
       </form>
 
-      {searched ? (
+      {searching ? (
+        <p className="mt-6 flex items-center gap-2 text-sm text-navy-500">
+          Suzi is reading your request <ThinkingDots />
+        </p>
+      ) : searched ? (
         <div className="mt-6 space-y-3">
           {results.length === 0 ? (
             <p className="text-sm text-navy-500">No strong matches yet — try mentioning a city, budget, or bedroom count.</p>

@@ -7,11 +7,11 @@ import { SuziMessageList, type SuziMessage } from "@/components/suzi/suzi-messag
 import { SuziPanel } from "@/components/suzi/suzi-panel";
 import { SuziPropertyContextCard } from "@/components/suzi/suzi-property-context-card";
 import { SuziQuickActions } from "@/components/suzi/suzi-quick-actions";
+import { askSuzi } from "@/app/actions";
 import {
   getGreetingForPage,
   getPageSuggestions,
   getQuickActions,
-  getSuziResponse,
 } from "@/lib/ai/suzi-assistant";
 import { getMockListing } from "@/lib/mock-data";
 import { SUZI_OPEN_EVENT } from "@/lib/suzi-events";
@@ -96,25 +96,41 @@ export function SuziAvatarAssistant() {
     return () => window.removeEventListener(SUZI_OPEN_EVENT, openPanel);
   }, [openPanel]);
 
-  function send(message: string) {
+  async function send(message: string) {
     const text = message.trim();
     if (!text || thinking) return;
+
+    const history = messages.map((m) => ({
+      role: m.role === "user" ? ("user" as const) : ("assistant" as const),
+      content: m.text,
+    }));
+    const replyIndex = messages.length + 1;
+
     setMessages((prev) => [...prev, { role: "user", text }]);
     setInput("");
     setThinking(true);
-    window.setTimeout(() => {
-      const reply = getSuziResponse(text, { route: pathname, listing });
-      setMessages((prev) => {
-        const next = [...prev, { role: "suzi" as const, text: reply.text }];
-        setTypingIndex(next.length - 1);
-        return next;
-      });
-      setThinking(false);
-      const nav = reply.navigation;
-      if (nav) {
-        window.setTimeout(() => router.push(nav.href), 900);
-      }
-    }, 650);
+
+    const [reply] = await Promise.all([
+      askSuzi({ message: text, route: pathname, listing, history }).catch(() => null),
+      new Promise((resolve) => window.setTimeout(resolve, 450)),
+    ]);
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "suzi" as const,
+        text:
+          reply?.text ??
+          "Sorry — I couldn't reach my brain just then. Try asking me again?",
+      },
+    ]);
+    setTypingIndex(replyIndex);
+    setThinking(false);
+
+    const nav = reply?.navigation;
+    if (nav) {
+      window.setTimeout(() => router.push(nav.href), 900);
+    }
   }
 
   const suggestions = getPageSuggestions(pathname);

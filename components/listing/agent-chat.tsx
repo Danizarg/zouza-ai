@@ -2,7 +2,8 @@
 
 import { ThinkingDots } from "@/components/motion/thinking-dots";
 import { TypewriterText } from "@/components/motion/typewriter-text";
-import { answerAgentQuestion, SUGGESTED_AGENT_QUESTIONS } from "@/lib/ai/service";
+import { askSuzi } from "@/app/actions";
+import { SUGGESTED_AGENT_QUESTIONS } from "@/lib/ai/service";
 import type { Listing } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -30,20 +31,41 @@ export function AgentChat({ listing }: { listing: Listing }) {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, thinking]);
 
-  function ask(question: string) {
+  async function ask(question: string) {
     const q = question.trim();
     if (!q || thinking) return;
+
+    const history = messages.map((m) => ({
+      role: m.role === "user" ? ("user" as const) : ("assistant" as const),
+      content: m.text,
+    }));
+    const replyIndex = messages.length + 1;
+
     setMessages((prev) => [...prev, { role: "user", text: q }]);
     setInput("");
     setThinking(true);
-    window.setTimeout(() => {
-      setMessages((prev) => {
-        const next = [...prev, { role: "agent" as const, text: answerAgentQuestion(listing, q) }];
-        setTypingIndex(next.length - 1);
-        return next;
-      });
-      setThinking(false);
-    }, 650);
+
+    const [reply] = await Promise.all([
+      askSuzi({
+        message: q,
+        route: `/property/${listing.id}`,
+        listing,
+        history,
+      }).catch(() => null),
+      new Promise((resolve) => window.setTimeout(resolve, 400)),
+    ]);
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "agent" as const,
+        text:
+          reply?.text ??
+          "Sorry — I couldn't reach my brain just then. Ask me again and I'll answer from this listing's data.",
+      },
+    ]);
+    setTypingIndex(replyIndex);
+    setThinking(false);
   }
 
   return (
