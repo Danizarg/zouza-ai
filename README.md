@@ -33,10 +33,8 @@ advice.
   API keys configured
 
 **Mock / demo-only:**
-- All AI behaviour (listing generation, the property agent, the homepage
-  chat panel, natural-language search) is deterministic template/keyword
-  logic unless an AI provider key is added (see `lib/ai/service.ts` — each
-  function has a clear swap-in point for a real model call)
+- All AI behaviour falls back to deterministic template/keyword logic when
+  `ANTHROPIC_API_KEY` is not set — see "Turning Suzi on" below
 - The homepage's live photo-analysis checklist is a presentational timer
   loop, not real image analysis — actual generation happens in
   `/list-with-ai`
@@ -87,24 +85,42 @@ the property AI agent all work against bundled demo data and
    changes needed, since every data function checks
    `isSupabaseConfigured()` and falls back to mock mode otherwise.
 
-## Connecting a real AI model
+## Turning Suzi on
 
-`lib/ai/service.ts` exports `generateListingContent(facts)` — the single
-integration point used by the wizard's server action
-(`app/actions.ts:generateListingAction`). To connect a real model:
+Add one variable to `.env.local`:
 
-1. Add `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` to `.env.local`.
-2. Replace the body of `generateListingContent` with a call to your model,
-   prompting it to return JSON matching the `GeneratedListingContent` type
-   in `lib/types.ts`.
-3. Keep the existing `mockGenerate` function as a fallback for missing or
-   invalid keys, so the product never breaks without configuration.
+```
+ANTHROPIC_API_KEY=sk-ant-...
+```
 
-The per-listing AI property agent (`answerAgentQuestion`), the homepage
-chat panel (`chatRespond`), and natural-language search
-(`interpretSearchQuery`) — all in the same file — can be swapped the same
-way; they currently do deterministic keyword routing/matching over
-structured listing fields and a small canned-example set.
+That's it — restart the dev server and Suzi's chat, the per-property Q&A,
+natural-language search, and listing generation all run on a real model.
+Optionally set `ZOUZA_AI_MODEL` to override the default (`claude-opus-5`).
+
+**Without the key nothing breaks.** Every AI surface falls back to the
+deterministic answers in `lib/ai/service.ts`, so the product stays fully
+clickable with zero configuration. The same fallback catches an invalid
+key, a rate limit, a timeout, or a model refusal at runtime — the visitor
+gets a working answer and the server logs one `[suzi:*]` line.
+
+### How it fits together
+
+| Layer | File | Role |
+|---|---|---|
+| Model access | `lib/ai/provider.ts` | The only module that talks to Anthropic. **Server-only** (`import "server-only"`). Returns `null` on any failure rather than throwing. |
+| Prompts | `lib/ai/prompts.ts` | Suzi's persona, the business boundaries, and the property/facts context builders. |
+| Server actions | `app/actions.ts` | `askSuzi`, `askSuziSearch`, `generateListingAction`. Each computes the deterministic result, tries the model, and returns whichever it got. |
+| Deterministic layer | `lib/ai/service.ts`, `lib/ai/suzi-assistant.ts` | Client-safe, offline, no key. Both the zero-config demo and the permanent fallback. |
+
+Client components never call a model directly — they call the server
+actions, so the API key never reaches the browser. **Do not import
+`lib/ai/provider.ts` (or the Anthropic SDK) from anything a client
+component imports.**
+
+Search is deliberately split: the model turns free text into structured
+`SearchCriteria`, and the deterministic scorer always does the ranking, so
+the match percentages and reasons shown to visitors stay inspectable and
+stable.
 
 ## Environment variables
 
@@ -114,8 +130,8 @@ See `.env.example`:
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
-OPENAI_API_KEY=
 ANTHROPIC_API_KEY=
+ZOUZA_AI_MODEL=
 NEXT_PUBLIC_APP_URL=
 ```
 
@@ -138,7 +154,8 @@ Live domain: **[zouza.ai](https://zouza.ai)**.
 
 ## What's still needed for production
 
-- Real AI provider integration (currently mock-only)
+- Real user accounts: there is no session gate, so `/dashboard` is publicly
+  reachable and wizard-published listings are owned by a placeholder id
 - Real-time messaging (current inbox is demo data + local state)
 - Payment/rent-collection integration is **intentionally out of scope**
   for this pure-intermediary MVP

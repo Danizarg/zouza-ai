@@ -4,7 +4,10 @@ This file is a handover/continuation document for anyone (human or AI) picking
 up this project. It records what exists, why it was built this way, what is
 real vs. mock, and what's left to do. Keep it updated as the project evolves.
 
-Last updated: 2026-07-17 (see §18 — Suzi persona rebrand + global avatar assistant).
+Last updated: 2026-08-25 (see §19 — handover to a new Claude session + the real AI layer).
+
+**⚠ `CLAUDE.md` is now the primary development context — read it first.**
+This file remains the chronological build journal.
 
 **⚠ Read §16 first.** Later on 2026-07-13 the product pivoted from a
 "verified marketplace with AI tools" positioning to an AI-chat-first
@@ -944,3 +947,83 @@ fallback); typing "I want to sell my property" into the avatar on the
 homepage correctly detected the sell intent and auto-navigated to
 `/list-with-ai`; Close button, Escape key, and re-open all confirmed
 working after the `AnimatePresence` fix above.
+
+---
+
+## 19. Handover to a new Claude account + real AI layer (2026-08-25)
+
+The user lost access to the Claude account that built §1–§18 and handed
+the project to a fresh session, with the repository as the only source of
+truth. **`CLAUDE.md` is now the permanent development context** — read it
+first. This file stays as the chronological build journal; where the two
+disagree, `CLAUDE.md` wins.
+
+Two things arrived with the handover:
+
+1. **A new business model** — Zouza as a multi-sided platform with
+   recurring revenue: free buyers → Suzi Premium; free basic listings for
+   private sellers → optional premium seller tools; Professional/Agency
+   subscriptions for agents and agencies; later, clearly-labelled premium
+   placement and partner services. Documented in full in `CLAUDE.md` §3,
+   with the architecture gap analysis in §6.
+2. **Node.js was not installed on the machine at all** — no node, npm,
+   nvm or fnm. Installed Node LTS v24.19.0 via
+   `winget install OpenJS.NodeJS.LTS`. It lands in `C:\Program Files\nodejs`
+   (machine PATH), but already-running processes keep a stale PATH, so a
+   shell that can't find `node` just needs the directory prepended. The
+   local `.claude/launch.json` therefore points `runtimeExecutable` at
+   `C:/Program Files/nodejs/node.exe` running
+   `node_modules/next/dist/bin/next dev` directly, rather than `npm`.
+
+### Suzi is no longer a mock
+
+§7, §16 and §17 all describe the AI as deterministic keyword routing with
+"a clear swap-in point for a real model". That swap-in happened.
+
+New: `lib/ai/provider.ts` (the only module importing `@anthropic-ai/sdk`,
+guarded by `import "server-only"`) and `lib/ai/prompts.ts` (persona,
+boundaries, context builders). `app/actions.ts` gained `askSuzi` and
+`askSuziSearch`, and `generateListingAction` now writes with a real model.
+
+**The deterministic functions were kept, not replaced.** Every action
+computes the offline answer first, tries the model, and returns whichever
+it got — so a missing key, an invalid key, a rate limit, a timeout, a
+refusal, or a schema mismatch all degrade to the previous behaviour. The
+zero-configuration demo mode described in §10 is intact.
+
+The architectural change that made this possible: the four AI functions
+were being called **directly from client components**. They now go through
+server actions, so the API key never reaches the browser. Verified after
+building — `grep -rl anthropic .next/static/` returns nothing, and the
+only Supabase symbol in the client chunks is the legitimate
+`createBrowserClient`.
+
+`interpretSearchQuery` was split into `parseSearchQuery` (free text →
+`SearchCriteria`) and `rankListings` (criteria → scored matches). The
+model replaces only the first half; ranking stays deterministic because
+the visitor is shown a match percentage and the reasons behind it, and
+that has to be inspectable and stable. If you add a criterion, add it to
+`SearchCriteria`, the parser, the scorer, *and* the zod schema +
+extraction prompt — all four, or the two paths diverge.
+
+### Three real bugs found while testing (details in `CLAUDE.md` §13)
+
+- `StepChatFacts` discarded the owner's **last** answer (every sale listing
+  generated at the default €1,200) — a stale-closure `onContinue`.
+- AI search ranked **rentals inside purchase queries** on budget alone.
+- The wizard never asked the **property type**, so every AI-created
+  listing was an `apartment`.
+
+### Verification performed
+
+`tsc --noEmit`, `npm run lint`, `npm run build` all clean (23/23 routes).
+Live in-browser: hero chat, per-property Q&A answering from real listing
+data, `/ai-search` (including the `€1.2M` parsing gotcha from §16 and the
+new mode filter), and the complete `/list-with-ai` flow through to a
+published listing in `localStorage`. Fallback behaviour tested with a
+deliberately invalid `ANTHROPIC_API_KEY`.
+
+**Not verified: real model output.** No API key was available on this
+machine, so only the failure paths of the model integration were
+exercised. Reviewing Suzi's actual tone, length and refusal behaviour
+against `lib/ai/prompts.ts` is the first task once a key exists.
