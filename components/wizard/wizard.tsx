@@ -135,12 +135,17 @@ export function Wizard() {
     }
   }
 
-  function handleFactsSubmit() {
+  // `finalFacts` comes from the chat step rather than this component's
+  // `facts` state: the callback the chat step holds was created before the
+  // last answer was applied, so its closure would generate the listing from
+  // facts missing that answer (the price, for a sale).
+  function handleFactsSubmit(finalFacts: ListingFacts) {
+    setFacts(finalFacts);
     setStep(4);
     animationDoneRef.current = false;
     generatedRef.current = null;
     setContent(null);
-    generateListingAction({ ...facts, photo_count: photos.length }).then((generated) => {
+    generateListingAction({ ...finalFacts, photo_count: photos.length }).then((generated) => {
       generatedRef.current = generated;
       tryAdvancePastGenerating();
     });

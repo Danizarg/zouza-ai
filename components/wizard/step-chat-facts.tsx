@@ -4,6 +4,7 @@ import { ThinkingDots } from "@/components/motion/thinking-dots";
 import { TypewriterText } from "@/components/motion/typewriter-text";
 import { Button } from "@/components/ui/button";
 import type { ListingFacts } from "@/lib/types";
+import { PROPERTY_TYPES } from "@/lib/types";
 import { Send } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -28,6 +29,24 @@ function buildSteps(forRent: boolean): QuestionStep[] {
         return { ...facts, address_area: area, city: city || area };
       },
       retry: "I need at least a city or area name to continue.",
+    },
+    {
+      ask: "What kind of property is it — apartment, house, villa, townhouse, penthouse, finca or studio?",
+      apply: (answer, facts) => {
+        const a = answer.toLowerCase();
+        const type =
+          PROPERTY_TYPES.find((t) => a.includes(t)) ??
+          (/(flat|piso)/.test(a)
+            ? "apartment"
+            : /(country house|cortijo|masia|farmhouse)/.test(a)
+              ? "finca"
+              : /(chalet)/.test(a)
+                ? "villa"
+                : null);
+        if (!type) return null;
+        return { ...facts, property_type: type };
+      },
+      retry: "Pick the closest one: apartment, house, villa, townhouse, penthouse, finca or studio.",
     },
     {
       ask: "How many bedrooms?",
@@ -113,7 +132,14 @@ export function StepChatFacts({
   facts: ListingFacts;
   onChange: (facts: ListingFacts) => void;
   onBack: () => void;
-  onContinue: () => void;
+  /**
+   * Receives the completed facts directly. The parent's `facts` state has
+   * been updated via `onChange` by this point, but the `onContinue` we hold
+   * is from the render *before* that update, so its own closure over `facts`
+   * is one answer behind — passing the value explicitly is what makes the
+   * last answer survive.
+   */
+  onContinue: (facts: ListingFacts) => void;
 }) {
   const [steps] = useState(() => buildSteps(facts.intent === "rent_out"));
   const [stepIndex, setStepIndex] = useState(0);
@@ -161,7 +187,7 @@ export function StepChatFacts({
 
       if (isLast) {
         setDone(true);
-        window.setTimeout(onContinue, 1400);
+        window.setTimeout(() => onContinue(next), 1400);
       } else {
         setStepIndex((i) => i + 1);
       }
