@@ -161,9 +161,9 @@ realistic local behaviour** if not:
   Otherwise `lib/mock-data.ts` (12 realistic Spain listings) and
   `localStorage` back the whole product.
 - `isAiEnabled()` (`lib/ai/provider.ts`, server-only) — true when
-  `ANTHROPIC_API_KEY` is set. Otherwise every AI surface answers from the
-  deterministic layer. `hasAiProvider()` in `lib/ai/service.ts` mirrors it
-  for client-safe callers.
+  `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` is set. Otherwise every AI
+  surface answers from the deterministic layer. `hasAiProvider()` in
+  `lib/ai/service.ts` mirrors it for client-safe callers.
 
 **Result: `git clone && npm install && npm run dev` gives a fully
 clickable product with zero configuration.** This is a deliberate
@@ -358,15 +358,31 @@ plan name directly — that makes pricing changes a refactor.
 
 ## 7. AI / Suzi
 
-**Suzi runs on a real model** (Anthropic, `claude-opus-5` by default) when
-`ANTHROPIC_API_KEY` is set, and falls back to a deterministic layer when it
-isn't. Wired 2026-08-25.
+**Suzi runs on a real model** when a provider key is set, and falls back
+to a deterministic layer when it isn't. Wired 2026-08-25.
+
+**Production runs OpenAI `gpt-5-nano`** — that is the owner's cost choice.
+The provider is chosen from whichever key is present:
+
+| Key | Provider | Default model |
+|---|---|---|
+| `OPENAI_API_KEY` | OpenAI (Responses API) | `gpt-5-nano` |
+| `ANTHROPIC_API_KEY` | Anthropic | `claude-opus-5` |
+
+`ZOUZA_AI_MODEL` overrides the model; `ZOUZA_AI_PROVIDER` breaks the tie
+when both keys exist (OpenAI wins by default). **Switching models is an
+environment-variable change, never a code change** — keep it that way.
+
+`gpt-5-nano` is the smallest model in its family. If Suzi's answers ever
+read as thin, generic, or drift off the persona in `lib/ai/prompts.ts`,
+try `ZOUZA_AI_MODEL=gpt-5-mini` before rewriting prompts — the prompts
+were authored against a strong model.
 
 ### The four layers
 
 | Layer | File | Role |
 |---|---|---|
-| Model access | `lib/ai/provider.ts` | The **only** module importing the Anthropic SDK. `import "server-only"`. `runText()` / `runStructured()` return `null` on missing key, auth failure, rate limit, timeout, refusal, or schema mismatch — they never throw. Model id from `ZOUZA_AI_MODEL`, default `claude-opus-5`. |
+| Model access | `lib/ai/provider.ts` | The **only** module importing a provider SDK. `import "server-only"`. `runText()` / `runStructured()` return `null` on missing key, auth failure, rate limit, timeout, refusal, or schema mismatch — they never throw. Requests are sent with `store: false` so visitors' words aren't retained provider-side. |
 | Prompts | `lib/ai/prompts.ts` | Suzi's persona, the §1 business boundaries, an injection guard, and the listing/facts context builders. Pure strings. |
 | Server actions | `app/actions.ts` | `askSuzi`, `askSuziSearch`, `generateListingAction`. |
 | Deterministic | `lib/ai/service.ts`, `lib/ai/suzi-assistant.ts` | Client-safe, offline. The zero-config demo **and** the permanent fallback. |
@@ -402,10 +418,10 @@ checklist and translation map (platform facts, not prose).
 ### Non-negotiable boundary
 
 Client components **never** call a model. They call server actions. Do not
-import `lib/ai/provider.ts`, or the Anthropic SDK, from any module a
+import `lib/ai/provider.ts`, or a provider SDK, from any module a
 client component imports — the key is server-only, and `lib/ai/service.ts`
 is imported directly by client code. Verify after changes:
-`grep -rl anthropic .next/static/` must return nothing.
+`grep -rlE "anthropic|openai" .next/static/` must return nothing.
 
 ### Still to do here
 

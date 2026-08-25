@@ -34,7 +34,7 @@ advice.
 
 **Mock / demo-only:**
 - All AI behaviour falls back to deterministic template/keyword logic when
-  `ANTHROPIC_API_KEY` is not set — see "Turning Suzi on" below
+  no provider key is set — see "Turning Suzi on" below
 - The homepage's live photo-analysis checklist is a presentational timer
   loop, not real image analysis — actual generation happens in
   `/list-with-ai`
@@ -87,35 +87,49 @@ the property AI agent all work against bundled demo data and
 
 ## Turning Suzi on
 
-Add one variable to `.env.local`:
+Add one key to `.env.local`:
 
 ```
-ANTHROPIC_API_KEY=sk-ant-...
+OPENAI_API_KEY=sk-proj-...
 ```
 
 That's it — restart the dev server and Suzi's chat, the per-property Q&A,
 natural-language search, and listing generation all run on a real model.
-Optionally set `ZOUZA_AI_MODEL` to override the default (`claude-opus-5`).
 
-**Without the key nothing breaks.** Every AI surface falls back to the
+The provider is picked from whichever key is present, so switching is an
+environment-variable change rather than a deploy:
+
+| Key | Provider | Default model |
+|---|---|---|
+| `OPENAI_API_KEY` | OpenAI | `gpt-5-nano` |
+| `ANTHROPIC_API_KEY` | Anthropic | `claude-opus-5` |
+
+`ZOUZA_AI_MODEL` overrides the model (e.g. `gpt-5-mini` for noticeably
+better copy at ~8x the token price). `ZOUZA_AI_PROVIDER` breaks the tie
+when both keys are set; OpenAI wins by default.
+
+**Without a key nothing breaks.** Every AI surface falls back to the
 deterministic answers in `lib/ai/service.ts`, so the product stays fully
 clickable with zero configuration. The same fallback catches an invalid
 key, a rate limit, a timeout, or a model refusal at runtime — the visitor
 gets a working answer and the server logs one `[suzi:*]` line.
 
+Conversations are sent with `store: false`, so visitors' own words about
+where they want to live aren't retained in provider-side storage.
+
 ### How it fits together
 
 | Layer | File | Role |
 |---|---|---|
-| Model access | `lib/ai/provider.ts` | The only module that talks to Anthropic. **Server-only** (`import "server-only"`). Returns `null` on any failure rather than throwing. |
+| Model access | `lib/ai/provider.ts` | The only module that talks to a provider SDK. **Server-only** (`import "server-only"`). Returns `null` on any failure rather than throwing. |
 | Prompts | `lib/ai/prompts.ts` | Suzi's persona, the business boundaries, and the property/facts context builders. |
 | Server actions | `app/actions.ts` | `askSuzi`, `askSuziSearch`, `generateListingAction`. Each computes the deterministic result, tries the model, and returns whichever it got. |
 | Deterministic layer | `lib/ai/service.ts`, `lib/ai/suzi-assistant.ts` | Client-safe, offline, no key. Both the zero-config demo and the permanent fallback. |
 
 Client components never call a model directly — they call the server
 actions, so the API key never reaches the browser. **Do not import
-`lib/ai/provider.ts` (or the Anthropic SDK) from anything a client
-component imports.**
+`lib/ai/provider.ts` (or a provider SDK) from anything a client component
+imports.**
 
 Search is deliberately split: the model turns free text into structured
 `SearchCriteria`, and the deterministic scorer always does the ranking, so
@@ -130,7 +144,9 @@ See `.env.example`:
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
+OPENAI_API_KEY=
 ANTHROPIC_API_KEY=
+ZOUZA_AI_PROVIDER=
 ZOUZA_AI_MODEL=
 NEXT_PUBLIC_APP_URL=
 ```

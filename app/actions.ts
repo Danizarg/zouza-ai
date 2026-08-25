@@ -166,6 +166,7 @@ export async function askSuziSearch(query: string): Promise<SuziSearchResult> {
         system: SEARCH_EXTRACTION_SYSTEM,
         messages: [{ role: "user", content: trimmed }],
         schema: searchCriteriaSchema,
+        schemaName: "search_criteria",
         effort: "low",
         maxTokens: 4_000,
       });
@@ -232,6 +233,7 @@ export async function generateListingAction(
         },
       ],
       schema: generatedContentSchema,
+      schemaName: "listing_content",
       effort: "medium",
     });
 

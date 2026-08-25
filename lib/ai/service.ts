@@ -28,11 +28,10 @@ import { formatPrice, totalMoveIn } from "@/lib/utils";
 /**
  * Whether a real model is configured. Mirrors `isAiEnabled()` in
  * `lib/ai/provider.ts`, which is server-only; this exists so client-safe
- * callers can ask the same question. Anthropic is the only implemented
- * provider, so an OpenAI key alone does not enable anything.
+ * callers can ask the same question.
  */
 export function hasAiProvider(): boolean {
-  return Boolean(process.env.ANTHROPIC_API_KEY);
+  return Boolean(process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY);
 }
 
 /** Template exposé built purely from the owner's facts — the generation fallback. */
