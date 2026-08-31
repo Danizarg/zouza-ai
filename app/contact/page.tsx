@@ -25,7 +25,9 @@ export default function ContactPage() {
         <div className="mt-8 space-y-4 text-sm text-navy-600">
           <p className="flex items-center gap-2">
             <Mail className="h-4 w-4 text-gold-600" aria-hidden />
-            hello@zouza.ai
+            <a href="mailto:info@zouza.ai" className="hover:text-terra-600">
+              info@zouza.ai
+            </a>
           </p>
           <p className="flex items-center gap-2">
             <MapPin className="h-4 w-4 text-gold-600" aria-hidden />

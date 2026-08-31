@@ -258,9 +258,19 @@ zero configuration** — preserve this when adding any new data-backed
 feature; add the Supabase path as an *additive* layer behind
 `isSupabaseConfigured()`, never as a hard requirement.
 
-**No other external services.** No payment provider, no email provider
-(contact/waitlist forms insert Supabase rows, or no-op in mock mode), no
-analytics, no map provider (placeholder only).
+**Email (added 2026-08-24):** Namecheap Private Email over SMTP
+(`mail.privateemail.com:587`, STARTTLS) via `nodemailer` —
+`lib/email.ts`'s `sendTeamNotification()`. `submitContact` and
+`joinWaitlist` call it after their Supabase write so a real notification
+reaches `info@zouza.ai`. Same additive/fallback pattern as everywhere else:
+if SMTP isn't configured or a send fails, it logs and returns `false`, and
+the visitor's submission still succeeds — **never fail a form submission
+because mail didn't send**. Verified end-to-end 2026-08-24 (real message
+delivered, accepted by the server; contact form submitted in-browser with
+no errors).
+
+**No other external services.** No payment provider, no analytics, no map
+provider (placeholder only).
 
 ---
 
@@ -323,19 +333,25 @@ engineering tasks; do not attempt to resolve them in code.** Summarized:
 1. Permission to create two "background accounts" under the company name:
    (a) a real database/backend (Supabase), (b) a real AI provider
    (OpenAI/Anthropic) so Suzi can actually think instead of using canned
-   replies.
+   replies. **AI provider: DONE 2026-08-24** — `OPENAI_API_KEY` is
+   configured in `.env.local`, account just needs credit (§4d). Supabase:
+   still open.
 2. An approximate monthly budget cap for those two services (usage-based
    cost, small at low traffic).
 3. Real property listings with real photos, address, room count, price —
    everything on the site today is placeholder/demo data.
-4. A monitored inbox (e.g. `info@zouza.ai`) and a person responsible for
-   checking it — contact-form/waitlist submissions currently reach nobody.
+4. **DONE 2026-08-24** — monitored inbox is `info@zouza.ai`, and it is now
+   actually wired: contact-form and waitlist submissions send an SMTP
+   notification there via Namecheap Private Email (§5). Verified with a
+   real delivered message. The contact page previously displayed a
+   different address (`hello@zouza.ai`) that nobody owned — fixed to
+   `info@zouza.ai` in the same pass.
 5. A lawyer to review the Terms/Privacy/Disclaimer pages — currently
    template-based, not legally reviewed, especially important for Spanish
    real estate.
-6. Confirmation that she owns the `zouza.ai` domain and the Vercel account,
-   and that credentials are stored securely and known to more than one
-   person.
+6. **CONFIRMED 2026-08-24** — she owns the `zouza.ai` domain and the
+   Vercel hosting account. Credential-storage/multi-person-access part of
+   this item not yet explicitly confirmed — worth a follow-up.
 7. A decision on how owner/property verification will actually work
    (currently just a badge with no real process behind it) — e.g. manual
    document upload + review.
@@ -448,7 +464,15 @@ SUPABASE_SERVICE_ROLE_KEY=         # server-only, reserved for future admin task
 OPENAI_API_KEY=                    # powers the protocol classifier (lib/ai/protocol-classifier.ts) — set locally, account has no credits yet (§4d)
 ANTHROPIC_API_KEY=                 # powers generateListingContent (lib/ai/service.ts) — not currently set
 NEXT_PUBLIC_APP_URL=               # used for metadata/OG/sitemap; defaults to http://localhost:3000
+EMAIL_SMTP_HOST=                   # mail.privateemail.com (Namecheap Private Email)
+EMAIL_SMTP_PORT=                   # 587 (STARTTLS). lib/email.ts treats 465 as implicit TLS
+EMAIL_SMTP_USER=                   # info@zouza.ai — the mailbox notifications are sent FROM
+EMAIL_SMTP_PASS=                   # that mailbox's password
+EMAIL_NOTIFY_TO=                   # info@zouza.ai — where contact/waitlist notifications go
 ```
+
+All five `EMAIL_*` vars must be set for notifications to send; if any is
+missing, `lib/email.ts` no-ops silently and forms still work.
 
 **`.env.local` exists in this checkout as of 2026-08-24** (git-ignored,
 confirmed via `git check-ignore -v` — never committed) with a real
@@ -461,6 +485,15 @@ Environment Variables** before they'll work in production — local
 
 ## 11. Verification log
 
+- **2026-08-24 (later):** Wired real email notifications (`nodemailer` +
+  Namecheap Private Email SMTP) into `submitContact`/`joinWaitlist` via
+  `lib/email.ts` (§5). Verified by (a) a standalone SMTP script that
+  connected, authenticated, and delivered a real test message to
+  `info@zouza.ai` (accepted by the server, no rejections), and (b)
+  submitting the real contact form in the dev-server browser — success
+  state rendered, no server errors. Also fixed the contact page displaying
+  `hello@zouza.ai` (an address nobody owns) instead of `info@zouza.ai`.
+  `tsc`/lint/build clean.
 - **2026-08-24:** Built the protocol-driven AI layer (§4a): `lib/ai/protocol.ts`,
   `lib/ai/protocol-classifier.ts` (OpenAI `gpt-5-nano`, structured outputs),
   `resolveProtocolAction()` in `lib/ai/suzi-assistant.ts`, and

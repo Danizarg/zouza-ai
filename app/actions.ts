@@ -4,6 +4,7 @@ import { chatRespond, generateListingContent } from "@/lib/ai/service";
 import { classifyProtocolAction } from "@/lib/ai/protocol-classifier";
 import { getSuziResponse, resolveProtocolAction } from "@/lib/ai/suzi-assistant";
 import type { SuziContext, SuziReply } from "@/lib/ai/suzi-assistant";
+import { sendTeamNotification } from "@/lib/email";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { GeneratedListingContent, ListingFacts } from "@/lib/types";
 import { z } from "zod";
@@ -71,6 +72,13 @@ export async function submitContact(input: {
     const { error } = await supabase.from("contact_submissions").insert(parsed.data);
     if (error) return { ok: false, error: "Could not save your message. Please retry." };
   }
+
+  const { reason, name, email, message } = parsed.data;
+  await sendTeamNotification(
+    `New contact form submission — ${reason}`,
+    `Name: ${name}\nEmail: ${email}\nReason: ${reason}\n\n${message}`,
+  );
+
   return { ok: true };
 }
 
@@ -91,5 +99,11 @@ export async function joinWaitlist(
       .from("waitlist_signups")
       .upsert({ email: parsed.data.email, interest: parsed.data.interest ?? null }, { onConflict: "email" });
   }
+
+  await sendTeamNotification(
+    "New waitlist signup",
+    `Email: ${parsed.data.email}\nInterest: ${parsed.data.interest ?? "—"}`,
+  );
+
   return { ok: true };
 }
