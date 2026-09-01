@@ -137,7 +137,8 @@ you need. She'll do the rest."*
 | **Dashboard auth gate** | **FIXED 2026-08-18** (this session) | See §6 — was the single most important pre-launch gap |
 | Dashboard (`/dashboard*`) | **COMPLETE UI, all mock/localStorage data** | Messaging is local-state only, never persists |
 | Marketing/legal pages | **COMPLETE (content), legally UNREVIEWED** | See §7 — needs real lawyer sign-off before real users, per the business owner's own requirements doc |
-| Real AI model calls | **PARTIAL — protocol classifier live (OpenAI, no credits yet); `generateListingContent` wired (Anthropic, untested)** | See §4 |
+| Real AI model calls (Suzi chat/navigation) | **COMPLETE & LIVE-VERIFIED** | Protocol classifier on OpenAI `gpt-5-nano`, account funded, 9/9 on adversarial tests (§4a, §4d) |
+| Real AI model calls (listing generation) | **WIRED, UNTESTED** | Anthropic `claude-sonnet-5`; no `ANTHROPIC_API_KEY` set (§4b) |
 | Real map integration | **PLANNED** | Currently a static placeholder |
 | Contract-template library | **PLANNED** | Placeholder with disclaimer only |
 | Payments/monetization | **PLANNED — business decision not yet made** | Intentionally out of scope until the owner picks a model |
@@ -218,23 +219,42 @@ parsing + scoring) has no AI wiring yet; not in scope for the protocol
 classifier as designed (it's a structured-data ranking task, would need
 its own integration point if ever made AI-driven).
 
-### 4d. Live-tested 2026-08-24
+### 4d. Live-tested and WORKING as of 2026-08-24
 
-An OpenAI key (`sk-proj-…`) is configured in `.env.local` (git-ignored,
-never committed) but the account has **no credits** — confirmed by
-actually exercising the classifier in the dev server: both the homepage
-hero chat and the Suzi widget's navigation-intent message triggered a real
-call to `https://api.openai.com/v1/chat/completions`, which returned
-`429 insufficient_quota` / `credit_balance_exhausted`, and the fallback
-caught it cleanly — the UI never broke, replies came from the original
-deterministic path exactly as before this session. **This confirms the
-fallback works correctly; it does not confirm the live classification
-path** — that still needs testing once the OpenAI account has credit (see
-§8 P1).
+The OpenAI account was funded ($10) and the classifier is **live and
+verified**. Both branches are now confirmed:
 
-Per the business owner's requirements doc (`Zouza_Was_wir_brauchen.docx`,
-§7), the credits/budget decision is hers — the code-side wiring is built
-ahead of it so funding the account is the only remaining step to go live.
+- **Fallback branch (verified earlier the same day):** with an uncredited
+  key, real calls returned `429 insufficient_quota` and the fallback
+  caught them cleanly — UI never broke, replies came from the
+  deterministic path exactly as before.
+- **Live branch (verified after funding):** 9/9 correct on a test set
+  deliberately phrased to *defeat* the old keyword matcher — e.g.
+  "I'm relocating from Berlin and need somewhere to live for a year"
+  → `navigate_rent` (never says "rent"); "My mother passed away and I
+  need to get rid of her flat" → `navigate_list_property` (never says
+  "sell"/"list"); "Do you think property in Marbella is a smart place to
+  put my savings?" → `refuse_advice` (never says "financial advice").
+  Then confirmed through the actual site: submitting the "get rid of her
+  flat" message via the homepage hero form produced the navigation reply
+  with **no** classifier-failure log line (previously this exact flow
+  logged the 429), proving the live path ran end-to-end through
+  `homeChatAction`.
+
+**Measured cost: ~$0.20 per 1,000 visitor messages** (3044 in / 4223 out
+tokens across 9 messages on `gpt-5-nano`). Note output tokens exceed input
+despite the tiny JSON response — `gpt-5-nano` spends reasoning tokens
+internally. $10 of credit is therefore roughly 50,000 messages; cost is a
+non-issue at this project's scale.
+
+**Key rotation gotcha, already hit once:** the first key stopped working
+between sessions, returning `401 invalid_api_key` where it had previously
+returned `429` — i.e. the failure moved from billing to authentication,
+meaning the key was revoked/replaced, not merely unfunded. If OpenAI calls
+start failing, **check whether it's 401 (bad key) or 429 (no credit)
+before assuming it's a billing problem** — they need completely different
+fixes. Both keys were pasted through chat; rotating to a fresh key set
+directly in Vercel (never through chat) is the recommended end state.
 
 ---
 
@@ -384,16 +404,12 @@ system before item 8 is decided.
 ahead of the business decision to fund it:**
 4. ~~Wire `ANTHROPIC_API_KEY` into `generateListingContent`~~ — **DONE
    2026-08-18** (§4b). Still untested against a real key.
-5. ~~Build the protocol-driven intent classifier for Suzi (navigation,
-   advice refusal, property Q&A routing, general chat)~~ — **DONE
-   2026-08-24** (§4a). `OPENAI_API_KEY` is set in `.env.local` but the
-   account has no credits — **fund the OpenAI account, then test the live
-   classification branch** (currently only the fallback-on-failure branch
-   is verified). Once funded, spot-check: does it correctly route a
-   "sell my villa" message to `/list-with-ai`, refuse an
-   "is this a good investment" message, and answer a property question
-   from real listing data — same checks as the mock path, against the
-   live model this time.
+5. ~~Build the protocol-driven intent classifier for Suzi~~ — **DONE and
+   LIVE-VERIFIED 2026-08-24** (§4a, §4d). Account funded, 9/9 on adversarial
+   test cases, confirmed working end-to-end through the site. Remaining
+   sub-item: the `answer_property_question` path (property-page chat with a
+   listing in context) has not been specifically exercised against the live
+   model — worth a spot-check on a `/property/[id]` page.
 6. Confirm listing photo uploads still persist correctly to Supabase
    Storage once configured (currently correct in the wizard's publish step
    per last verification, but re-check after any future hero/wizard
@@ -485,6 +501,13 @@ Environment Variables** before they'll work in production — local
 
 ## 11. Verification log
 
+- **2026-08-24 (latest):** OpenAI account funded; **the AI is live**.
+  Rotated to a new key (the first was revoked — see §4d's 401-vs-429 note).
+  Ran a 9-case adversarial classification test (messages phrased to defeat
+  keyword matching): 9/9 correct. Confirmed end-to-end through the running
+  site — the homepage hero form produced the correct navigation reply with
+  no classifier-failure log, where the same flow previously logged a 429.
+  Measured ~$0.20 per 1,000 messages.
 - **2026-08-24 (later):** Wired real email notifications (`nodemailer` +
   Namecheap Private Email SMTP) into `submitContact`/`joinWaitlist` via
   `lib/email.ts` (§5). Verified by (a) a standalone SMTP script that
