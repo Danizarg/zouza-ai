@@ -1,8 +1,8 @@
 "use client";
 
+import { propertyChatAction } from "@/app/actions";
 import { ThinkingDots } from "@/components/motion/thinking-dots";
 import { TypewriterText } from "@/components/motion/typewriter-text";
-import { answerAgentQuestion } from "@/lib/ai/service";
 import { MOCK_LISTINGS } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -39,18 +39,22 @@ export function AgentDemo() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, thinking]);
 
-  function ask(question: string) {
+  async function ask(question: string) {
     if (thinking) return;
+    // Skip the seeded greeting; it isn't part of the real exchange.
+    const history = messages.slice(1).map((m) => ({
+      role: m.role === "user" ? ("user" as const) : ("assistant" as const),
+      content: m.text,
+    }));
     setMessages((prev) => [...prev, { role: "user", text: question }]);
     setThinking(true);
-    window.setTimeout(() => {
-      setMessages((prev) => {
-        const next = [...prev, { role: "agent" as const, text: answerAgentQuestion(demoListing, question) }];
-        setTypingIndex(next.length - 1);
-        return next;
-      });
-      setThinking(false);
-    }, 700);
+    const answer = await propertyChatAction(demoListing.id, question, history);
+    setMessages((prev) => {
+      const next = [...prev, { role: "agent" as const, text: answer }];
+      setTypingIndex(next.length - 1);
+      return next;
+    });
+    setThinking(false);
   }
 
   return (

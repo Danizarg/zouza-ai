@@ -1,10 +1,11 @@
 "use server";
 
-import { chatRespond, generateListingContent } from "@/lib/ai/service";
-import { classifyProtocolAction } from "@/lib/ai/protocol-classifier";
-import { getSuziResponse, resolveProtocolAction } from "@/lib/ai/suzi-assistant";
+import { answerAgentQuestion, chatRespond, generateListingContent } from "@/lib/ai/service";
+import { generateSuziReply, NAVIGATION_TARGETS, type SuziTurn } from "@/lib/ai/suzi-brain";
+import { getSuziResponse } from "@/lib/ai/suzi-assistant";
 import type { SuziContext, SuziReply } from "@/lib/ai/suzi-assistant";
 import { sendTeamNotification } from "@/lib/email";
+import { getMockListing, MOCK_LISTINGS } from "@/lib/mock-data";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { GeneratedListingContent, ListingFacts } from "@/lib/types";
 import { z } from "zod";
@@ -21,33 +22,76 @@ export async function generateListingAction(
 }
 
 /**
- * Runs the full Suzi protocol for a visitor message: the AI (when
- * OPENAI_API_KEY is set and has credit) classifies the message into one of
- * the fixed actions in lib/ai/protocol.ts, then `resolveProtocolAction`
- * deterministically turns that classification into a reply — the model
- * never generates the reply text itself. If the classifier is unavailable
- * or fails for any reason (no key, no credits, network error), this falls
- * back to the original deterministic keyword classifier, so the assistant
- * behaves identically either way. Runs server-side so OPENAI_API_KEY is
- * never sent to the browser.
+ * Suzi's main conversational entry point. Generates a real reply via the
+ * model (`lib/ai/suzi-brain.ts`), grounded in the site's actual listings and
+ * the property in view, and carrying conversation history so follow-up
+ * questions work. Returns both the generated text and any navigation the
+ * model chose.
+ *
+ * Falls back to the deterministic keyword assistant if the model is
+ * unavailable for any reason (no key, no credit, network error, timeout),
+ * so the assistant always answers. Runs server-side so OPENAI_API_KEY never
+ * reaches the browser.
  */
-export async function suziReplyAction(message: string, context: SuziContext): Promise<SuziReply> {
+export async function suziReplyAction(
+  message: string,
+  context: SuziContext,
+  history: SuziTurn[] = [],
+): Promise<SuziReply> {
   const trimmed = message.trim();
   if (!trimmed) {
     return { text: "Tell me what you're looking for and I'll take it from there.", navigation: null };
   }
-  const action = await classifyProtocolAction(trimmed, Boolean(context.listing));
-  if (!action) return getSuziResponse(trimmed, context);
-  return resolveProtocolAction(action, trimmed, context);
+
+  const result = await generateSuziReply(trimmed, {
+    route: context.route,
+    listing: context.listing,
+    listings: MOCK_LISTINGS,
+    history,
+  });
+  if (!result) return getSuziResponse(trimmed, context);
+
+  return {
+    text: result.reply,
+    navigation: NAVIGATION_TARGETS[result.action] ?? null,
+  };
 }
 
-/** Same protocol as suziReplyAction, for the homepage demo chat panels — no listing/navigation UI there, just the reply text. */
-export async function homeChatAction(message: string): Promise<string> {
+/** Homepage chat panels — same generative brain, text only (these surfaces don't route). */
+export async function homeChatAction(message: string, history: SuziTurn[] = []): Promise<string> {
   const trimmed = message.trim();
   if (!trimmed) return chatRespond(trimmed);
-  const action = await classifyProtocolAction(trimmed, false);
-  if (!action) return chatRespond(trimmed);
-  return resolveProtocolAction(action, trimmed, { route: "/" }).text;
+
+  const result = await generateSuziReply(trimmed, {
+    route: "/",
+    listings: MOCK_LISTINGS,
+    history,
+  });
+  return result?.reply ?? chatRespond(trimmed);
+}
+
+/**
+ * Per-property chat (the property page's "ask about this home" panel and the
+ * homepage agent demo). Grounded in the single listing in view, so Suzi
+ * answers from that property's real data rather than generically.
+ * Falls back to the deterministic per-listing answerer.
+ */
+export async function propertyChatAction(
+  listingId: string,
+  message: string,
+  history: SuziTurn[] = [],
+): Promise<string> {
+  const trimmed = message.trim();
+  const listing = getMockListing(listingId);
+  if (!listing) return "I couldn't load that property just now — try refreshing the page.";
+  if (!trimmed) return answerAgentQuestion(listing, trimmed);
+
+  const result = await generateSuziReply(trimmed, {
+    route: `/property/${listing.slug}`,
+    listing,
+    history,
+  });
+  return result?.reply ?? answerAgentQuestion(listing, trimmed);
 }
 
 const contactSchema = z.object({

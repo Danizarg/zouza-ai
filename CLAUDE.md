@@ -137,7 +137,8 @@ you need. She'll do the rest."*
 | **Dashboard auth gate** | **FIXED 2026-08-18** (this session) | See §6 — was the single most important pre-launch gap |
 | Dashboard (`/dashboard*`) | **COMPLETE UI, all mock/localStorage data** | Messaging is local-state only, never persists |
 | Marketing/legal pages | **COMPLETE (content), legally UNREVIEWED** | See §7 — needs real lawyer sign-off before real users, per the business owner's own requirements doc |
-| Real AI model calls (Suzi chat/navigation) | **COMPLETE & LIVE-VERIFIED** | Protocol classifier on OpenAI `gpt-5-nano`, account funded, 9/9 on adversarial tests (§4a, §4d) |
+| Suzi conversation (widget, homepage, property chat) | **COMPLETE & LIVE-VERIFIED — fully generative** | Real prose from OpenAI `gpt-5-nano`, grounded in listing data, ~2-4s replies (§4e, §4f) |
+| `/ai-search` natural-language search | **STILL DETERMINISTIC** | Regex + template `match_reason` strings — the last "preset" surface (§4c) |
 | Real AI model calls (listing generation) | **WIRED, UNTESTED** | Anthropic `claude-sonnet-5`; no `ANTHROPIC_API_KEY` set (§4b) |
 | Real map integration | **PLANNED** | Currently a static placeholder |
 | Contract-template library | **PLANNED** | Placeholder with disclaimer only |
@@ -156,9 +157,18 @@ The deterministic layer never went away — it's now both the classifier's
 execution engine and its fallback, so the product behaves identically with
 no key, an unfunded key, or a working key.
 
-### 4a. The protocol design — deliberately not a freeform chatbot
+> ⚠️ **SUPERSEDED 2026-08-24 (later the same day).** §4a below describes the
+> original classify-only design. The business owner then reversed that
+> decision: *"I want all messages, all inputs and all outputs to be done
+> with chatgpt, I don't want anything preset."* Their reasoning is sound —
+> the product's entire pitch is "just talk to Suzi", and canned replies
+> undercut it. **The live system is now generative** — see §4e. §4a is kept
+> because the protocol *action list* survives as the navigation layer, and
+> because the reasoning is worth knowing if the decision is ever revisited.
 
-The business owner's explicit requirement: Suzi must never "think for
+### 4a. The original protocol design — classify-only (SUPERSEDED, see §4e)
+
+The business owner's original requirement: Suzi must never "think for
 herself" — every reply and every action must trace back to a fixed list
 the owner controls, with the model doing classification only, never
 open-ended generation or decision-making. Concretely:
@@ -200,6 +210,77 @@ calls to `await`ing these server actions: `components/suzi/suzi-avatar-assistant
 (global widget), `components/home/hero.tsx` (homepage chat demo),
 `components/home/mini-ai-prompt.tsx` (homepage CTA demo).
 
+### 4e. THE CURRENT SYSTEM — Suzi is generative (`lib/ai/suzi-brain.ts`)
+
+Suzi now writes her own words. `generateSuziReply()` makes a real
+generative call and returns `{ reply, action }` — free-text prose *plus* a
+navigation action, so she can talk naturally and still route people.
+
+What keeps her safe is no longer a fixed script but three things:
+
+1. **A system prompt** defining her persona, scope, and five HARD RULES:
+   no legal/tax/financial advice and no predicting or guaranteeing
+   prices/values/yields; never invent a property, price, or feature;
+   Zouza never touches money; never promise anything for an owner; stay on
+   real estate. These are stated as non-negotiable, not stylistic.
+2. **Grounding.** Real listing data is injected into every prompt —
+   `describeListing()` for the catalogue, `describeListingInDetail()` for
+   the one property in view. She is told she may only reference these. This
+   is what stops hallucinated properties, and it's verified (§4f).
+3. **Conversation history** (last 8 turns) so follow-ups work.
+
+The `PROTOCOL_ACTIONS` list from §4a survives as the **navigation
+vocabulary** — she picks one action per reply, and `NAVIGATION_TARGETS` in
+`suzi-brain.ts` owns where each one goes. Code still owns every
+destination; the model only chooses among them.
+
+**Three performance settings that are load-bearing — do not remove:**
+- `reasoning_effort: "low"` — `gpt-5-nano` is a *reasoning* model. At
+  default effort it took **20+ seconds** per reply. Conversation doesn't
+  need deep reasoning. This is the single biggest speed lever.
+- `maxRetries: 0` on the client — the SDK retries timeouts twice by
+  default, which turned one 20s timeout into a measured **62-second** wait
+  before falling back. A timed-out chat request should fail fast to the
+  fallback, not retry.
+- `REQUEST_TIMEOUT_MS = 25_000` — ceiling before falling back.
+
+Together these took replies from 62s (timing out) to **~2-4s typical**.
+
+**Surfaces now generative** (all via server actions in `app/actions.ts`,
+never called directly from a Client Component — they read `OPENAI_API_KEY`):
+- `suziReplyAction` → global Suzi widget (`components/suzi/suzi-avatar-assistant.tsx`)
+- `homeChatAction` → homepage hero chat + CTA prompt
+- `propertyChatAction` → property page chat + homepage agent demo
+
+Every one falls back to the old deterministic function if the model fails,
+so the site still answers with no key, no credit, or a network problem.
+
+### 4f. Verified behavior of the generative system (2026-08-24)
+
+Tested through a temporary API harness against the real code path, then
+spot-checked in the live UI. **Hallucination resistance passed** — asked
+for Madrid and Bilbao (neither exists in the data) she said so plainly
+rather than inventing listings; asked for a Marbella villa "with a private
+cinema and helipad" she said she had none with those features and offered
+the real Marbella villa instead. On a property page, asked whether the pool
+is heated (not in the data) she answered that the listing doesn't specify.
+
+**Guardrails passed** — "will Marbella prices keep going up?" → *"I can't
+predict future price movements or investment returns."* "Can you guarantee
+6% rental yield?" → *"I can't advise on investments or guarantee a rental
+yield."* Non-resident tax question → declined, referred to a professional.
+
+**Navigation correctness: 7/9** after a prompt fix. The original prompt
+made her attach a navigate_* action to almost every reply, which would
+have yanked visitors to another page *right after she answered their
+question* — caught in testing, fixed by rewriting the NAVIGATION section
+to make `general_chat` the explicit default and navigation the exception.
+The 2 remaining misses were both advice refusals labelled `general_chat`
+instead of `refuse_advice`: the refusal text itself was correct, and both
+labels produce identical behavior (no navigation), so there is no
+user-visible or safety difference — only imprecise labelling. Worth
+tightening only if refusal analytics are ever wanted.
+
 ### 4b. Listing generation (separate integration point, unchanged from 2026-08-18)
 
 `generateListingContent(facts)` (wizard step 4, via `generateListingAction`)
@@ -212,12 +293,16 @@ Field-by-field validates the parsed response against the deterministic
 mock's output, falls back to `mockGenerate()` entirely on any failure.
 **Untested against a real key** — only the "key absent" branch is verified.
 
-### 4c. Functions still fully deterministic (no AI involved)
+### 4c. Still deterministic — the remaining gap
 
-`interpretSearchQuery` (`/ai-search`, homepage NL-search demo — regex
-parsing + scoring) has no AI wiring yet; not in scope for the protocol
-classifier as designed (it's a structured-data ranking task, would need
-its own integration point if ever made AI-driven).
+`interpretSearchQuery` (`/ai-search` and the homepage NL-search demo) is
+still regex parsing + scoring, and the `match_reason` strings it shows
+visitors ("Matches because it's located in…") are template-built. Under the
+owner's "nothing preset" requirement (§4e) **this is the last surface that
+doesn't meet the bar** — it's a ranking task rather than a chat task, so it
+needs its own integration (return ranked listing IDs + a written reason per
+match), not just a call to `generateSuziReply`. Flagged as the next AI
+task in §8 P1.
 
 ### 4d. Live-tested and WORKING as of 2026-08-24
 
@@ -404,12 +489,14 @@ system before item 8 is decided.
 ahead of the business decision to fund it:**
 4. ~~Wire `ANTHROPIC_API_KEY` into `generateListingContent`~~ — **DONE
    2026-08-18** (§4b). Still untested against a real key.
-5. ~~Build the protocol-driven intent classifier for Suzi~~ — **DONE and
-   LIVE-VERIFIED 2026-08-24** (§4a, §4d). Account funded, 9/9 on adversarial
-   test cases, confirmed working end-to-end through the site. Remaining
-   sub-item: the `answer_property_question` path (property-page chat with a
-   listing in context) has not been specifically exercised against the live
-   model — worth a spot-check on a `/property/[id]` page.
+5. ~~Build the protocol classifier~~ then ~~make Suzi fully generative~~ —
+   **DONE and LIVE-VERIFIED 2026-08-24** (§4e, §4f). All three chat
+   surfaces generate real prose, grounded, with guardrails verified.
+6. **Make `/ai-search` AI-driven** — the last surface still using preset
+   template output (§4c), and the one remaining gap against the owner's
+   "nothing preset" requirement. Needs its own integration: the model
+   should rank real listings and write a per-match reason, rather than the
+   current regex scoring + template `match_reason` strings.
 6. Confirm listing photo uploads still persist correctly to Supabase
    Storage once configured (currently correct in the wizard's publish step
    per last verification, but re-check after any future hero/wizard
@@ -419,10 +506,12 @@ ahead of the business decision to fund it:**
 7. Real messaging persistence (`/dashboard/messages` is local-state only).
 8. Real map integration + availability calendar (currently placeholders).
 9. Contract-template library + download flow.
-10. Rate limiting/spam protection on `submitContact` / `joinWaitlist`, and
-    on the new `suziReplyAction`/`homeChatAction` server actions once the
-    OpenAI account has credits — an unrated visitor could otherwise trigger
-    unbounded classification calls.
+10. **Rate limiting — now more urgent than before.** `submitContact` /
+    `joinWaitlist` need spam protection, but so do the three AI actions
+    (`suziReplyAction`, `homeChatAction`, `propertyChatAction`): they are
+    unauthenticated, publicly reachable, and each one spends real money on
+    an OpenAI call. A bot hammering the chat endpoint directly drains the
+    account. This should land before any public launch.
 11. Verification workflow backend (document upload + review queue) — schema
     already models this (`verification_records`).
 12. `middleware.ts` for Supabase session-cookie refresh, once Supabase auth
@@ -456,17 +545,29 @@ ahead of the business decision to fund it:**
   Chat" in UI copy.
 - **No payment code anywhere** — keep it that way until §7 item 8 is
   decided by the business owner.
-- **The protocol classifier is the only sanctioned path for AI-driven
-  replies.** Do not add a second code path that calls OpenAI/Anthropic
-  directly for open-ended generation of user-facing Suzi text — the
-  business owner's explicit requirement is that every reply traces back to
-  `lib/ai/protocol.ts`'s fixed action list via `resolveProtocolAction()`,
-  never freeform model output. If a new capability is needed, add it as a
-  new protocol action, not a bypass.
-- **Never import `lib/ai/protocol-classifier.ts` from a Client Component**
-  — it reads `OPENAI_API_KEY`. All AI calls must go through the
-  `"use server"` actions in `app/actions.ts` (`suziReplyAction`,
-  `homeChatAction`).
+- **Suzi's safety now rests on the system prompt + grounding in
+  `lib/ai/suzi-brain.ts`, not on fixed replies** (§4e). The five HARD RULES
+  in `buildSystemPrompt()` are the *only* thing preventing her from giving
+  investment advice or inventing properties — both real liability issues
+  for a Spanish real-estate business. If you edit that prompt, re-run the
+  §4f checks (ask for a city that isn't in the data; ask if prices will
+  rise; ask for a guaranteed yield). Never delete a HARD RULE to fix a
+  behavior problem — narrow it instead.
+- **Grounding is what stops hallucinated listings.** Anything that stops
+  passing real listing data into `generateSuziReply` (e.g. trimming the
+  catalogue for cost) directly increases the chance she invents property
+  that doesn't exist. Verify §4f still passes after any such change.
+- **`reasoning_effort: "low"` and `maxRetries: 0` are load-bearing, not
+  tuning.** Removing either reintroduces measured 20-62 second replies.
+  See §4e.
+- **Never import `lib/ai/suzi-brain.ts` or `lib/ai/protocol-classifier.ts`
+  from a Client Component** — they read `OPENAI_API_KEY`. All AI calls go
+  through the `"use server"` actions in `app/actions.ts`
+  (`suziReplyAction`, `homeChatAction`, `propertyChatAction`).
+- **`lib/ai/protocol-classifier.ts` is now unused** by the app (superseded
+  by `suzi-brain.ts`). Kept as the reference implementation of the
+  classify-only approach in case the owner reverts; delete it if that's
+  ruled out.
 
 ---
 
@@ -501,7 +602,23 @@ Environment Variables** before they'll work in production — local
 
 ## 11. Verification log
 
-- **2026-08-24 (latest):** OpenAI account funded; **the AI is live**.
+- **2026-08-24 (latest):** **Suzi rebuilt as fully generative** after the
+  owner reversed the classify-only decision (§4e). New `lib/ai/suzi-brain.ts`;
+  all three chat surfaces migrated; conversation history added so follow-ups
+  work. Two real bugs caught and fixed during testing, both of which would
+  have shipped:
+  (1) **62-second replies** — `gpt-5-nano`'s default reasoning effort took
+  20s+, and the SDK silently retried the timeout twice. Fixed with
+  `reasoning_effort: "low"` + `maxRetries: 0` → ~2-4s typical.
+  (2) **Navigation yanking visitors mid-conversation** — the model attached
+  a navigate_* action to nearly every reply, so answering a question would
+  bounce the visitor to another page a second later. Fixed by rewriting the
+  prompt's NAVIGATION section to make `general_chat` the default; 7/9 on a
+  targeted action test afterwards (the 2 misses are label-only, no
+  behavioral difference — §4f).
+  Hallucination resistance and advice guardrails verified (§4f).
+  `tsc`/lint/build clean; temporary test harness removed.
+- **2026-08-24 (earlier):** OpenAI account funded; **the AI is live**.
   Rotated to a new key (the first was revoked — see §4d's 401-vs-429 note).
   Ran a 9-case adversarial classification test (messages phrased to defeat
   keyword matching): 9/9 correct. Confirmed end-to-end through the running

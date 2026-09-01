@@ -95,10 +95,16 @@ export function SuziAvatarAssistant() {
   async function send(message: string) {
     const text = message.trim();
     if (!text || thinking) return;
+    // Snapshot the conversation *before* this turn so Suzi has continuity
+    // for follow-up questions ("what about the other one?").
+    const history = messages.map((m) => ({
+      role: m.role === "user" ? ("user" as const) : ("assistant" as const),
+      content: m.text,
+    }));
     setMessages((prev) => [...prev, { role: "user", text }]);
     setInput("");
     setThinking(true);
-    const reply = await suziReplyAction(text, { route: pathname, listing });
+    const reply = await suziReplyAction(text, { route: pathname, listing }, history);
     setMessages((prev) => {
       const next = [...prev, { role: "suzi" as const, text: reply.text }];
       setTypingIndex(next.length - 1);

@@ -42,10 +42,15 @@ export function Hero() {
   async function ask(message: string) {
     const text = message.trim();
     if (!text || thinking) return;
+    // Snapshot before this turn so Suzi can follow the thread.
+    const history = turns.map((t) => ({
+      role: t.role === "user" ? ("user" as const) : ("assistant" as const),
+      content: t.text,
+    }));
     setTurns((prev) => [...prev, { role: "user", text }]);
     setInput("");
     setThinking(true);
-    const reply = await homeChatAction(text);
+    const reply = await homeChatAction(text, history);
     setTurns((prev) => {
       const next = [...prev, { role: "ai" as const, text: reply }];
       setTypingIndex(next.length - 1);
