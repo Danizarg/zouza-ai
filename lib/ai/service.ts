@@ -13,11 +13,12 @@ import { formatPrice, totalMoveIn } from "@/lib/utils";
 /**
  * AI service abstraction.
  *
- * `generateListingContent` calls a real model when ANTHROPIC_API_KEY is set
- * (§4/§7 of CLAUDE.md — going fully live also needs the business owner's
- * sign-off + budget, so this stays inert without a key). Any failure —
- * missing key, network error, malformed model output — falls back to the
- * deterministic mock generator so the wizard never breaks.
+ * `generateListingContent` writes the listing exposé with a real model
+ * (OpenAI `gpt-4.1-nano`, same model as the rest of the site — see
+ * lib/ai/suzi-brain.ts for why that model). Any failure — missing key,
+ * network error, malformed output — falls back field-by-field to the
+ * deterministic generator, so the wizard always produces a complete
+ * listing and never blocks an owner mid-flow.
  */
 export function hasAiProvider(): boolean {
   return Boolean(process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY);
@@ -26,54 +27,118 @@ export function hasAiProvider(): boolean {
 export async function generateListingContent(
   facts: ListingFacts,
 ): Promise<GeneratedListingContent> {
-  if (process.env.ANTHROPIC_API_KEY) {
+  if (process.env.OPENAI_API_KEY) {
     try {
       return await modelGenerate(facts);
     } catch (err) {
-      console.error("[ai/service] model generation failed, falling back to mock:", err);
+      console.error("[ai/service] listing generation failed, falling back to templates:", err);
     }
   }
   return mockGenerate(facts);
 }
 
 /* ------------------------------------------------------------------ */
-/* Real model generation (Anthropic)                                   */
+/* Real model generation (OpenAI)                                      */
 /* ------------------------------------------------------------------ */
 
+/** Longer than the chat timeout: this writes a full exposé, and the owner is on a "generating…" step expecting a wait. */
+const LISTING_TIMEOUT_MS = 30_000;
+
 async function modelGenerate(facts: ListingFacts): Promise<GeneratedListingContent> {
-  const { default: Anthropic } = await import("@anthropic-ai/sdk");
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const { default: OpenAI } = await import("openai");
+  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, maxRetries: 1 });
 
   const forRent = facts.intent === "rent_out";
   const fallback = mockGenerate(facts);
 
-  const prompt = `You are Suzi, Zouza's AI real-estate marketing assistant. Write a compelling, honest listing exposé for a property with these facts (Spain-first platform, pure intermediary — never mention payment processing, escrow, or give tax/legal advice):
+  const system = `You are Suzi, Zouza's AI real-estate copywriter for Spain. You write listing exposés that are warm and appealing but strictly honest.
 
-${JSON.stringify(facts, null, 2)}
+RULES
+- Use only the facts given. Never invent a feature, measurement, view, or nearby amenity that isn't in the data.
+- Never give legal, tax or financial advice, and never predict prices or promise investment returns.
+- Never mention payment processing, escrow, deposits held by Zouza, or rent guarantees — Zouza is a pure intermediary and handles none of those.
+- Write naturally, as a person would. No estate-agent clichés ("nestled", "boasts", "stunning opportunity").
+- Write in English.`;
 
-This is a ${forRent ? "long-term rental" : "sale"} listing. Return ONLY a JSON object with exactly these keys (no markdown fences, no commentary):
-- title (string)
-- summary (string, one line)
-- description (string, 2-4 short paragraphs)
-- featureBullets (string[])
-- lifestyleParagraph (string)
-- locationParagraph (string)
-- idealProfile (string)
-- priceExplanation (string)
-- ownerRulesSummary (string)
-- verificationChecklist (string[])
-- faq (array of {question, answer}, 5-7 items)
-- agentKnowledgeBase (string[], short factual bullet points a property-chat agent can quote from)
-- translations (object with keys ${TRANSLATION_LANGUAGES.map((l) => `"${l}"`).join(", ")}, each value "ready" or "pending")`;
+  const response = await client.chat.completions.create(
+    {
+      model: "gpt-4.1-nano",
+      messages: [
+        { role: "system", content: system },
+        {
+          role: "user",
+          content: [
+            `Write the listing for this ${forRent ? "long-term rental" : "property for sale"}.`,
+            "",
+            "HOW TO READ THE FIGURES (state these correctly or not at all):",
+            forRent
+              ? `- price = monthly rent in euros.\n- utilities_monthly = estimated monthly utilities, paid by the tenant on top of rent.\n- deposit = one-off refundable deposit.\n- platform_fee_percent = a percentage of ONE MONTH'S rent, not of annual rent and not of the deposit.\n- Total due at move-in is ${formatPrice(totalMoveIn({ price_monthly: facts.price, utilities_monthly: facts.utilities_monthly, deposit: facts.deposit ?? facts.price, platform_fee_percent: facts.platform_fee_percent }))} — use this figure if you mention a total.`
+              : `- price = the asking price in euros, direct from the owner with no agency commission.\n- Do not state purchase taxes or notary fees as amounts; they vary by region and buyer, and you must not advise on them.`,
+            "- Any field that is null, empty or absent is unknown: say nothing about it rather than guessing.",
+            "",
+            "FACTS:",
+            JSON.stringify(facts, null, 2),
+          ].join("\n"),
+        },
+      ],
+      response_format: {
+        type: "json_schema",
+        json_schema: {
+          name: "listing_content",
+          strict: true,
+          schema: {
+            type: "object",
+            properties: {
+              title: { type: "string" },
+              summary: { type: "string", description: "One line." },
+              description: { type: "string", description: "2-4 short paragraphs, separated by blank lines." },
+              featureBullets: { type: "array", items: { type: "string" } },
+              lifestyleParagraph: { type: "string" },
+              locationParagraph: { type: "string" },
+              idealProfile: { type: "string", description: "Who this home suits." },
+              priceExplanation: { type: "string", description: "Plain explanation of the costs, using only the figures given." },
+              ownerRulesSummary: { type: "string" },
+              verificationChecklist: { type: "array", items: { type: "string" } },
+              faq: {
+                type: "array",
+                description: "5-7 questions a real enquirer would ask, answered from the facts.",
+                items: {
+                  type: "object",
+                  properties: { question: { type: "string" }, answer: { type: "string" } },
+                  required: ["question", "answer"],
+                  additionalProperties: false,
+                },
+              },
+              agentKnowledgeBase: {
+                type: "array",
+                description: "Short factual bullets the property chat assistant can quote.",
+                items: { type: "string" },
+              },
+            },
+            required: [
+              "title",
+              "summary",
+              "description",
+              "featureBullets",
+              "lifestyleParagraph",
+              "locationParagraph",
+              "idealProfile",
+              "priceExplanation",
+              "ownerRulesSummary",
+              "verificationChecklist",
+              "faq",
+              "agentKnowledgeBase",
+            ],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    { timeout: LISTING_TIMEOUT_MS },
+  );
 
-  const response = await client.messages.create({
-    model: "claude-sonnet-5",
-    max_tokens: 4096,
-    messages: [{ role: "user", content: prompt }],
-  });
-
-  const text = response.content.find((block) => block.type === "text")?.text;
-  if (!text) throw new Error("No text content in model response");
+  const text = response.choices[0]?.message?.content;
+  if (!text) throw new Error("No content in model response");
 
   const parsed = JSON.parse(text) as Partial<GeneratedListingContent>;
 

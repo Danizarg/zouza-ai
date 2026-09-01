@@ -1,13 +1,20 @@
 "use server";
 
-import { answerAgentQuestion, chatRespond, generateListingContent } from "@/lib/ai/service";
+import {
+  answerAgentQuestion,
+  chatRespond,
+  generateListingContent,
+  interpretSearchQuery,
+} from "@/lib/ai/service";
 import { generateSuziReply, NAVIGATION_TARGETS, type SuziTurn } from "@/lib/ai/suzi-brain";
 import { getSuziResponse } from "@/lib/ai/suzi-assistant";
 import type { SuziContext, SuziReply } from "@/lib/ai/suzi-assistant";
+import { aiSearchListings } from "@/lib/ai/suzi-search";
 import { sendTeamNotification } from "@/lib/email";
 import { getMockListing, MOCK_LISTINGS } from "@/lib/mock-data";
+import { checkRateLimit, RATE_LIMITED_MESSAGE } from "@/lib/rate-limit";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
-import type { GeneratedListingContent, ListingFacts } from "@/lib/types";
+import type { GeneratedListingContent, ListingFacts, SearchMatch } from "@/lib/types";
 import { z } from "zod";
 
 /**
@@ -42,6 +49,7 @@ export async function suziReplyAction(
   if (!trimmed) {
     return { text: "Tell me what you're looking for and I'll take it from there.", navigation: null };
   }
+  if (!(await checkRateLimit())) return { text: RATE_LIMITED_MESSAGE, navigation: null };
 
   const result = await generateSuziReply(trimmed, {
     route: context.route,
@@ -61,6 +69,7 @@ export async function suziReplyAction(
 export async function homeChatAction(message: string, history: SuziTurn[] = []): Promise<string> {
   const trimmed = message.trim();
   if (!trimmed) return chatRespond(trimmed);
+  if (!(await checkRateLimit())) return RATE_LIMITED_MESSAGE;
 
   const result = await generateSuziReply(trimmed, {
     route: "/",
@@ -85,6 +94,7 @@ export async function propertyChatAction(
   const listing = getMockListing(listingId);
   if (!listing) return "I couldn't load that property just now — try refreshing the page.";
   if (!trimmed) return answerAgentQuestion(listing, trimmed);
+  if (!(await checkRateLimit())) return RATE_LIMITED_MESSAGE;
 
   const result = await generateSuziReply(trimmed, {
     route: `/property/${listing.slug}`,
@@ -92,6 +102,21 @@ export async function propertyChatAction(
     history,
   });
   return result?.reply ?? answerAgentQuestion(listing, trimmed);
+}
+
+/**
+ * AI-driven natural-language property search. The model ranks the real
+ * catalogue and writes its own reason per match; falls back to the
+ * deterministic scorer in lib/ai/service.ts if it's unavailable, so the
+ * search page always returns something.
+ */
+export async function aiSearchAction(query: string): Promise<SearchMatch[]> {
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+  if (!(await checkRateLimit())) return interpretSearchQuery(trimmed, MOCK_LISTINGS);
+
+  const results = await aiSearchListings(trimmed, MOCK_LISTINGS);
+  return results ?? interpretSearchQuery(trimmed, MOCK_LISTINGS);
 }
 
 const contactSchema = z.object({

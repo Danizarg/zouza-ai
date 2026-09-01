@@ -1,10 +1,10 @@
 "use client";
 
+import { aiSearchAction } from "@/app/actions";
 import { ListingCard } from "@/components/listing-card";
 import { Input } from "@/components/ui/field";
-import { interpretSearchQuery } from "@/lib/ai/service";
 import { MOCK_LISTINGS } from "@/lib/mock-data";
-import type { Listing } from "@/lib/types";
+import type { Listing, SearchMatch } from "@/lib/types";
 import { ArrowRight, Search, SlidersHorizontal, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -18,14 +18,11 @@ const EXAMPLES = [
 export default function AiSearchPage() {
   const [query, setQuery] = useState("");
   const [submitted, setSubmitted] = useState<string | null>(null);
+  const [results, setResults] = useState<SearchMatch[]>([]);
+  const [searching, setSearching] = useState(false);
   const [refineOpen, setRefineOpen] = useState(false);
   const [minBeds, setMinBeds] = useState(0);
   const [maxBudget, setMaxBudget] = useState<number | "">("");
-
-  const results = useMemo(() => {
-    if (!submitted) return [];
-    return interpretSearchQuery(submitted, MOCK_LISTINGS);
-  }, [submitted]);
 
   const refined = useMemo(() => {
     const base: (Listing & { match_reason?: string })[] = submitted
@@ -41,9 +38,14 @@ export default function AiSearchPage() {
     });
   }, [submitted, results, minBeds, maxBudget]);
 
-  function runSearch(q: string) {
-    setQuery(q);
-    setSubmitted(q);
+  async function runSearch(q: string) {
+    const trimmed = q.trim();
+    if (!trimmed || searching) return;
+    setQuery(trimmed);
+    setSubmitted(trimmed);
+    setSearching(true);
+    setResults(await aiSearchAction(trimmed));
+    setSearching(false);
   }
 
   return (
@@ -76,10 +78,11 @@ export default function AiSearchPage() {
         </div>
         <button
           type="submit"
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-navy-950 px-6 py-3.5 text-sm font-medium text-ivory transition-colors hover:bg-navy-800"
+          disabled={searching}
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-navy-950 px-6 py-3.5 text-sm font-medium text-ivory transition-colors hover:bg-navy-800 disabled:opacity-60"
         >
           <Sparkles className="h-4 w-4" aria-hidden />
-          Search with AI
+          {searching ? "Searching…" : "Search with AI"}
         </button>
       </form>
 
@@ -100,7 +103,9 @@ export default function AiSearchPage() {
 
       <div className="mt-8 flex items-center justify-between border-t border-line pt-6">
         <p className="text-sm text-navy-600">
-          {submitted ? (
+          {searching ? (
+            "Suzi is reading through the listings…"
+          ) : submitted ? (
             <>
               <span className="font-semibold text-navy-900">{refined.length}</span> match
               {refined.length === 1 ? "" : "es"}

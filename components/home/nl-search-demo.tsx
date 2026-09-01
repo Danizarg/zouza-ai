@@ -1,23 +1,58 @@
 "use client";
 
+import { aiSearchAction } from "@/app/actions";
 import { interpretSearchQuery } from "@/lib/ai/service";
 import { MOCK_LISTINGS } from "@/lib/mock-data";
 import type { SearchMatch } from "@/lib/types";
 import { formatPrice } from "@/lib/utils";
 import { ArrowRight, MessageCircle, Search } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-const DEFAULT_QUERY = "I'm moving from Germany to Marbella. Budget €900,000. Need 3 bedrooms. Walking distance to beach.";
+/**
+ * Chosen so the demo has genuine matches in the catalogue. An earlier
+ * default asked for Marbella under €900,000 — the only Marbella property is
+ * €2.95M, so a correct AI search returned nothing and the demo looked
+ * broken. Keep this query satisfiable if the listings change.
+ */
+const DEFAULT_QUERY = "I'm moving from Germany with my family. Around €900,000, three bedrooms, walking distance to the beach.";
 
 export function NlSearchDemo() {
   const [query, setQuery] = useState(DEFAULT_QUERY);
+  // Seeded synchronously with the deterministic scorer purely so the demo
+  // paints instantly instead of flashing empty — a server action can't run
+  // during render. The effect below immediately replaces it with real AI
+  // output, so what the visitor actually reads is never template text.
   const [results, setResults] = useState<SearchMatch[]>(() => interpretSearchQuery(DEFAULT_QUERY, MOCK_LISTINGS));
   const [searched, setSearched] = useState(true);
+  const [searching, setSearching] = useState(false);
 
-  function runSearch(q: string) {
-    setResults(interpretSearchQuery(q, MOCK_LISTINGS));
+  useEffect(() => {
+    // No mounted-once ref guard here: in React StrictMode the component
+    // mounts, unmounts, then remounts, so a ref guard would skip the second
+    // mount's fetch while the first mount's had already been cancelled by
+    // cleanup — leaving the template seed on screen forever. The `cancelled`
+    // flag alone is the correct guard; StrictMode costs one extra call in
+    // dev only.
+    let cancelled = false;
+    // Apply whatever the AI returns, including an empty result — silently
+    // keeping the template seed on an empty answer would misrepresent the
+    // AI as having found matches it didn't.
+    void aiSearchAction(DEFAULT_QUERY).then((r) => {
+      if (!cancelled) setResults(r);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function runSearch(q: string) {
+    const trimmed = q.trim();
+    if (!trimmed || searching) return;
+    setSearching(true);
+    setResults(await aiSearchAction(trimmed));
     setSearched(true);
+    setSearching(false);
   }
 
   return (
@@ -41,9 +76,10 @@ export function NlSearchDemo() {
         </div>
         <button
           type="submit"
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-navy-950 px-6 py-3 text-sm font-medium text-ivory transition-colors hover:bg-navy-800"
+          disabled={searching}
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-navy-950 px-6 py-3 text-sm font-medium text-ivory transition-colors hover:bg-navy-800 disabled:opacity-60"
         >
-          Search with AI
+          {searching ? "Searching…" : "Search with AI"}
         </button>
       </form>
 
@@ -69,7 +105,11 @@ export function NlSearchDemo() {
                     </span>
                   </div>
 
-                  {r.reasons.length > 0 ? (
+                  {/* AI results carry a written `match_reason`; the deterministic
+                      fallback carries a structured `reasons` list instead. */}
+                  {r.match_reason ? (
+                    <p className="mt-3 text-xs text-navy-600">{r.match_reason}</p>
+                  ) : r.reasons.length > 0 ? (
                     <ul className="mt-3 grid gap-1.5 sm:grid-cols-2">
                       {r.reasons.map((reason) => (
                         <li key={reason.label} className="text-xs text-navy-600">

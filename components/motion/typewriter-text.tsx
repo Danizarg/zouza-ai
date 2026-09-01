@@ -4,9 +4,27 @@ import { useEffect, useRef, useState } from "react";
 
 interface TypewriterTextProps {
   text: string;
+  /** Override the per-character interval. Omit to use the adaptive pace below. */
   speed?: number;
   onDone?: () => void;
   className?: string;
+}
+
+/**
+ * Total time the animation should aim to take, regardless of length. A
+ * fixed per-character speed was fine for the old short canned replies, but
+ * real generated replies run 200-400 characters — at the previous flat
+ * 14ms that was 3-6 seconds of watching text crawl *after* the model had
+ * already answered. Pacing to a target duration keeps the effect while
+ * bounding the wait.
+ */
+const TARGET_DURATION_MS = 900;
+const MIN_CHAR_MS = 4;
+const MAX_CHAR_MS = 14;
+
+function paceFor(length: number): number {
+  if (length === 0) return MAX_CHAR_MS;
+  return Math.min(MAX_CHAR_MS, Math.max(MIN_CHAR_MS, TARGET_DURATION_MS / length));
 }
 
 /**
@@ -15,7 +33,7 @@ interface TypewriterTextProps {
  * chat facts step, so every AI response "types" rather than appearing
  * instantly. Respects prefers-reduced-motion by rendering instantly.
  */
-export function TypewriterText({ text, speed = 14, onDone, className }: TypewriterTextProps) {
+export function TypewriterText({ text, speed, onDone, className }: TypewriterTextProps) {
   const [shown, setShown] = useState("");
   // Keep the latest callback in a ref (updated post-render, not during) so
   // the typing effect only depends on `text` — including `onDone` directly
@@ -41,15 +59,22 @@ export function TypewriterText({ text, speed = 14, onDone, className }: Typewrit
       return () => window.clearTimeout(id);
     }
 
+    const charMs = speed ?? paceFor(text.length);
+    // At the fast end one character per tick would need sub-frame timers,
+    // so reveal several characters per tick instead and keep the interval
+    // at a length the browser can actually honour.
+    const step = Math.max(1, Math.ceil(MIN_CHAR_MS / charMs));
+    const tickMs = charMs * step;
+
     let i = 0;
     const id = window.setInterval(() => {
-      i += 1;
+      i += step;
       setShown(text.slice(0, i));
       if (i >= text.length) {
         window.clearInterval(id);
         onDoneRef.current?.();
       }
-    }, speed);
+    }, tickMs);
     return () => window.clearInterval(id);
   }, [text, speed]);
 

@@ -21,18 +21,29 @@ import OpenAI from "openai";
  * generated prose and site navigation are not mutually exclusive.
  */
 
-const MODEL = "gpt-5-nano";
-
 /**
- * `gpt-5-nano` is a reasoning model: left at its default effort it spends
- * many seconds thinking before writing, which measured at 20s+ per reply
- * here — unusable for live chat. Conversation doesn't need deep reasoning,
- * so effort is pinned low. Combined with `maxRetries: 0` below (a retried
- * timeout just multiplies the wait; the first failure already means we
- * should fall back), this keeps replies inside a few seconds.
+ * `gpt-4.1-nano`, deliberately NOT a reasoning model.
+ *
+ * Measured on this workload (3 runs each, same prompt):
+ *   gpt-5-nano  default effort  20s+   (timed out)
+ *   gpt-5-nano  effort=low      4226ms  514 output tokens
+ *   gpt-5-nano  effort=minimal  1358ms  115 output tokens
+ *   gpt-4.1-nano                 995ms   44 output tokens
+ *   gpt-4o-mini                 1042ms   65 output tokens
+ *
+ * The gap is reasoning tokens: gpt-5-nano thinks before it writes, and for
+ * a short conversational reply that thinking is pure latency and pure cost.
+ * gpt-4.1-nano is ~4x faster AND ~7x cheaper per message here (its slightly
+ * higher input price is far outweighed by emitting a tenth of the output
+ * tokens). gpt-5-nano at minimal effort also drifted into replying in
+ * Spanish unprompted, which gpt-4.1-nano did not.
+ *
+ * If you switch back to a reasoning model, re-check latency — and keep
+ * `maxRetries: 0` either way, since a retried timeout just multiplies the
+ * wait when we should be falling back instead.
  */
-const REASONING_EFFORT = "low";
-const REQUEST_TIMEOUT_MS = 25_000;
+const MODEL = "gpt-4.1-nano";
+const REQUEST_TIMEOUT_MS = 15_000;
 
 /** Where each navigable action sends the visitor. Suzi picks the action; this file owns the destination. */
 export const NAVIGATION_TARGETS: Partial<Record<ProtocolActionId, { href: string; label: string }>> = {
@@ -109,7 +120,8 @@ function describeListingInDetail(l: Listing): string {
   return lines.join("\n");
 }
 
-function buildSystemPrompt(route: string, listing: Listing | null, listings: Listing[]): string {
+/** The static half of the prompt — identical on every request, so it caches. */
+function buildSystemPrompt(): string {
   const base = `You are Suzi, the AI real estate partner for Zouza — a property platform for Spain. You are talking to a visitor on the website.
 
 WHO YOU ARE
@@ -149,21 +161,30 @@ Two special actions, neither of which navigates:
 
 If you're unsure, choose general_chat. Never describe the action itself in your reply text; if you are sending them somewhere, just say so naturally ("I'll take you to the search page").`;
 
-  const context: string[] = [`\n\nCURRENT PAGE: ${route}`];
+  return base;
+}
 
-  if (listing) {
-    context.push(
-      `\nTHE VISITOR IS LOOKING AT THIS PROPERTY. Answer questions about it from this data only:\n${describeListingInDetail(listing)}`,
-    );
-  }
-
+/**
+ * Context messages, ordered stable-prefix-first so OpenAI's automatic
+ * prompt caching can reuse as much as possible between requests: the
+ * catalogue is identical on every non-property page, while the route and
+ * the property in view change. Putting the volatile parts last keeps the
+ * cacheable prefix long.
+ */
+function buildContextMessages(route: string, listing: Listing | null, listings: Listing[]): string[] {
+  const out: string[] = [];
   if (listings.length > 0) {
-    context.push(
-      `\nPROPERTIES CURRENTLY ON ZOUZA (the only ones you may reference — if you mention one, include its /property/... link):\n${listings.map(describeListing).join("\n")}`,
+    out.push(
+      `PROPERTIES CURRENTLY ON ZOUZA (the only ones you may reference — if you mention one, include its /property/... link):\n${listings.map(describeListing).join("\n")}`,
     );
   }
-
-  return base + context.join("\n");
+  if (listing) {
+    out.push(
+      `THE VISITOR IS LOOKING AT THIS PROPERTY. Answer questions about it from this data only:\n${describeListingInDetail(listing)}`,
+    );
+  }
+  out.push(`CURRENT PAGE: ${route}`);
+  return out;
 }
 
 /**
@@ -189,9 +210,17 @@ export async function generateSuziReply(
     const response = await openai.chat.completions.create(
       {
         model: MODEL,
-        reasoning_effort: REASONING_EFFORT,
+        // Caps a runaway reply. Suzi is instructed to write 2-4 sentences;
+        // this bounds latency and cost if she ever ignores that.
+        max_tokens: 400,
         messages: [
-          { role: "system", content: buildSystemPrompt(route, listing, listings) },
+          // Static persona/rules first, then context, then history — a
+          // stable prefix for prompt caching (see buildContextMessages).
+          { role: "system", content: buildSystemPrompt() },
+          ...buildContextMessages(route, listing, listings).map((content) => ({
+            role: "system" as const,
+            content,
+          })),
           // Last few turns only — enough for continuity, bounded for cost.
           ...history.slice(-8).map((t) => ({ role: t.role, content: t.content })),
           { role: "user", content: message },

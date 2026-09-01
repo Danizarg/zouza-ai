@@ -234,17 +234,36 @@ vocabulary** — she picks one action per reply, and `NAVIGATION_TARGETS` in
 `suzi-brain.ts` owns where each one goes. Code still owns every
 destination; the model only chooses among them.
 
-**Three performance settings that are load-bearing — do not remove:**
-- `reasoning_effort: "low"` — `gpt-5-nano` is a *reasoning* model. At
-  default effort it took **20+ seconds** per reply. Conversation doesn't
-  need deep reasoning. This is the single biggest speed lever.
+**MODEL CHOICE IS A HARD RULE FROM THE OWNER: `gpt-4.1-nano`, OpenAI, do
+not change it without asking.** It is also the right call on measurement.
+Benchmarked on this workload, 3 runs each, identical prompt:
+
+| Model | Avg latency | Output tokens |
+|---|---|---|
+| `gpt-5-nano` default effort | 20s+ (timed out) | — |
+| `gpt-5-nano` effort=low | 4226ms | 514 |
+| `gpt-5-nano` effort=minimal | 1358ms | 115 |
+| **`gpt-4.1-nano`** | **995ms** | **44** |
+| `gpt-4o-mini` | 1042ms | 65 |
+
+The gap is *reasoning tokens*: `gpt-5-nano` thinks before it writes, which
+for a short conversational reply is pure latency and pure cost. Despite a
+higher per-input-token price, `gpt-4.1-nano` is ~7x cheaper per message
+here because it emits a tenth of the output tokens. `gpt-5-nano` at minimal
+effort also drifted into replying in **Spanish** unprompted; `gpt-4.1-nano`
+did not.
+
+**Load-bearing settings — do not remove:**
 - `maxRetries: 0` on the client — the SDK retries timeouts twice by
   default, which turned one 20s timeout into a measured **62-second** wait
-  before falling back. A timed-out chat request should fail fast to the
-  fallback, not retry.
-- `REQUEST_TIMEOUT_MS = 25_000` — ceiling before falling back.
+  before falling back. A timed-out chat request should fail fast.
+- `max_tokens: 400` on chat — caps a runaway reply.
+- Prompt ordering in `buildContextMessages()` — static persona first, then
+  catalogue, then the volatile route/property. That keeps the longest
+  possible stable prefix for OpenAI's automatic prompt caching.
 
-Together these took replies from 62s (timing out) to **~2-4s typical**.
+Measured end state: chat **~1.3s**, search **~1.7s**, listing generation
+**~7.5s** (a much larger output, behind the wizard's animated step).
 
 **Surfaces now generative** (all via server actions in `app/actions.ts`,
 never called directly from a Client Component — they read `OPENAI_API_KEY`):
@@ -293,16 +312,28 @@ Field-by-field validates the parsed response against the deterministic
 mock's output, falls back to `mockGenerate()` entirely on any failure.
 **Untested against a real key** — only the "key absent" branch is verified.
 
-### 4c. Still deterministic — the remaining gap
+### 4c. AI coverage — every visitor-facing surface (as of 2026-08-24)
 
-`interpretSearchQuery` (`/ai-search` and the homepage NL-search demo) is
-still regex parsing + scoring, and the `match_reason` strings it shows
-visitors ("Matches because it's located in…") are template-built. Under the
-owner's "nothing preset" requirement (§4e) **this is the last surface that
-doesn't meet the bar** — it's a ranking task rather than a chat task, so it
-needs its own integration (return ranked listing IDs + a written reason per
-match), not just a call to `generateSuziReply`. Flagged as the next AI
-task in §8 P1.
+| Surface | Runs on | Entry point |
+|---|---|---|
+| Global Suzi widget | `gpt-4.1-nano` | `suziReplyAction` |
+| Homepage hero chat + CTA prompt | `gpt-4.1-nano` | `homeChatAction` |
+| Property page chat + homepage agent demo | `gpt-4.1-nano` | `propertyChatAction` |
+| `/ai-search` | `gpt-4.1-nano` | `aiSearchAction` → `lib/ai/suzi-search.ts` |
+| Homepage NL-search demo | `gpt-4.1-nano` | `aiSearchAction` (fires on mount) |
+| `/list-with-ai` listing generation | `gpt-4.1-nano` | `generateListingAction` → `modelGenerate` |
+
+**The only deterministic code a visitor can still see** is the instant-paint
+seed in `nl-search-demo.tsx`: a server action can't run during render, so
+the section paints with `interpretSearchQuery` output and an effect replaces
+it with real AI ~1.5s later. Everything else deterministic is *fallback
+only* — reached when the model fails.
+
+**`/list-with-ai` was silently broken before this pass:** it was wired to
+Anthropic (`claude-sonnet-5`) while only `OPENAI_API_KEY` was ever set, so
+the guard never fired and every "AI-generated" listing was actually a
+template. It now runs on OpenAI like everything else. `@anthropic-ai/sdk`
+has been uninstalled — nothing references it.
 
 ### 4d. Live-tested and WORKING as of 2026-08-24
 
@@ -602,7 +633,39 @@ Environment Variables** before they'll work in production — local
 
 ## 11. Verification log
 
-- **2026-08-24 (latest):** **Suzi rebuilt as fully generative** after the
+- **2026-08-24 (latest):** **AI extended to every surface, and switched to
+  `gpt-4.1-nano`** (owner's hard rule; also 4x faster and ~7x cheaper —
+  §4e benchmark). Added AI search (`lib/ai/suzi-search.ts`), moved listing
+  generation off Anthropic onto OpenAI, added rate limiting
+  (`lib/rate-limit.ts`) since every AI action is unauthenticated and spends
+  money. Uninstalled the now-unused `@anthropic-ai/sdk`. Bugs found and
+  fixed while testing:
+  - **`/list-with-ai` was silently faking it** — wired to Anthropic while
+    only `OPENAI_API_KEY` was set, so every "AI-written" listing was a
+    template. The core owner journey was not actually using AI at all.
+  - **Listing copy misstated money** — the model wrote "2% of the annual
+    rent" when the fee is 2% of *one month*; the raw facts never said which.
+    Fixed by labelling every figure in the prompt and passing the computed
+    move-in total. Re-verified: now "€26… total €2,736", matching exactly.
+  - **AI search returned zero matches** — the prompt was long and
+    constraint-heavy, and a small model over-indexed on the "never invent"
+    warnings. Rewritten shorter and directive-first, with the catalogue in
+    its own system message. Now returns honest near-misses ("slightly above
+    €1,200 at €1,450") instead of nothing.
+  - **Homepage demo never showed AI** — a `useRef` mount guard combined with
+    React StrictMode's mount→unmount→remount meant the only fetch issued was
+    the one cleanup cancelled, so the template seed stayed on screen
+    permanently. Removed the ref guard.
+  - **Homepage demo's default query was unsatisfiable** — it asked for
+    Marbella under €900,000 when the only Marbella property is €2.95M, so a
+    *correct* AI search returned nothing and the demo looked broken.
+  - **Rate limit was too tight** (12/min) once the homepage fires a search
+    on mount; raised to 30/min, which still stops abuse.
+  - **Typewriter animation was the real remaining lag** — a flat 14ms/char
+    meant 3-6s of crawl *after* the model had answered. Now paced to a
+    ~900ms target regardless of length.
+  `tsc`/lint/build clean; all temporary test routes removed.
+- **2026-08-24 (earlier):** **Suzi rebuilt as fully generative** after the
   owner reversed the classify-only decision (§4e). New `lib/ai/suzi-brain.ts`;
   all three chat surfaces migrated; conversation history added so follow-ups
   work. Two real bugs caught and fixed during testing, both of which would
