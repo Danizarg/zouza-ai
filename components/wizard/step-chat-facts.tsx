@@ -19,6 +19,12 @@ interface QuestionStep {
   retry: string;
 }
 
+/**
+ * A "no" in a yes/no answer. It is checked before the affirmative pattern and matched on word boundaries, so
+ * "not furnished" and "not ok" read as no, and the "ok" inside "book" does not read as yes.
+ */
+const NEGATIVE_ANSWER = /\b(no|nope|not|never|cannot)\b|n['\u2019]t\b/;
+
 function buildSteps(forRent: boolean): QuestionStep[] {
   return [
     {
@@ -70,8 +76,8 @@ function buildSteps(forRent: boolean): QuestionStep[] {
       ask: "Is it furnished?",
       apply: (answer, facts) => {
         const a = answer.toLowerCase();
-        if (/(yes|yeah|furnish)/.test(a)) return { ...facts, furnished: true };
-        if (/(no|not|unfurnish)/.test(a)) return { ...facts, furnished: false };
+        if (NEGATIVE_ANSWER.test(a) || /\bunfurnish/.test(a)) return { ...facts, furnished: false };
+        if (/\b(yes|yeah|furnish)/.test(a)) return { ...facts, furnished: true };
         return null;
       },
       retry: "Just yes or no.",
@@ -80,8 +86,8 @@ function buildSteps(forRent: boolean): QuestionStep[] {
       ask: "Are pets allowed?",
       apply: (answer, facts) => {
         const a = answer.toLowerCase();
-        if (/(yes|yeah|welcome|ok)/.test(a)) return { ...facts, pets_allowed: true };
-        if (/(no|not)/.test(a)) return { ...facts, pets_allowed: false };
+        if (NEGATIVE_ANSWER.test(a)) return { ...facts, pets_allowed: false };
+        if (/\b(yes|yeah|welcome|ok|okay)\b/.test(a)) return { ...facts, pets_allowed: true };
         return null;
       },
       retry: "Just yes or no.",
