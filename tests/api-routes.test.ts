@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GET as getListing } from "@/app/api/v1/listings/[id]/route";
 import { POST as contact } from "@/app/api/v1/contact/route";
 import { POST as generate } from "@/app/api/v1/listings/generate/route";
@@ -6,9 +6,15 @@ import { GET as listings, OPTIONS as listingsOptions } from "@/app/api/v1/listin
 import { GET as meta } from "@/app/api/v1/meta/route";
 import { POST as search } from "@/app/api/v1/search/route";
 import { POST as chat } from "@/app/api/v1/suzi/chat/route";
+import { sendTeamNotification } from "@/lib/email";
 import { resetRateLimitsForTests } from "@/lib/rate-limit";
 import { PROPERTY_NOT_FOUND_REPLY } from "@/lib/server/suzi";
 import { FACTS } from "./fixtures";
+
+// The contact core emails the team inbox. Replace the mailer so a test can
+// observe whether a submission would have been sent (in mock mode the real
+// one just returns false, which is indistinguishable from "not called").
+vi.mock("@/lib/email", () => ({ sendTeamNotification: vi.fn(async () => true) }));
 
 const post = (body: unknown, ip = "1.2.3.4") =>
   new Request("http://localhost/api", {
@@ -18,7 +24,10 @@ const post = (body: unknown, ip = "1.2.3.4") =>
   });
 const get = (headers: Record<string, string> = {}) => new Request("http://localhost/api", { headers });
 
-beforeEach(() => resetRateLimitsForTests());
+beforeEach(() => {
+  resetRateLimitsForTests();
+  vi.mocked(sendTeamNotification).mockClear();
+});
 
 describe("GET /api/v1/listings", () => {
   it("returns the catalogue", async () => {
@@ -41,6 +50,13 @@ describe("GET /api/v1/listings/:id", () => {
     const bySlug = await getListing(get(), { params: Promise.resolve({ id: body.listing.slug }) });
     expect((await bySlug.json()).listing.id).toBe("l-marbella-villa");
     expect((await getListing(get(), { params: Promise.resolve({ id: "missing" }) })).status).toBe(404);
+  });
+  it("404s a lone % instead of throwing (Next has already decoded the param)", async () => {
+    // GET /api/v1/listings/%25 reaches the handler as { id: "%" }; decoding it
+    // a second time throws a URIError, which would surface as a 500.
+    const res = await getListing(get(), { params: Promise.resolve({ id: "%" }) });
+    expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({ error: "not_found" });
   });
 });
 
@@ -92,11 +108,22 @@ describe("POST /api/v1/listings/generate", () => {
 
 describe("POST /api/v1/contact", () => {
   const valid = { reason: "Support", name: "Ana", email: "ana@example.com", message: "Hello, I have a question." };
-  it("accepts a valid message", async () => {
+  it("accepts a valid message and emails the team once", async () => {
     expect(await (await contact(post(valid))).json()).toEqual({ ok: true });
+    expect(sendTeamNotification).toHaveBeenCalledTimes(1);
   });
-  it("silently drops honeypot submissions", async () => {
+  it("silently drops honeypot submissions without emailing or spending rate budget", async () => {
+    // Looks like a success to the bot...
     expect(await (await contact(post({ ...valid, company: "Spam Inc" }))).json()).toEqual({ ok: true });
+    // ...but nothing is sent.
+    expect(sendTeamNotification).not.toHaveBeenCalled();
+    // More honeypot hits than the 5/min contact limit, from the same IP...
+    for (let i = 0; i < 6; i++) {
+      expect((await contact(post({ ...valid, company: "Spam Inc" }, "9.9.9.9"))).status).toBe(200);
+    }
+    // ...must not have used up that IP's budget: a real message still goes through.
+    expect((await contact(post(valid, "9.9.9.9"))).status).toBe(200);
+    expect(sendTeamNotification).toHaveBeenCalledTimes(1);
   });
   it("400s on an invalid email", async () => {
     expect((await contact(post({ ...valid, email: "nope" }))).status).toBe(400);

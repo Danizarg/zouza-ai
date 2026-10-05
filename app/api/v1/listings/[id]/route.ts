@@ -4,8 +4,10 @@ import { findListing, getReviewsFor } from "@/lib/server/catalogue";
 export const runtime = "nodejs";
 
 export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }): Promise<Response> {
+  // Next has already URL-decoded the dynamic segment; decoding again would
+  // throw a URIError (a 500) on a literal "%" such as GET /listings/%25.
   const { id } = await ctx.params;
-  const listing = findListing(decodeURIComponent(id));
+  const listing = findListing(id);
   if (!listing) return json(req, { error: "not_found" }, { status: 404 });
   return json(
     req,
