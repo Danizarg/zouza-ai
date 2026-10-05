@@ -24,17 +24,21 @@ export function hasAiProvider(): boolean {
   return Boolean(process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY);
 }
 
-export async function generateListingContent(
+export async function generateListingContentWithSource(
   facts: ListingFacts,
-): Promise<GeneratedListingContent> {
+): Promise<{ content: GeneratedListingContent; source: "model" | "fallback" }> {
   if (process.env.OPENAI_API_KEY) {
     try {
-      return await modelGenerate(facts);
+      return { content: await modelGenerate(facts), source: "model" };
     } catch (err) {
       console.error("[ai/service] listing generation failed, falling back to templates:", err);
     }
   }
-  return mockGenerate(facts);
+  return { content: mockGenerate(facts), source: "fallback" };
+}
+
+export async function generateListingContent(facts: ListingFacts): Promise<GeneratedListingContent> {
+  return (await generateListingContentWithSource(facts)).content;
 }
 
 /* ------------------------------------------------------------------ */
@@ -63,6 +67,7 @@ RULES
   const response = await client.chat.completions.create(
     {
       model: "gpt-4.1-nano",
+      max_tokens: 2500,
       messages: [
         { role: "system", content: system },
         {
@@ -372,7 +377,7 @@ export function answerAgentQuestion(listing: Listing, question: string): string 
     return `The asking price is ${formatPrice(listing.price_sale ?? 0)}, direct from the owner with no agency commission on top. Purchase taxes and notary fees depend on the region and your situation.`;
   }
   if (/(book|schedule).*(viewing|visit|tour)/.test(q) || /(visit|viewing|see it|tour|appointment|when can i)/.test(q)) {
-    return "Yes. I can help request a viewing. The owner currently has slots available Thursday afternoon and Saturday morning — use the “Request viewing” button and I'll pass your preferred time along.";
+    return "Yes — use the “Request viewing” button with your preferred date and time, and the owner will confirm what works for them.";
   }
   if (/(garage|park)/.test(q)) {
     return listing.garage

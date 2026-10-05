@@ -79,6 +79,7 @@ export async function aiSearchListings(
     const response = await openai.chat.completions.create(
       {
         model: MODEL,
+        max_tokens: 1200,
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           // Catalogue as reference data in its own system message, so the
