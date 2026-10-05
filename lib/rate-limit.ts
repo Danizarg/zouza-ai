@@ -47,30 +47,55 @@ async function getClientKey(): Promise<string> {
   }
 }
 
+export const RATE_LIMIT_WINDOW_SECONDS = WINDOW_MS / 1000;
+
+export interface RateLimitOptions {
+  /** Client identity; defaults to the request's forwarded IP via next/headers. */
+  key?: string;
+  /** Separate counters per purpose, e.g. "ai" (default), "generate", "contact". */
+  bucket?: string;
+  max?: number;
+  windowMs?: number;
+}
+
 /**
  * Returns true if this caller is allowed to proceed, false if they've
  * exceeded the window. Fails open — a limiter bug must never take the
  * site down.
  */
-export async function checkRateLimit(): Promise<boolean> {
+export async function checkRateLimit(opts: RateLimitOptions = {}): Promise<boolean> {
   try {
-    const key = await getClientKey();
+    const client = opts.key ?? (await getClientKey());
+    const key = `${opts.bucket ?? "ai"}:${client}`;
+    const max = opts.max ?? MAX_REQUESTS_PER_WINDOW;
+    const windowMs = opts.windowMs ?? WINDOW_MS;
     const now = Date.now();
 
     if (hits.size > MAX_TRACKED_CLIENTS) pruneExpired(now);
 
     const entry = hits.get(key);
     if (!entry || entry.resetAt <= now) {
-      hits.set(key, { count: 1, resetAt: now + WINDOW_MS });
+      hits.set(key, { count: 1, resetAt: now + windowMs });
       return true;
     }
-    if (entry.count >= MAX_REQUESTS_PER_WINDOW) return false;
+    if (entry.count >= max) return false;
 
     entry.count += 1;
     return true;
   } catch {
     return true;
   }
+}
+
+/** Same identity rule as getClientKey, for Route Handlers that already hold the Request. */
+export function clientKeyFromRequest(req: Request): string {
+  const forwarded = req.headers.get("x-forwarded-for");
+  if (forwarded) return forwarded.split(",")[0]!.trim();
+  return req.headers.get("x-real-ip") ?? "unknown";
+}
+
+export function resetRateLimitsForTests(): void {
+  hits.clear();
 }
 
 export const RATE_LIMITED_MESSAGE =
