@@ -4,6 +4,7 @@ import { chatRespond, generateListingContent } from "@/lib/ai/service";
 import type { SuziReply } from "@/lib/ai/suzi-assistant";
 import type { SuziTurn } from "@/lib/ai/suzi-brain";
 import { checkRateLimit, RATE_LIMITED_MESSAGE } from "@/lib/rate-limit";
+import { findListing } from "@/lib/server/catalogue";
 import { runJoinWaitlist, runSubmitContact } from "@/lib/server/contact";
 import { runAiSearch, runFallbackSearch } from "@/lib/server/search";
 import { EMPTY_GLOBAL_REPLY, runSuziChat } from "@/lib/server/suzi";
@@ -40,7 +41,10 @@ export async function propertyChatAction(
   message: string,
   history: SuziTurn[] = [],
 ): Promise<string> {
-  if (message.trim() && !(await checkRateLimit())) return RATE_LIMITED_MESSAGE;
+  // The not-found line is answered before the limiter (runSuziChat does that
+  // for unresolvable ids), so only resolvable listings with a real message
+  // spend a token — as before the shared core.
+  if (message.trim() && findListing(listingId) && !(await checkRateLimit())) return RATE_LIMITED_MESSAGE;
   return (await runSuziChat({ message, surface: "property", listingId, history })).text;
 }
 
