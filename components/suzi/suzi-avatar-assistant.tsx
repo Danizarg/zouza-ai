@@ -104,7 +104,7 @@ export function SuziAvatarAssistant() {
     setMessages((prev) => [...prev, { role: "user", text }]);
     setInput("");
     setThinking(true);
-    const reply = await suziReplyAction(text, { route: pathname, listing }, history);
+    const reply = await suziReplyAction(text, { route: pathname, listingId: listing?.id ?? null }, history);
     setMessages((prev) => {
       const next = [...prev, { role: "suzi" as const, text: reply.text }];
       setTypingIndex(next.length - 1);
