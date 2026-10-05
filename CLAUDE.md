@@ -85,10 +85,14 @@ you need. She'll do the rest."*
   (contact form, waitlist). React Hook Form is a dependency but most forms
   are hand-rolled controlled inputs.
 - **lucide-react** icons; **Fraunces** + **Inter** via `next/font/google`.
-- No backend of its own beyond Next.js server actions + optional Supabase.
-  No separate API server, no queue, no background jobs, no `middleware.ts`.
-- **No automated test suite** (unit or e2e) anywhere in the repo — this is
-  a real gap, not a stylistic choice (see §7 P3).
+- No backend of its own beyond Next.js server actions, the versioned
+  `/api/v1` Route Handlers for the iOS app (§4g, branch `app-api-v1`) and
+  optional Supabase. No separate API server, no queue, no background jobs,
+  no `middleware.ts`.
+- **Tests:** a Vitest suite (`npm test`, `tests/`) covers the shared server
+  core and the `/api/v1` routes; it runs with every secret deleted
+  (`tests/setup.ts`) so it can never spend OpenAI credit or send email.
+  There are no UI or e2e tests yet (see §8 P3).
 
 ### Key directories
 
@@ -107,6 +111,13 @@ you need. She'll do the rest."*
   (`suziReplyAction`, `homeChatAction`) — **all AI entry points for the
   browser go through here**, never call `protocol-classifier.ts` directly
   from a Client Component (it reads `OPENAI_API_KEY`).
+- `lib/server/*` — the **shared server core** (`suzi.ts`, `search.ts`,
+  `contact.ts`, `catalogue.ts`): the real logic behind Suzi chat, AI search,
+  the contact/waitlist forms and the listing catalogue. The website's
+  server actions in `app/actions.ts` are thin wrappers over it, and so are
+  the `/api/v1` routes in `app/api/v1/` (§4g) — fix behaviour here, once.
+  `lib/api/http.ts` + `lib/api/schemas.ts` are the Route Handler plumbing
+  (CORS, JSON errors, zod request schemas).
 - `lib/supabase/` — `config.ts` (mode detection), `client.ts` (browser),
   `server.ts` (server, cookie-based).
 - `lib/mock-data.ts` — 12 seeded Spain listings + canned AI chat examples.
@@ -137,14 +148,14 @@ you need. She'll do the rest."*
 | **Dashboard auth gate** | **FIXED 2026-08-18** (this session) | See §6 — was the single most important pre-launch gap |
 | Dashboard (`/dashboard*`) | **COMPLETE UI, all mock/localStorage data** | Messaging is local-state only, never persists |
 | Marketing/legal pages | **COMPLETE (content), legally UNREVIEWED** | See §7 — needs real lawyer sign-off before real users, per the business owner's own requirements doc |
-| Suzi conversation (widget, homepage, property chat) | **COMPLETE & LIVE-VERIFIED — fully generative** | Real prose from OpenAI `gpt-5-nano`, grounded in listing data, ~2-4s replies (§4e, §4f) |
+| Suzi conversation (widget, homepage, property chat) | **COMPLETE & LIVE-VERIFIED — fully generative** | Real prose from OpenAI `gpt-4.1-nano`, grounded in listing data, ~2-4s replies (§4e, §4f) |
 | `/ai-search` natural-language search | **STILL DETERMINISTIC** | Regex + template `match_reason` strings — the last "preset" surface (§4c) |
 | Real AI model calls (listing generation) | **WIRED, UNTESTED** | Anthropic `claude-sonnet-5`; no `ANTHROPIC_API_KEY` set (§4b) |
 | Real map integration | **PLANNED** | Currently a static placeholder |
 | Contract-template library | **PLANNED** | Placeholder with disclaimer only |
 | Payments/monetization | **PLANNED — business decision not yet made** | Intentionally out of scope until the owner picks a model |
 | Verification workflow backend | **PLANNED** | Schema (`verification_records`) + UI badges exist, no document upload/review pipeline |
-| Automated tests | **NOT STARTED** | No test suite of any kind exists |
+| Automated tests | **STARTED 2026-10-05 (branch `app-api-v1`)** | Vitest suite (`npm test`) covers the shared server core and the `/api/v1` routes (§4g); no UI/e2e tests yet |
 
 ---
 
@@ -372,6 +383,127 @@ before assuming it's a billing problem** — they need completely different
 fixes. Both keys were pasted through chat; rotating to a fresh key set
 directly in Vercel (never through chat) is the recommended end state.
 
+### 4g. Public JSON API for the iOS app (`/api/v1`)
+
+Added 2026-10-05 for the new Zouza iOS app (design spec §4 in the app
+repo: `docs/superpowers/specs/2026-10-05-zouza-app-parity-design.md`). The
+app calls these Route Handlers (`app/api/v1/**/route.ts`); the website does
+not.
+
+> **`/api/v1` is a contract with shipped App Store binaries — never break
+> it; add `/api/v2` instead.** Once a build is in users' hands we cannot
+> change what it sends or expects. Do not rename, remove or retype a
+> response field, change a status code, or tighten a request schema (a
+> request the old app sends today must keep returning 200). Adding a new
+> optional response field is safe. `tests/api-routes.test.ts` pins the
+> contract — never edit an expectation just to make it pass.
+
+**Status: lives on branch `app-api-v1` (cut from local `main` @ `052b703`).
+It is NOT pushed and NOT deployed.** Deploying needs the owner's OK first,
+and the `EMAIL_*` vars (§10) must be set in Vercel beforehand —
+without them `POST /api/v1/contact` still answers `{ok: true}` but the team
+notification email silently no-ops (and with no Supabase configured the
+message is stored nowhere), so app users' messages would vanish.
+`OPENAI_API_KEY` must be set there too for `source: "model"`.
+
+**One server core.** All logic lives in `lib/server/*` (`suzi.ts`,
+`search.ts`, `contact.ts`, `catalogue.ts`) plus `lib/ai/service.ts` for
+listing generation. The website's server actions in `app/actions.ts` are
+**thin wrappers** over that core and the `/api/v1` routes are thin wrappers
+over it too, so web and app answer identically. Fix behaviour in the core,
+never in just one wrapper. Request schemas (zod) are in `lib/api/schemas.ts`;
+CORS/JSON/429 helpers are in `lib/api/http.ts`.
+
+#### Routes
+
+Every route sets `runtime = "nodejs"`, answers `OPTIONS` (CORS preflight,
+204) and speaks JSON only.
+
+| Route | Request | Success response |
+|---|---|---|
+| `GET /api/v1/listings` | — | `200 {listings: Listing[]}` |
+| `GET /api/v1/listings/:idOrSlug` | — | `200 {listing: Listing, reviews: Review[]}` · `404 {error: "not_found"}` |
+| `POST /api/v1/suzi/chat` | `{message, surface, route?, listingId?, history?}` | `200 SuziChatResult` = `{text, action, navigation, source}` |
+| `POST /api/v1/search` | `{query}` | `200 {matches: SearchMatch[], source}` |
+| `POST /api/v1/listings/generate` | `{facts: ListingFacts}` | `200 {content: GeneratedListingContent, source}` |
+| `POST /api/v1/contact` | `{reason, name, email, message, company?}` | `200 {ok: boolean, error?: string}` |
+| `GET /api/v1/meta` | — | `200 {minAppVersion: string, latestAppVersion: string}` |
+
+Request details (the zod schemas in `lib/api/schemas.ts` are authoritative):
+
+- **chat** — `message` 1–1000 chars (trimmed); `surface` is
+  `"global" | "home" | "property"`; `route` ≤200 chars; `listingId` (id or
+  slug, ≤200, nullable); `history` is `{role: "user" | "assistant",
+  content ≤1000}[]` — up to 50 turns are accepted and the **last 8** are
+  kept. `action` is a `ProtocolActionId | null`; `navigation` is
+  `{href, label} | null` (`href` is a website path such as
+  `/list-with-ai`); `source` is `"model" | "fallback"`. On the `property`
+  surface an unknown `listingId` is **not** an error: it returns `200` with
+  the fixed `PROPERTY_NOT_FOUND_REPLY` text.
+- **search** — `query` 1–500 chars (trimmed). `source` is
+  `"model" | "fallback"`.
+- **listings/generate** — `facts` must satisfy `listingFactsSchema` (every
+  `ListingFacts` field, bounded; `intent` is `"rent_out" | "sell"`).
+  `source` is `"model" | "fallback"`. `/listings/generate` is a static
+  segment next to `[id]` and wins the match; no listing may ever have the
+  slug `generate`.
+- **contact** — `reason` 1–120, `name` 2–120, valid `email`, `message`
+  10–4000. `company` is a **honeypot**: if it is non-empty the route
+  returns `200 {ok: true}` and sends/stores nothing (and does not consume
+  rate-limit budget). A failed Supabase save comes back as
+  `200 {ok: false, error}`.
+- **meta** — `minAppVersion` / `latestAppVersion` come from
+  `APP_MIN_VERSION` / `APP_LATEST_VERSION` and default to `"1.0.0"` **only
+  when the variable is unset**: the route uses `??`, so an *empty* value
+  (e.g. the blank lines copied as-is from `.env.example`) is served as `""`.
+  Set a real version or delete the line. The app shows a blocking "Update
+  Zouza" screen when its version is below `minAppVersion` — raising that env
+  var in Vercel (then redeploying) is the kill-switch for old builds.
+
+Errors, identical on every route: `400 {error: "invalid_json"}` for an
+unparseable body, `400 {error: "invalid_request", issues: [{path, message}]}`
+for a failed schema, and `429 {error: "rate_limited", message}` with a
+`Retry-After: 60` header when the caller is over budget.
+
+Never accept a client-supplied `Listing` into a prompt: the app sends only a
+`listingId`, and the core looks the listing up server-side (`findListing`).
+The model stays `gpt-4.1-nano`, and mock mode must keep working with zero
+env vars (every route falls back to the deterministic path).
+
+#### Rate limits
+
+Per client IP (first `x-forwarded-for` entry, else `x-real-ip`), 60-second
+window, via `lib/rate-limit.ts`:
+
+| Bucket | Limit | Routes |
+|---|---|---|
+| `ai` (default) | **30/min** | `suzi/chat`, `search` — the same bucket the website's AI server actions use |
+| `generate` | **6/min** | `listings/generate` (the most expensive call) |
+| `contact` | **5/min** | `contact` (every accepted message emails the team) |
+
+The limiter is **in-memory**: the counter is per serverless instance and
+resets on deploy, so on Vercel it is a speed bump, not a wall, and it fails
+open. **Move it to Upstash Redis / Vercel KV before real traffic** (§8 P2
+item 10). Validation runs before the limiter, so malformed requests do not
+spend budget.
+
+#### CORS
+
+A native iOS app ignores CORS; the headers exist only for the app's Expo-web
+dev preview. Allowed origins come from `API_ALLOWED_ORIGINS`
+(comma-separated, **never a wildcard**). Outside production the Expo dev
+origins (`http://localhost:8081`, `http://127.0.0.1:8081`,
+`http://localhost:19006`) are allowed automatically; in production only
+`API_ALLOWED_ORIGINS` applies. Allowed methods are `GET, POST, OPTIONS` and
+the only allowed request header is `Content-Type`.
+
+#### Env vars and checks
+
+New names (all optional, see §10): `API_ALLOWED_ORIGINS`,
+`APP_MIN_VERSION`, `APP_LATEST_VERSION`. Before committing changes here run
+`npm test && npm run typecheck && npm run lint && npm run build`; the build's
+route list must show all seven `ƒ /api/v1/...` routes.
+
 ---
 
 ## 5. Database & external services
@@ -549,7 +681,8 @@ ahead of the business decision to fund it:**
     is actually live in production (see §6).
 
 **P3 — polish/hygiene:**
-13. Automated test suite (none exists).
+13. Automated test suite — unit tests for the server core and `/api/v1`
+    exist (§4g); UI and e2e coverage still missing.
 14. Rename the Vercel project from `aurora-homes` to something matching
     `zouza-ai` (cosmetic only).
 
@@ -617,6 +750,9 @@ EMAIL_SMTP_PORT=                   # 587 (STARTTLS). lib/email.ts treats 465 as 
 EMAIL_SMTP_USER=                   # info@zouza.ai — the mailbox notifications are sent FROM
 EMAIL_SMTP_PASS=                   # that mailbox's password
 EMAIL_NOTIFY_TO=                   # info@zouza.ai — where contact/waitlist notifications go
+API_ALLOWED_ORIGINS=               # /api/v1 CORS allow-list, comma-separated origins; only for the app's Expo-web preview, never "*" (§4g)
+APP_MIN_VERSION=                   # /api/v1/meta minAppVersion; 1.0.0 when UNSET (an empty value is served as "" — set a version or delete the line) (§4g)
+APP_LATEST_VERSION=                # /api/v1/meta latestAppVersion; same rule (§4g)
 ```
 
 All five `EMAIL_*` vars must be set for notifications to send; if any is
