@@ -453,12 +453,10 @@ Request details (the zod schemas in `lib/api/schemas.ts` are authoritative):
   rate-limit budget). A failed Supabase save comes back as
   `200 {ok: false, error}`.
 - **meta** — `minAppVersion` / `latestAppVersion` come from
-  `APP_MIN_VERSION` / `APP_LATEST_VERSION` and default to `"1.0.0"` **only
-  when the variable is unset**: the route uses `??`, so an *empty* value
-  (e.g. the blank lines copied as-is from `.env.example`) is served as `""`.
-  Set a real version or delete the line. The app shows a blocking "Update
-  Zouza" screen when its version is below `minAppVersion` — raising that env
-  var in Vercel (then redeploying) is the kill-switch for old builds.
+  `APP_MIN_VERSION` / `APP_LATEST_VERSION` and default to `"1.0.0"` when the
+  variable is unset or empty. The app shows a blocking "Update Zouza" screen
+  when its version is below `minAppVersion` — raising that env var in Vercel
+  (then redeploying) is the kill-switch for old builds.
 
 Errors, identical on every route: `400 {error: "invalid_json"}` for an
 unparseable body, `400 {error: "invalid_request", issues: [{path, message}]}`
@@ -751,8 +749,8 @@ EMAIL_SMTP_USER=                   # info@zouza.ai — the mailbox notifications
 EMAIL_SMTP_PASS=                   # that mailbox's password
 EMAIL_NOTIFY_TO=                   # info@zouza.ai — where contact/waitlist notifications go
 API_ALLOWED_ORIGINS=               # /api/v1 CORS allow-list, comma-separated origins; only for the app's Expo-web preview, never "*" (§4g)
-APP_MIN_VERSION=                   # /api/v1/meta minAppVersion; 1.0.0 when UNSET (an empty value is served as "" — set a version or delete the line) (§4g)
-APP_LATEST_VERSION=                # /api/v1/meta latestAppVersion; same rule (§4g)
+APP_MIN_VERSION=                   # /api/v1/meta minAppVersion; 1.0.0 when unset or empty (§4g)
+APP_LATEST_VERSION=                # /api/v1/meta latestAppVersion; 1.0.0 when unset or empty (§4g)
 ```
 
 All five `EMAIL_*` vars must be set for notifications to send; if any is

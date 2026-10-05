@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GET as getListing } from "@/app/api/v1/listings/[id]/route";
 import { POST as contact } from "@/app/api/v1/contact/route";
 import { POST as generate } from "@/app/api/v1/listings/generate/route";
@@ -131,7 +131,22 @@ describe("POST /api/v1/contact", () => {
 });
 
 describe("GET /api/v1/meta", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
   it("reports app versions", async () => {
+    const body = await (await meta(get())).json();
+    expect(body).toEqual({ minAppVersion: "1.0.0", latestAppVersion: "1.0.0" });
+  });
+  it("serves the configured versions", async () => {
+    vi.stubEnv("APP_MIN_VERSION", "1.2.0");
+    vi.stubEnv("APP_LATEST_VERSION", "1.4.1");
+    const body = await (await meta(get())).json();
+    expect(body).toEqual({ minAppVersion: "1.2.0", latestAppVersion: "1.4.1" });
+  });
+  it("falls back to 1.0.0 when the env vars are empty (cp .env.example .env.local)", async () => {
+    vi.stubEnv("APP_MIN_VERSION", "");
+    vi.stubEnv("APP_LATEST_VERSION", "");
     const body = await (await meta(get())).json();
     expect(body).toEqual({ minAppVersion: "1.0.0", latestAppVersion: "1.0.0" });
   });
