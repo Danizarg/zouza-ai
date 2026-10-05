@@ -3,8 +3,8 @@
 import { ThinkingDots } from "@/components/motion/thinking-dots";
 import { TypewriterText } from "@/components/motion/typewriter-text";
 import { Button } from "@/components/ui/button";
+import { classifyPropertyType } from "@/lib/property-type";
 import type { ListingFacts } from "@/lib/types";
-import { PROPERTY_TYPES } from "@/lib/types";
 import { Send } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -33,16 +33,7 @@ function buildSteps(forRent: boolean): QuestionStep[] {
     {
       ask: "What kind of property is it — apartment, house, villa, townhouse, penthouse, finca or studio?",
       apply: (answer, facts) => {
-        const a = answer.toLowerCase();
-        const type =
-          PROPERTY_TYPES.find((t) => a.includes(t)) ??
-          (/(flat|piso)/.test(a)
-            ? "apartment"
-            : /(country house|cortijo|masia|farmhouse)/.test(a)
-              ? "finca"
-              : /(chalet)/.test(a)
-                ? "villa"
-                : null);
+        const type = classifyPropertyType(answer);
         if (!type) return null;
         return { ...facts, property_type: type };
       },
