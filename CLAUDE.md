@@ -233,12 +233,18 @@ supabase/schema.sql       Full Postgres schema + RLS + storage bucket
 
 ### Design system
 
-`app/globals.css` `@theme`. Backgrounds `ivory`/`parchment`/`sand`;
-ink `navy-900…950`; accent `gold-500/600`; primary CTA `terra-600`
-(terracotta). Utilities `.container-page`, `.eyebrow`, `.glow-cta`
-(reserved for primary "Start with Suzi" CTAs only). Shadows
-`shadow-card` / `shadow-lift`. Radius: `rounded-2xl` cards,
-`rounded-full` buttons/badges.
+**v2 (violet) since 2026-10-16.** `app/globals.css` `@theme`, mirrored
+hex-for-hex in `design/tokens.json` for the mobile app. Brand scale
+`brand-50…950` (primary `brand-500` #7255F0, dark bands `brand-900`);
+neutrals `paper`/`paper-2`/`surface`, `border`/`border-strong`,
+`ink`/`ink-2`/`muted`/`muted-2`/`faint`; semantic `success`/`danger`.
+The old navy/gold/terra/ivory/parchment/sand/olive tokens are **gone,
+with no aliases** — a stale class renders unstyled, on purpose.
+Utilities `.container-page`, `.eyebrow` (muted), `.glow-cta` (reserved
+for the primary "Talk to Suzi" CTA). Shadows `shadow-card` /
+`shadow-lift` (ink-tinted). Radius: `rounded-lg` controls, `rounded-xl`
+cards. Brand mark: `components/brand/z-mark.tsx` (Z mark B, "Voice") —
+never the lucide Sparkles for Zouza or Suzi.
 
 Constraints deliberately followed: one accent colour, one neutral
 background system, no gradient blobs, no glassmorphism, restrained

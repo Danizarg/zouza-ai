@@ -196,20 +196,20 @@ export function StepChatFacts({
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-navy-950 sm:text-3xl">A few quick questions</h1>
-      <p className="mt-2 text-navy-600">
+      <h1 className="text-2xl font-semibold text-ink sm:text-3xl">A few quick questions</h1>
+      <p className="mt-2 text-muted">
         Answer like you would in a chat — Suzi fills in the rest.
       </p>
 
-      <div className="mt-8 overflow-hidden rounded-xl border border-line bg-white">
+      <div className="mt-8 overflow-hidden rounded-xl border border-border bg-white">
         <div ref={scrollRef} className="h-96 space-y-3 overflow-y-auto px-5 py-4">
           {turns.map((t, i) => (
             <div key={i} className={t.role === "user" ? "flex justify-end" : "flex justify-start"}>
               <p
                 className={
                   t.role === "user"
-                    ? "max-w-[80%] rounded-xl rounded-br-md bg-navy-950 px-4 py-2.5 text-sm leading-relaxed text-ivory"
-                    : "max-w-[80%] rounded-xl rounded-bl-md bg-parchment px-4 py-2.5 text-sm leading-relaxed text-navy-800"
+                    ? "max-w-[80%] rounded-xl rounded-br-md bg-brand-900 px-4 py-2.5 text-sm leading-relaxed text-paper"
+                    : "max-w-[80%] rounded-xl rounded-bl-md bg-paper-2 px-4 py-2.5 text-sm leading-relaxed text-ink-2"
                 }
               >
                 {t.role === "ai" && i === typingIndex ? (
@@ -222,7 +222,7 @@ export function StepChatFacts({
           ))}
           {thinking ? (
             <div className="flex justify-start">
-              <p className="flex items-center gap-2 rounded-xl rounded-bl-md bg-parchment px-4 py-2.5 text-sm text-navy-500">
+              <p className="flex items-center gap-2 rounded-xl rounded-bl-md bg-paper-2 px-4 py-2.5 text-sm text-muted">
                 Suzi is thinking <ThinkingDots />
               </p>
             </div>
@@ -234,7 +234,7 @@ export function StepChatFacts({
             e.preventDefault();
             submit();
           }}
-          className="flex items-center gap-2 border-t border-line bg-ivory px-5 py-3"
+          className="flex items-center gap-2 border-t border-border bg-paper px-5 py-3"
         >
           <input
             value={input}
@@ -243,13 +243,13 @@ export function StepChatFacts({
             disabled={done || thinking}
             aria-label="Your answer"
             autoFocus
-            className="flex-1 rounded-lg border border-line bg-white px-4 py-2 text-sm focus:border-navy-400 focus:outline-none disabled:opacity-50"
+            className="flex-1 rounded-lg border border-border bg-white px-4 py-2 text-sm focus:border-brand-500 disabled:opacity-50"
           />
           <button
             type="submit"
             disabled={done || thinking || !input.trim()}
             aria-label="Send"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy-950 text-ivory disabled:opacity-40 cursor-pointer"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-900 text-paper disabled:opacity-40 cursor-pointer"
           >
             <Send className="h-4 w-4" aria-hidden />
           </button>

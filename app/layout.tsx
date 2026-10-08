@@ -1,7 +1,8 @@
 import { CursorGlow } from "@/components/motion/cursor-glow";
+import { MotionProvider } from "@/components/motion/motion-provider";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { SuziAvatarAssistant } from "@/components/suzi/suzi-avatar-assistant";
+import { SuziWidget } from "@/components/suzi/suzi-widget";
 import type { Metadata } from "next";
 import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
@@ -51,11 +52,13 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${fraunces.variable} ${inter.variable} h-full`}>
       <body className="flex min-h-full flex-col">
-        <CursorGlow />
-        <SiteHeader />
-        <main className="flex-1">{children}</main>
-        <SiteFooter />
-        <SuziAvatarAssistant />
+        <MotionProvider>
+          <CursorGlow />
+          <SiteHeader />
+          <main className="flex-1">{children}</main>
+          <SiteFooter />
+          <SuziWidget />
+        </MotionProvider>
       </body>
     </html>
   );

@@ -50,7 +50,7 @@ export default function TermsPage() {
         <p>
           Verification badges reflect a best-effort review process and are
           not a guarantee. See our{" "}
-          <a href="/trust" className="underline hover:text-navy-900">Trust &amp; verification</a>{" "}
+          <a href="/trust" className="underline hover:text-ink">Trust &amp; verification</a>{" "}
           page for details.
         </p>
       </LegalSection>

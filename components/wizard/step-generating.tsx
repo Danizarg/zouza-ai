@@ -1,7 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { BadgeCheck, FileText, Languages, MessageCircle, Search, Sparkles } from "lucide-react";
+import { ZMark, ZPulse } from "@/components/brand/z-mark";
+import { BadgeCheck, FileText, MessageCircle, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const STAGES = [
@@ -9,8 +9,7 @@ const STAGES = [
   { icon: BadgeCheck, label: "Detecting features" },
   { icon: FileText, label: "Writing exposé" },
   { icon: MessageCircle, label: "Creating FAQ" },
-  { icon: Languages, label: "Preparing translations" },
-  { icon: Sparkles, label: "Building property AI agent" },
+  { icon: ZMark, label: "Teaching Suzi this property" },
 ] as const;
 
 /** Purely presentational — advances a progress narrative while the caller awaits the real (or mock) AI call. */
@@ -28,20 +27,15 @@ export function StepGenerating({ onDone }: { onDone: () => void }) {
 
   return (
     <div className="flex flex-col items-center py-10 text-center">
-      <motion.span
-        className="flex h-16 w-16 items-center justify-center rounded-full bg-navy-900 text-gold-300"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 2.4, repeat: Infinity, ease: "linear" }}
-      >
-        <Sparkles className="h-7 w-7" aria-hidden />
-      </motion.span>
-      <h1 className="mt-6 text-2xl font-semibold text-navy-950 sm:text-3xl">
-        Zouza is creating your listing
+      {/* Suzi's mark in its "thinking" state: the stroke draws itself in a
+          1.8s loop (CSS-only, still under prefers-reduced-motion). */}
+      <span className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-900 text-brand-300">
+        <ZPulse state="thinking" className="h-8 w-8" />
+      </span>
+      <h1 className="mt-6 text-2xl font-semibold text-ink sm:text-3xl">
+        Suzi is creating your listing
       </h1>
-      <p className="mt-2 max-w-sm text-navy-600">
-        This normally takes a few seconds — writing something a real agent
-        would charge for.
-      </p>
+      <p className="mt-2 max-w-sm text-muted">This usually takes a few seconds.</p>
 
       <ul className="mt-8 w-full max-w-sm space-y-2.5 text-left">
         {STAGES.map((stage, i) => {
@@ -51,16 +45,16 @@ export function StepGenerating({ onDone }: { onDone: () => void }) {
               key={stage.label}
               className={`flex items-center gap-3 rounded-xl border px-4 py-2.5 text-sm transition-colors ${
                 state === "pending"
-                  ? "border-line bg-white text-navy-400"
-                  : "border-gold-200 bg-gold-100 text-navy-900"
+                  ? "border-border bg-white text-muted"
+                  : "border-brand-100 bg-brand-50 text-ink"
               }`}
             >
               <stage.icon
-                className={`h-4 w-4 shrink-0 ${state === "active" ? "animate-pulse text-gold-600" : state === "done" ? "text-gold-600" : "text-navy-300"}`}
+                className={`h-4 w-4 shrink-0 ${state === "active" ? "animate-pulse text-brand-600" : state === "done" ? "text-brand-600" : "text-faint"}`}
                 aria-hidden
               />
               {stage.label}
-              {state === "done" ? <BadgeCheck className="ml-auto h-4 w-4 text-gold-600" aria-hidden /> : null}
+              {state === "done" ? <BadgeCheck className="ml-auto h-4 w-4 text-brand-600" aria-hidden /> : null}
             </li>
           );
         })}

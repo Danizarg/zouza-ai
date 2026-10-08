@@ -1,12 +1,13 @@
 import { ContactForm } from "@/components/contact-form";
 import { Reveal } from "@/components/reveal";
-import { Mail, MapPin } from "lucide-react";
+import { Mail } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Contact Zouza",
-  description: "Get in touch about renting, listing, selling or buying a property, or ask about partnerships and support.",
+  description:
+    "Questions about renting, listing, selling or buying, partnerships or support — send Zouza a message and a real person replies.",
 };
 
 export default function ContactPage() {
@@ -14,38 +15,30 @@ export default function ContactPage() {
     <div className="container-page grid gap-12 py-16 md:py-20 lg:grid-cols-[1fr_1.3fr]">
       <Reveal>
         <p className="eyebrow">Contact</p>
-        <h1 className="mt-3 text-3xl font-semibold text-navy-950 sm:text-4xl">
-          Talk to Zouza
-        </h1>
-        <p className="mt-4 max-w-sm text-navy-600">
-          Whether you want to rent, list a property, sell, buy, or explore a
-          partnership — send us a message and a real person will reply.
+        <h1 className="mt-3 text-3xl font-semibold text-ink sm:text-4xl">Get in touch.</h1>
+        <p className="mt-4 max-w-sm text-muted">
+          Questions, partnerships or support — send a message and a real person replies.
         </p>
 
-        <div className="mt-8 space-y-4 text-sm text-navy-600">
-          <p className="flex items-center gap-2">
-            <Mail className="h-4 w-4 text-gold-600" aria-hidden />
-            hello@zouza.ai
-          </p>
-          <p className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-gold-600" aria-hidden />
-            Valencia, Spain (remote-first team)
-          </p>
-        </div>
+        <a
+          href="mailto:hello@zouza.ai"
+          className="mt-8 inline-flex min-h-11 items-center gap-2 text-sm text-ink-2 hover:text-ink"
+        >
+          <Mail className="h-4 w-4 text-brand-600" aria-hidden />
+          hello@zouza.ai
+        </a>
 
-        <p className="mt-8 max-w-sm text-xs leading-relaxed text-navy-500">
-          Zouza is an independent concept and is not affiliated with
-          Airbnb, Idealista, ThinkSpain, Zillow, Booking, or any other
-          rental/property platform. See our{" "}
-          <Link href="/legal/disclaimer" className="underline hover:text-navy-700">
-            full disclaimer
+        <p className="mt-8 max-w-sm text-xs leading-relaxed text-muted">
+          Zouza is an independent platform, not affiliated with any other property site.{" "}
+          <Link href="/legal/disclaimer" className="underline hover:text-ink-2">
+            Read the disclaimer
           </Link>
           .
         </p>
       </Reveal>
 
       <Reveal delay={0.08}>
-        <div className="rounded-xl border border-line bg-white p-6 shadow-card sm:p-8">
+        <div className="rounded-xl border border-border bg-surface p-6 sm:p-8">
           <ContactForm />
         </div>
       </Reveal>

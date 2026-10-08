@@ -2,8 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { Input, Label, Textarea } from "@/components/ui/field";
-import { TRANSLATION_LANGUAGES, type GeneratedListingContent } from "@/lib/types";
-import { CheckCircle2, Circle } from "lucide-react";
+import type { GeneratedListingContent } from "@/lib/types";
+import { Circle } from "lucide-react";
 
 export function StepReview({
   content,
@@ -22,8 +22,8 @@ export function StepReview({
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-navy-950 sm:text-3xl">Review your generated listing</h1>
-      <p className="mt-2 text-navy-600">Everything below is editable — make it yours before publishing.</p>
+      <h1 className="text-2xl font-semibold text-ink sm:text-3xl">Review your generated listing</h1>
+      <p className="mt-2 text-muted">Everything below is editable — make it yours before publishing.</p>
 
       <div className="mt-8 space-y-8">
         <div>
@@ -71,7 +71,7 @@ export function StepReview({
 
         <div>
           <Label>Price explanation</Label>
-          <p className="rounded-xl border border-line bg-parchment px-4 py-3 text-sm leading-relaxed text-navy-700">
+          <p className="rounded-xl border border-border bg-paper-2 px-4 py-3 text-sm leading-relaxed text-ink-2">
             {content.priceExplanation}
           </p>
         </div>
@@ -80,8 +80,8 @@ export function StepReview({
           <Label>Verification checklist</Label>
           <ul className="space-y-1.5">
             {content.verificationChecklist.map((item) => (
-              <li key={item} className="flex items-center gap-2 text-sm text-navy-600">
-                <Circle className="h-3.5 w-3.5 text-gold-500" aria-hidden />
+              <li key={item} className="flex items-center gap-2 text-sm text-muted">
+                <Circle className="h-3.5 w-3.5 text-brand-500" aria-hidden />
                 {item}
               </li>
             ))}
@@ -92,35 +92,12 @@ export function StepReview({
           <Label>FAQ</Label>
           <div className="space-y-3">
             {content.faq.map((item, i) => (
-              <div key={i} className="rounded-xl border border-line bg-white p-4">
-                <p className="text-sm font-semibold text-navy-900">{item.question}</p>
-                <p className="mt-1 text-sm text-navy-600">{item.answer}</p>
+              <div key={i} className="rounded-xl border border-border bg-white p-4">
+                <p className="text-sm font-semibold text-ink">{item.question}</p>
+                <p className="mt-1 text-sm text-muted">{item.answer}</p>
               </div>
             ))}
           </div>
-        </div>
-
-        <div>
-          <Label>Translations</Label>
-          <div className="flex flex-wrap gap-2">
-            {TRANSLATION_LANGUAGES.map((lang) => (
-              <span
-                key={lang}
-                className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-3 py-1.5 text-xs font-medium text-navy-700"
-              >
-                {content.translations[lang] === "ready" ? (
-                  <CheckCircle2 className="h-3.5 w-3.5 text-gold-600" aria-hidden />
-                ) : (
-                  <Circle className="h-3.5 w-3.5 text-navy-300" aria-hidden />
-                )}
-                {lang}
-              </span>
-            ))}
-          </div>
-          <p className="mt-2 text-xs text-navy-500">
-            English is generated immediately; other languages are prepared on
-            publish (placeholder in this demo).
-          </p>
         </div>
       </div>
 

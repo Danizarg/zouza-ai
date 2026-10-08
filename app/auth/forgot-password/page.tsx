@@ -28,17 +28,17 @@ export default function ForgotPasswordPage() {
   return (
     <AuthCard
       title="Reset your password"
-      subtitle={isSupabaseConfigured() ? "We'll email you a reset link." : "Demo mode — no email is actually sent."}
+      subtitle={isSupabaseConfigured() ? "We'll email you a reset link." : "Demo mode — no email is sent."}
       footer={
-        <Link href="/auth/sign-in" className="font-medium text-terra-600 hover:text-terra-700">
+        <Link href="/auth/sign-in" className="font-medium text-brand-600 hover:text-brand-700">
           Back to sign in
         </Link>
       }
     >
       {status === "sent" ? (
-        <div className="flex items-start gap-3 rounded-xl border border-gold-200 bg-gold-100 p-4">
-          <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-gold-700" aria-hidden />
-          <p className="text-sm text-navy-800">
+        <div className="flex items-start gap-3 rounded-xl border border-brand-100 bg-brand-50 p-4">
+          <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand-700" aria-hidden />
+          <p role="status" className="text-sm text-ink-2">
             If an account exists for {email}, a reset link is on its way.
           </p>
         </div>

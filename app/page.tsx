@@ -1,156 +1,106 @@
-import { AgentDemo } from "@/components/home/agent-demo";
-import { ConversationShowcase } from "@/components/home/conversation-showcase";
-import { Hero } from "@/components/home/hero";
-import { LiveDemo } from "@/components/home/live-demo";
-import { MiniAiPrompt } from "@/components/home/mini-ai-prompt";
+import { Doors } from "@/components/home/doors";
+import { Landing } from "@/components/home/landing";
 import { NlSearchDemo } from "@/components/home/nl-search-demo";
-import { ValueStrip } from "@/components/home/value-strip";
 import { ListingCard } from "@/components/listing-card";
 import { Reveal } from "@/components/reveal";
 import { buttonClasses } from "@/components/ui/button";
-import { MOCK_LISTINGS, MOCK_TESTIMONIALS } from "@/lib/mock-data";
-import {
-  ArrowRight,
-  CalendarCheck,
-  Camera,
-  FileText,
-  Gauge,
-  GraduationCap,
-  Handshake,
-  Landmark,
-  Languages,
-  MessageCircle,
-  Rocket,
-  Search,
-  Sparkles,
-  Tag,
-  Upload,
-  Wand2,
-  Waves,
-} from "lucide-react";
+import { interpretSearchQuery } from "@/lib/ai/service";
+import { MOCK_LISTINGS } from "@/lib/mock-data";
+import { Camera, MessageCircle, Rocket } from "lucide-react";
 import Link from "next/link";
 
-const howItWorks = [
-  { icon: MessageCircle, title: "Tell Suzi", text: "Speak or type what you need — buying, renting, selling, or listing." },
-  { icon: Sparkles, title: "Suzi finds it", text: "Our AI searches, filters and understands what actually matters to you." },
-  { icon: Search, title: "Get matches", text: "Verified homes, or a ready listing, with the reasoning behind every result." },
-  { icon: Handshake, title: "Make it happen", text: "Message owners directly, book a viewing, or publish — Suzi handles the details." },
-] as const;
+/** The example in the prompt's empty field — the campaign's "flat in Valencia" line. */
+const SUZI_PLACEHOLDER = "A flat in Valencia near the beach, under €1,500 a month…";
 
-const whySuzi = [
-  { icon: Search, label: "Finds homes", example: "Matches from plain language, not filters" },
-  { icon: Gauge, label: "Estimates prices", example: "Real market value from comparable homes" },
-  { icon: FileText, label: "Writes exposés", example: "Agency-grade descriptions from your photos" },
-  { icon: CalendarCheck, label: "Organises viewings", example: "Proposes times, confirms with the owner" },
-  { icon: GraduationCap, label: "Recommends schools", example: "Local schools near any listing" },
-  { icon: Waves, label: "Calculates beach distance", example: "Walking or driving time to the coast" },
-  { icon: Landmark, label: "Explains financing", example: "Mortgage basics, taxes, and notary fees" },
-  { icon: MessageCircle, label: "Reviews documents", example: "Flags anything that looks off before you sign" },
-] as const;
+/**
+ * The same ask, phrased so the deterministic parser ranks rentals only. It
+ * has no model to infer that "a month" means rent (the model path does), so
+ * the seeded results below the field show what Suzi would actually answer.
+ */
+const SEED_QUERY = "A flat to rent in Valencia near the beach, under €1,500 a month";
 
 const steps = [
-  { icon: Camera, title: "Upload photos", text: "Drag in the photos you already have on your phone." },
-  { icon: Wand2, title: "Suzi asks a few questions", text: "Only what she couldn't detect — pets, parking, that kind of thing." },
-  { icon: Rocket, title: "Publish", text: "Review, then go live with Suzi answering enquiries for you." },
+  { icon: Camera, label: "Upload photos" },
+  { icon: MessageCircle, label: "Answer a few questions" },
+  { icon: Rocket, label: "Go live" },
 ] as const;
 
-const aiCreates = [
-  { icon: FileText, label: "Property title", example: "“Sea-view villa with private pool in Marbella”" },
-  { icon: FileText, label: "Description", example: "A full agency-style write-up from your photos and facts" },
-  { icon: Sparkles, label: "Lifestyle text", example: "Mornings on the terrace, five minutes from the beach" },
-  { icon: MessageCircle, label: "Buyer FAQ", example: "“Are pets allowed? Is parking included?”" },
-  { icon: Tag, label: "Property highlights", example: "Pool · sea view · garage · 3 bedrooms" },
-  { icon: Gauge, label: "Price estimation", example: "Estimated range based on area, size, and features" },
-  { icon: Rocket, label: "SEO text", example: "Optimised so the listing is found, not just published" },
-  { icon: Languages, label: "Multiple languages", example: "EN / ES / DE / FR / IT / NL" },
-  { icon: MessageCircle, label: "Suzi for this listing", example: "Answers questions about this home, 24/7" },
-  { icon: Rocket, label: "Listing publication", example: "Live the moment you approve it" },
-] as const;
-
+/*
+ * Visible words (excluding listing-card data, header/footer, the Suzi widget
+ * and transient states): landing 23 · §1 36 (incl. the three "% match"
+ * badges) · §2 21 · §3 5 · §4 11 = 96, under the 140 budget. Section
+ * headings stay at or under six words.
+ */
 export default function HomePage() {
-  const featured = MOCK_LISTINGS.filter((l) => l.verified_owner && l.verified_property).slice(0, 5);
+  // Ranked here, on the server, so the client demo never imports the inventory.
+  const seeded = interpretSearchQuery(SEED_QUERY, MOCK_LISTINGS);
+  const featured = MOCK_LISTINGS.filter((l) => l.verified_owner && l.verified_property).slice(0, 3);
 
   return (
     <>
-      <Hero />
+      <Landing />
 
-      {/* Value strip */}
-      <section className="border-y border-line bg-parchment py-10 md:py-12">
-        <div className="container-page">
-          <ValueStrip />
-        </div>
-      </section>
-
-      {/* How Zouza works */}
-      <section className="container-page py-16 md:py-20">
+      {/* §1 Ask Suzi */}
+      <section id="suzi" className="container-page scroll-mt-14 py-16 md:py-20" aria-labelledby="suzi-title">
         <Reveal>
-          <p className="eyebrow">How it works</p>
-          <h2 className="mt-3 text-3xl font-semibold text-navy-950 sm:text-4xl">
-            From your words to the perfect match
+          <h2 id="suzi-title" className="text-3xl font-semibold text-ink sm:text-4xl">
+            Hi, I&rsquo;m Suzi.
           </h2>
+          <p className="mt-3 max-w-lg text-muted">Your AI real estate partner. Tell me what you need.</p>
         </Reveal>
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {howItWorks.map((step, i) => (
-            <Reveal key={step.title} delay={i * 0.06} className="relative h-full">
-              <div className="h-full border-t-2 border-navy-950 pt-4">
-                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy-950 text-gold-300">
-                  <step.icon className="h-5 w-5" aria-hidden />
-                </span>
-                <h3 className="mt-4 text-base font-semibold text-navy-950">{step.title}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-navy-600">{step.text}</p>
-              </div>
-              {i < howItWorks.length - 1 ? (
-                <span className="absolute top-4 -right-3 hidden h-5 w-5 items-center justify-center text-navy-300 lg:flex">
-                  <ArrowRight className="h-4 w-4" aria-hidden />
-                </span>
-              ) : null}
-            </Reveal>
-          ))}
-        </div>
-        <Reveal delay={0.2}>
-          <Link
-            href="/how-it-works"
-            className="mt-10 inline-flex items-center gap-2 text-sm font-medium text-navy-700 hover:text-navy-950"
-          >
-            See how it works
-            <ArrowRight className="h-4 w-4" aria-hidden />
-          </Link>
+        <Reveal delay={0.1}>
+          <div className="mt-8 max-w-3xl">
+            <NlSearchDemo placeholder={SUZI_PLACEHOLDER} seedQuery={SEED_QUERY} initialResults={seeded} />
+          </div>
         </Reveal>
       </section>
 
-      {/* Interactive AI conversation showcase */}
-      <section className="border-y border-line bg-parchment py-16 md:py-20">
+      {/* §2 List your home — the page's one paper-2 band */}
+      <section className="border-y border-border bg-paper-2 py-16 md:py-20" aria-labelledby="list-title">
         <div className="container-page">
           <Reveal>
-            <p className="eyebrow">Talk to Suzi</p>
-            <h2 className="mt-3 max-w-xl text-3xl font-semibold text-navy-950 sm:text-4xl">
-              One partner, every intent
+            <h2 id="list-title" className="text-3xl font-semibold text-ink sm:text-4xl">
+              Photos in. Listing out.
             </h2>
-            <p className="mt-3 max-w-lg text-navy-600">
-              Buy, rent, sell, list, or invest — Suzi handles the conversation,
-              by voice or by typing.
-            </p>
           </Reveal>
-          <Reveal delay={0.1}>
-            <div className="mt-10">
-              <ConversationShowcase />
+          <div className="mt-10 grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+            <Reveal>
+              <Link
+                href="/list-with-ai"
+                className="flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-border-strong bg-surface p-10 text-center transition-colors hover:border-brand-500"
+              >
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-100 text-brand-700">
+                  <Camera className="h-5 w-5" aria-hidden />
+                </span>
+                <span className="font-semibold text-ink">Start your listing</span>
+                <span className="text-xs text-muted">Free to create. €20/month once live.</span>
+              </Link>
+            </Reveal>
+            <div className="grid gap-5 sm:grid-cols-3">
+              {steps.map((s, i) => (
+                <Reveal key={s.label} delay={0.06 + i * 0.06} className="h-full">
+                  <div className="h-full border-t-2 border-brand-500 pt-4">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-900 text-brand-300">
+                      <s.icon className="h-5 w-5" aria-hidden />
+                    </span>
+                    <p className="mt-4 text-sm font-semibold text-ink">{s.label}</p>
+                  </div>
+                </Reveal>
+              ))}
             </div>
-          </Reveal>
+          </div>
         </div>
       </section>
 
-      {/* Featured properties */}
-      <section className="container-page py-16 md:py-20">
+      {/* §3 Homes on Zouza */}
+      <section className="container-page py-16 md:py-20" aria-labelledby="homes-title">
         <Reveal>
           <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="eyebrow">Verified this month</p>
-              <h2 className="mt-3 text-3xl font-semibold text-navy-950 sm:text-4xl">
-                Handpicked for you
-              </h2>
-            </div>
-            <Link href="/explore" className={buttonClasses("outline", "sm")}>
-              View all properties
+            <h2 id="homes-title" className="text-3xl font-semibold text-ink sm:text-4xl">
+              Homes on Zouza
+            </h2>
+            <Link href="/explore" className={buttonClasses("outline", "md")}>
+              View all
             </Link>
           </div>
         </Reveal>
@@ -163,211 +113,21 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Why Suzi is different */}
-      <section className="border-y border-line bg-navy-950 py-16 text-ivory md:py-20">
+      {/*
+       * §4 Closing — a surface band. The tide's brand-900 water is this page's
+       * single dark band, so the closing stays light and the two brand-500
+       * doors read as primaries on it.
+       */}
+      <section className="border-t border-border bg-surface py-16 md:py-20" aria-labelledby="close-title">
         <div className="container-page">
-          <Reveal>
-            <p className="eyebrow text-gold-300">Not a general chatbot</p>
-            <h2 className="mt-3 max-w-xl text-3xl font-semibold sm:text-4xl">
-              Why Suzi is different
+          <Reveal className="mx-auto flex max-w-xl flex-col items-center text-center">
+            <h2 id="close-title" className="text-3xl font-semibold text-ink sm:text-4xl">
+              Tell Suzi what you need.
             </h2>
-            <p className="mt-4 max-w-lg text-navy-300">
-              Suzi knows only real estate — trained on one job, not a thousand.
-              Ask her anything about buying, renting, selling or listing a home.
-            </p>
-          </Reveal>
-          <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {whySuzi.map((item, i) => (
-              <Reveal key={item.label} delay={i * 0.04} className="h-full">
-                <div className="group flex h-full flex-col items-start gap-3 rounded-xl border border-navy-700 bg-navy-900 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-gold-500/50">
-                  <item.icon className="h-4.5 w-4.5 text-gold-300" aria-hidden />
-                  <p className="text-sm font-medium text-ivory">{item.label}</p>
-                  <p className="text-xs leading-snug text-navy-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                    {item.example}
-                  </p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Property AI assistant demo */}
-      <section className="border-b border-line bg-white py-16 md:py-20">
-        <div className="container-page grid gap-10 lg:grid-cols-2 lg:items-center">
-          <Reveal>
-            <p className="eyebrow">Every property gets its own Suzi</p>
-            <h2 className="mt-3 text-3xl font-semibold text-navy-950 sm:text-4xl">
-              Ask Suzi about this property
-            </h2>
-            <p className="mt-4 max-w-md text-navy-600">
-              Not &ldquo;Contact Agent.&rdquo; Every listing answers its own
-              questions — community fees, distance to the beach, schools,
-              taxes, availability — 24 hours a day, from the listing&rsquo;s
-              real data.
-            </p>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <AgentDemo />
+            <Doors className="mt-8" />
           </Reveal>
         </div>
       </section>
-
-      {/* Seller flow: List with Suzi */}
-      <section className="border-b border-line bg-parchment py-16 md:py-20">
-        <div className="container-page">
-          <Reveal>
-            <p className="eyebrow">Step 1: upload photos. That&rsquo;s it.</p>
-            <h2 className="mt-3 max-w-xl text-3xl font-semibold text-navy-950 sm:text-4xl">
-              List with Suzi
-            </h2>
-            <p className="mt-3 max-w-lg text-navy-600">
-              No forms to fill in. Suzi detects bedrooms, bathrooms, pool, sea
-              view and more from your photos, then asks only what she
-              couldn&rsquo;t see for herself.
-            </p>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <div className="mt-10">
-              <LiveDemo />
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* Three simple steps */}
-      <section className="container-page py-16 md:py-20">
-        <div className="grid gap-5 sm:grid-cols-3">
-          {steps.map((step, i) => (
-            <Reveal key={step.title} delay={i * 0.08} className="h-full">
-              <div className="h-full border-t-2 border-navy-950 pt-4">
-                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy-950 text-gold-300">
-                  <step.icon className="h-5 w-5" aria-hidden />
-                </span>
-                <h3 className="mt-4 text-base font-semibold text-navy-950">{step.title}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-navy-600">{step.text}</p>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-        <Reveal delay={0.2}>
-          <div className="mt-10">
-            <Link href="/list-with-ai" className={buttonClasses("primary", "md", "glow-cta")}>
-              <Upload className="h-4 w-4" aria-hidden />
-              List with Suzi
-            </Link>
-          </div>
-        </Reveal>
-      </section>
-
-      {/* AI creates everything */}
-      <section className="border-y border-line bg-navy-950 py-16 text-ivory md:py-20">
-        <div className="container-page">
-          <Reveal>
-            <p className="eyebrow text-gold-300">One upload, one pipeline</p>
-            <h2 className="mt-3 max-w-xl text-3xl font-semibold sm:text-4xl">
-              Everything Suzi creates from your photos
-            </h2>
-          </Reveal>
-          <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            {aiCreates.map((item, i) => (
-              <Reveal key={item.label} delay={i * 0.04} className="h-full">
-                <div className="group flex h-full flex-col items-start gap-3 rounded-xl border border-navy-700 bg-navy-900 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-gold-500/50">
-                  <item.icon className="h-4.5 w-4.5 text-gold-300" aria-hidden />
-                  <p className="text-sm font-medium text-ivory">{item.label}</p>
-                  <p className="text-xs leading-snug text-navy-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                    {item.example}
-                  </p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Natural language search */}
-      <section className="container-page py-16 md:py-20">
-        <Reveal>
-          <p className="eyebrow">Search, reinvented</p>
-          <h2 className="mt-3 max-w-xl text-3xl font-semibold text-navy-950 sm:text-4xl">
-            Tell Suzi what you&rsquo;re looking for
-          </h2>
-          <p className="mt-3 max-w-lg text-navy-600">
-            No filters to configure first — describe the home you want in
-            plain language, and Suzi explains why each result matches.
-          </p>
-        </Reveal>
-        <Reveal delay={0.1}>
-          <div className="mt-10">
-            <NlSearchDemo />
-          </div>
-        </Reveal>
-      </section>
-
-      {/* Testimonials */}
-      <section className="border-t border-line bg-parchment py-16 md:py-20">
-        <div className="container-page">
-          <Reveal>
-            <p className="eyebrow">Trusted by owners and buyers</p>
-            <h2 className="mt-3 text-3xl font-semibold text-navy-950 sm:text-4xl">
-              What people say after using Zouza
-            </h2>
-          </Reveal>
-          <div className="mt-10 grid gap-5 sm:grid-cols-2">
-            {MOCK_TESTIMONIALS.map((t, i) => (
-              <Reveal key={t.id} delay={i * 0.06} className="h-full">
-                <div className="flex h-full flex-col rounded-xl border border-line bg-white p-6">
-                  <p className="flex-1 text-sm leading-relaxed text-navy-700">&ldquo;{t.quote}&rdquo;</p>
-                  <div className="mt-4 border-t border-line pt-4">
-                    <p className="text-sm font-semibold text-navy-950">{t.name}</p>
-                    <p className="text-xs text-navy-500">{t.role}</p>
-                  </div>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section className="border-t border-line bg-navy-950 py-16 text-ivory md:py-20">
-        <div className="container-page grid gap-10 lg:grid-cols-2 lg:items-center">
-          <div>
-            <h2 className="font-display text-3xl font-semibold sm:text-4xl">Tell Suzi what you need.</h2>
-            <p className="mt-2 max-w-md text-navy-300">
-              Buying, renting, selling, or listing — say it, or type it, and
-              Suzi takes care of the rest.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link href="/list-with-ai" className={buttonClasses("primary", "lg", "glow-cta")}>
-                <Sparkles className="h-4.5 w-4.5" aria-hidden />
-                Talk to Suzi
-              </Link>
-              <Link
-                href="/explore"
-                className="inline-flex items-center gap-2 rounded-lg border border-ivory/25 px-7 py-3 text-base font-medium text-ivory transition-colors hover:border-ivory/50"
-              >
-                Explore homes
-                <ArrowRight className="h-4 w-4" aria-hidden />
-              </Link>
-            </div>
-          </div>
-          <div className="flex lg:justify-end">
-            <MiniAiPrompt />
-          </div>
-        </div>
-      </section>
-
-      {/* Mobile sticky CTA */}
-      <div className="sticky bottom-4 z-40 px-4 lg:hidden">
-        <Link
-          href="/list-with-ai"
-          className={buttonClasses("primary", "lg", "w-full shadow-card glow-cta")}
-        >
-          <Sparkles className="h-4.5 w-4.5" aria-hidden />
-          Talk to Suzi
-        </Link>
-      </div>
     </>
   );
 }

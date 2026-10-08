@@ -1,0 +1,154 @@
+/*
+ * Landing (/) — the full-viewport opener above the main site.
+ * Geometry, durations and reduced-motion handling follow the tide spec
+ * (§5–§6), re-expressed in the v2 violet tokens:
+ *   water body = brand-900 · foam = brand-200 · mid-water = brand-300 @ .55
+ *   deep edge = brand-900 · glints = brand-300 at low opacity · ground = paper.
+ * Only transform and opacity animate; every cycle is ≥ 14s; the band is
+ * paused off-screen (tide-pause.tsx) and fully static under reduced motion.
+ */
+
+.landing {
+  min-height: calc(100vh - 3.5rem); /* fallback */
+  min-height: calc(100svh - 3.5rem); /* 3.5rem = the sticky h-14 header, so header + landing = one viewport */
+}
+
+.rise {
+  animation: rise 0.6s cubic-bezier(0.21, 0.65, 0.36, 1) both;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.cue {
+  bottom: calc(34svh + 0.75rem);
+}
+
+.cueLine {
+  height: 2.5rem;
+  /* a 1px hairline that feathers out — not a wash */
+  background: linear-gradient(to bottom, var(--color-faint), transparent);
+}
+
+/* ---------- Tide ---------- */
+
+.tide {
+  contain: strict;
+}
+
+.wave1 path {
+  fill: var(--color-brand-200);
+}
+.wave2 path {
+  fill: var(--color-brand-300);
+  fill-opacity: 0.55;
+}
+.wave3 path {
+  fill: var(--color-brand-900);
+}
+
+.drift {
+  width: 200%;
+  will-change: transform;
+  animation: driftLeft var(--drift) linear infinite;
+}
+.wave2 .drift {
+  animation-name: driftRight; /* mid-water slides against the others */
+}
+.swell {
+  animation: swell var(--swell-t) ease-in-out infinite alternate;
+}
+
+@keyframes driftLeft {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(calc(-50% + 1px), 0, 0);
+  }
+}
+@keyframes driftRight {
+  from {
+    transform: translate3d(calc(-50% + 1px), 0, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+@keyframes swell {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, var(--swell), 0);
+  }
+}
+
+/* Light through water: the displacement filter is STATIC on the wrapper;
+   only the line inside moves, so it refracts as it travels. */
+.ripple {
+  filter: url(#tide-ripple);
+  max-width: 1920px; /* cap the raster on 4K */
+  margin-inline: auto;
+  overflow: visible;
+}
+.glint {
+  position: absolute;
+  inset: 0 -20%; /* 140% wide so the edges never show */
+  background: var(--color-brand-300);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 30%, #000 70%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 30%, #000 70%, transparent 100%);
+  opacity: 0.12;
+  will-change: transform, opacity;
+  animation: glint 22s ease-in-out infinite;
+}
+.glintB {
+  animation-duration: 28s;
+  animation-delay: -11s;
+}
+@keyframes glint {
+  0%,
+  100% {
+    opacity: 0.08;
+    transform: translate3d(-8%, 0, 0);
+  }
+  50% {
+    opacity: 0.16;
+    transform: translate3d(8%, 0, 0);
+  }
+}
+
+/* Paused while the landing is scrolled away (set by tide-pause.tsx) */
+:global(#landing[data-paused="true"]) .drift,
+:global(#landing[data-paused="true"]) .swell,
+:global(#landing[data-paused="true"]) .glint {
+  animation-play-state: paused;
+}
+
+/* Phones: skip the displacement filter; the shoreline carries the scene */
+@media (max-width: 640px) {
+  .ripple {
+    filter: none;
+  }
+}
+
+/* Reduced motion: a still shoreline at low tide */
+@media (prefers-reduced-motion: reduce) {
+  .rise,
+  .drift,
+  .swell,
+  .glint {
+    animation: none;
+  }
+  .glint {
+    opacity: 0.12;
+  }
+}
