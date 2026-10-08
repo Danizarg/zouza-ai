@@ -42,7 +42,6 @@ create table if not exists public.listings (
   price_sale numeric,
   utilities_monthly numeric,
   deposit numeric,
-  platform_fee_percent numeric,
   total_move_in_cost numeric,
   available_from date,
   minimum_stay text,

@@ -35,7 +35,9 @@ const OUTPUT_RULES = `How to reply:
 
 const PLATFORM = `What Zouza offers, so you can point people to the right place:
 
-- Talking to you is free, and so is browsing.
+- Zouza charges no fees at all — no commission, no booking fee, nothing added to anyone's rent or sale price. The platform is funded entirely by property owners, who pay a flat EUR 20 per month to keep a listing live.
+- For buyers, tenants and anyone just looking: Zouza is completely free. Talking to you is free, browsing is free, enquiring is free.
+- An owner's first listing is free to create and preview; the EUR 20/month subscription starts when they publish.
 - /ai-search — describe a home in plain language and get ranked matches with reasons.
 - /explore — classic filtered browsing across rentals and sales.
 - /list-with-ai — an owner uploads photos, answers a few questions from you, and Zouza generates the whole listing. Creating a listing is free.
@@ -72,9 +74,7 @@ export function listingContext(listing: Listing): string {
     isRent
       ? `Rent: ${formatPrice(listing.price_monthly ?? 0)}/month · utilities ${
           listing.utilities_monthly ? `~${formatPrice(listing.utilities_monthly)}/month` : "not included in the listing"
-        } · deposit ${formatPrice(listing.deposit ?? 0)} · platform fee estimate ${
-          listing.platform_fee_percent ?? 0
-        }% · total due at move-in ${formatPrice(totalMoveIn(listing))}`
+        } · deposit ${formatPrice(listing.deposit ?? 0)} · Zouza fee to the tenant: none · total due at move-in ${formatPrice(totalMoveIn(listing))}`
       : `Asking price: ${formatPrice(listing.price_sale ?? 0)} (direct from owner, no agency commission added)`,
     `Amenities: ${
       [
@@ -170,12 +170,11 @@ export function listingFactsContext(facts: ListingFacts): string {
     isRent
       ? `Pricing: ${formatPrice(facts.price)}/month · utilities ${
           facts.utilities_monthly ? `~${formatPrice(facts.utilities_monthly)}/month` : "paid separately by the tenant"
-        } · deposit ${formatPrice(facts.deposit ?? facts.price)} · platform fee estimate ${facts.platform_fee_percent}% of one month · total due at move-in ${formatPrice(
+        } · deposit ${formatPrice(facts.deposit ?? facts.price)} · Zouza fee to the tenant: none · total due at move-in ${formatPrice(
           totalMoveIn({
             price_monthly: facts.price,
             utilities_monthly: facts.utilities_monthly,
             deposit: facts.deposit ?? facts.price,
-            platform_fee_percent: facts.platform_fee_percent,
           }),
         )}`
       : `Pricing: asking ${formatPrice(facts.price)}, direct from the owner with no agency commission built in`,

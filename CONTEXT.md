@@ -1027,3 +1027,43 @@ deliberately invalid `ANTHROPIC_API_KEY`.
 machine, so only the failure paths of the model integration were
 exercised. Reviewing Suzi's actual tone, length and refusal behaviour
 against `lib/ai/prompts.ts` is the first task once a key exists.
+
+---
+
+## 20. Pricing theme: no fees, one €20/month owner subscription (2026-10-08)
+
+Owner's direction, verbatim in spirit: *"we don't take any fees, we only
+take a subscription."* Replaces the 0–3% platform fee that every rental's
+"total due at move-in" had been carrying since §1 — a fee the **tenant**
+paid on the first month's rent.
+
+Decisions, confirmed with the owner before building:
+
+- **Who pays:** property owners. Flat **€20/month** per owner to keep a
+  listing live; create + preview free, subscription starts at publish.
+- **Who doesn't:** buyers and tenants. Nothing at move-in, nothing on
+  purchase, no account fee. This reverses CLAUDE.md §3.2 / §11.6's
+  "basic listing is free forever" stance — both updated so a future
+  session doesn't quietly revert it.
+- **Currency:** euros, not the "$20" first said — the whole site renders
+  EUR via `formatPrice`, and Zouza is Spain-first.
+
+What changed in code: `platform_fee_percent` is **gone** — from `Listing`
+and `ListingFacts` in `lib/types.ts`, the `listings` column in
+`supabase/schema.sql` (never run live, so edited in place), the mock
+seed factory, the wizard's `DEFAULT_FACTS` + `buildListing`, and both AI
+prompt builders. `totalMoveIn()` is rent + utilities + deposit. The price
+breakdown shows an explicit **"Zouza fee · €0 — never any"** row for both
+rent and sale, since the absence is the point. Suzi's deterministic cost
+answer and her system prompt (`PLATFORM` block in `lib/ai/prompts.ts`)
+now state the model, so "what does Zouza cost?" is answered correctly on
+both the model path and the fallback. `app/pricing/page.tsx` was rewritten
+around two cards — Owners €20/month, Buyers & tenants Free — plus a
+worked tenant example with a €0 Zouza line.
+
+Not built, deliberately: any billing. Nothing gates publish and there is
+no `subscriptions` table; the page describes the model, Stripe stays P3
+(CLAUDE.md §10 item 15).
+
+Community fees, IBI and notary fees are third-party costs, not Zouza's,
+and were left everywhere they appear.

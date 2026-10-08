@@ -84,13 +84,25 @@ comparisons, personalised property intelligence, saved-search
 intelligence, alerts, advanced recommendations, decision-support tools,
 premium AI workflows.
 
-### 3.2 Private sellers — free basic listing → optional premium
+### 3.2 Private sellers / owners — **€20/month flat subscription**
 
-Creating a **basic listing is free** and stays free. This is strategic:
-**Zouza needs inventory.** The goal is to make listing a property
-dramatically easier than on a traditional portal — owner supplies photos
-+ facts, AI produces the listing (this is what `/list-with-ai` already
-does).
+**Decided 2026-10-08 by the owner, replacing the earlier "basic listing is
+free forever" stance.** An owner pays a flat **€20/month** to keep a
+listing live. Creating and previewing the listing is free; the
+subscription starts at publish. Cancel any month, no contract.
+
+**Zouza takes no transaction fees of any kind.** No commission on rent or
+sale price, no booking fee, nothing added at move-in. The old
+`platform_fee_percent` (0–3% of first month's rent, paid by the tenant)
+was removed from the data model, the move-in maths, the price breakdown,
+the AI prompts and all copy on 2026-10-08. `totalMoveIn()` is now
+rent + utilities + deposit, every euro of which goes to the owner or back
+to the tenant. **Do not reintroduce a per-transaction fee anywhere** — the
+"no fees, one subscription" message is the pricing theme.
+
+The listing experience itself is unchanged: owner supplies photos + facts,
+AI produces the listing (`/list-with-ai`). Zouza still needs inventory, so
+the €20 must feel obviously worth it — this is the lever to watch.
 
 Optional paid seller functionality later: premium visibility, featured
 listings, enhanced AI presentation, listing optimisation, performance
@@ -282,8 +294,6 @@ platform" filler. `design.md` holds the full spec.
   state, and `/dashboard` is publicly reachable.
 - **Wizard publish** — writes to Supabase *and* always to localStorage;
   `owner_id` is hardcoded `"local-owner"` (`components/wizard/wizard.tsx:65`).
-- **Pricing page** — describes a transactional platform-fee model that
-  predates the subscription business model in §3. Needs rewriting.
 
 **UI-ONLY / MOCK (no backend)**
 
@@ -500,6 +510,12 @@ the repo, wrote this file, installed Node 24 LTS (the machine had none),
 and implemented P0.1 — the real AI layer in §7. Also fixed three genuine
 bugs found while testing (see §13).
 
+**Session of 2026-10-08:** switched the AI provider layer to pick OpenAI
+(`gpt-5-nano`, the production key) or Anthropic from whichever key is set
+(§7), and replaced the 0–3% tenant-paid platform fee with the **€20/month
+owner subscription, no transaction fees** (§3.2) — pricing page rewritten,
+`platform_fee_percent` removed end to end. See `CONTEXT.md` §19–§20.
+
 Before that, the last commit was `6c79f61` (2026-07-18) — hero/header
 polish, following the Suzi persona + global assistant work in
 `CONTEXT.md` §18. Nothing had been left half-written.
@@ -557,7 +573,10 @@ matcher.
 ### P3 — Growth, monetisation, polish
 
 14. Entitlement layer (`can(account, feature)`) + plan definitions.
-15. Billing (Stripe): Suzi Premium, Professional, Agency; centralised
+15. Billing (Stripe). First product is the **€20/month owner
+    subscription** (§3.2) — the pricing page already describes it, but
+    nothing enforces it yet: publish is ungated and no `subscriptions`
+    table exists. Then Suzi Premium, Professional, Agency; centralised
     agency billing.
 16. Premium seller functionality + **clearly-labelled** premium placement.
 17. AI usage metering and limits per plan.
@@ -580,9 +599,12 @@ matcher.
    legal/tax/financial advice, in code or copy (§1).
 5. **Paid placement must never influence Suzi's recommendations**, and
    promoted results must be visibly marked (§3.4).
-6. **Free tiers stay useful.** Basic search/browse/Suzi for buyers, and
-   basic listing creation for private sellers, remain free — Zouza needs
-   both adoption and inventory.
+6. **Buyers and tenants are free, always. Owners pay €20/month flat.
+   Zouza takes no transaction fees of any kind** (decided 2026-10-08,
+   §3.2). Search, browse, Suzi, enquiries and viewings cost a seeker
+   nothing; owners create and preview for free and subscribe at publish.
+   Never add a commission, booking fee or move-in fee — "no fees, one
+   subscription" is the pricing theme.
 7. **Agents are customers, not targets.** Build tools that make them
    productive.
 8. **Entitlements, not plan-name checks** (§6).

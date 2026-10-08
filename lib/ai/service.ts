@@ -105,7 +105,7 @@ function mockGenerate(facts: ListingFacts): GeneratedListingContent {
     lifestyleParagraph,
     locationParagraph,
     forRent
-      ? `Offered ${facts.furnished ? "furnished" : "unfurnished"} from ${facts.available_from || "now"}. All costs are listed transparently — rent, utilities estimate, deposit and platform fee — so you know the total before you enquire.`
+      ? `Offered ${facts.furnished ? "furnished" : "unfurnished"} from ${facts.available_from || "now"}. All costs are listed transparently — rent, utilities estimate and deposit — so you know the total before you enquire. Zouza charges tenants nothing.`
       : `Offered for sale directly by the owner with full price transparency and a verification trail, so buyers can move forward with confidence.`,
   ].join("\n\n");
 
@@ -114,15 +114,14 @@ function mockGenerate(facts: ListingFacts): GeneratedListingContent {
         facts.utilities_monthly
           ? `, with utilities estimated at ${formatPrice(facts.utilities_monthly)}/month`
           : ""
-      }. The deposit is ${formatPrice(facts.deposit ?? facts.price)} and the platform fee estimate is ${facts.platform_fee_percent}% of one month. Total due at move-in: ${formatPrice(
+      }. The deposit is ${formatPrice(facts.deposit ?? facts.price)}, and Zouza adds no fee of any kind. Total due at move-in: ${formatPrice(
         totalMoveIn({
           price_monthly: facts.price,
           utilities_monthly: facts.utilities_monthly,
           deposit: facts.deposit ?? facts.price,
-          platform_fee_percent: facts.platform_fee_percent,
         }),
-      )}. No hidden costs.`
-    : `The asking price is ${formatPrice(facts.price)}. Purchase taxes and notary fees vary by region and buyer situation — Zouza shows an indicative placeholder and always recommends independent advice. There is no agency commission built into this price.`;
+      )}. No hidden costs, and no commission on your rent.`
+    : `The asking price is ${formatPrice(facts.price)}. Purchase taxes and notary fees vary by region and buyer situation — Zouza shows an indicative placeholder and always recommends independent advice. There is no agency commission built into this price, and Zouza takes no cut of the sale.`;
 
   const ownerRulesSummary = facts.owner_rules.trim()
     ? `House rules set by the owner: ${facts.owner_rules.trim()}`
@@ -167,7 +166,7 @@ function mockGenerate(facts: ListingFacts): GeneratedListingContent {
     `Location: ${facts.address_area}, ${facts.city}, ${facts.country}`,
     `Amenities: ${[facts.pool && "pool", facts.sea_view && "sea view", facts.garage && "garage", facts.furnished && "furnished", facts.pets_allowed && "pets allowed"].filter(Boolean).join(", ") || "standard"}`,
     forRent
-      ? `Pricing: ${formatPrice(facts.price)}/month, utilities ~${formatPrice(facts.utilities_monthly ?? 0)}, deposit ${formatPrice(facts.deposit ?? facts.price)}, platform fee ${facts.platform_fee_percent}%`
+      ? `Pricing: ${formatPrice(facts.price)}/month, utilities ~${formatPrice(facts.utilities_monthly ?? 0)}, deposit ${formatPrice(facts.deposit ?? facts.price)}, no Zouza fee to the tenant`
       : `Pricing: asking ${formatPrice(facts.price)}, direct from owner`,
     `Availability: ${facts.available_from || "immediately"}`,
     `Owner rules: ${facts.owner_rules || "none specified"}`,
@@ -232,12 +231,12 @@ export function answerAgentQuestion(listing: Listing, question: string): string 
   if (/(tax|ibi|notary)/.test(q)) {
     return listing.taxes_note
       ? listing.taxes_note
-      : "Utilities and platform fees are shown in the price breakdown above; for purchase taxes, always confirm with an independent notary.";
+      : "Utilities and the deposit are shown in the price breakdown above, and Zouza adds no fee of its own; for purchase taxes, always confirm with an independent notary.";
   }
   if (/(includ|price|cost|fee|total|how much|utilities|deposit)/.test(q)) {
     if (rentMode) {
       const total = totalMoveIn(listing);
-      return `The monthly rent is ${formatPrice(listing.price_monthly ?? 0)}${listing.utilities_monthly ? `, plus roughly ${formatPrice(listing.utilities_monthly)} in utilities` : ""}. The deposit is ${formatPrice(listing.deposit ?? 0)} and the platform fee estimate is ${listing.platform_fee_percent ?? 0}%. Total due at move-in: ${formatPrice(total)} — no hidden costs.`;
+      return `The monthly rent is ${formatPrice(listing.price_monthly ?? 0)}${listing.utilities_monthly ? `, plus roughly ${formatPrice(listing.utilities_monthly)} in utilities` : ""}. The deposit is ${formatPrice(listing.deposit ?? 0)}, and Zouza charges you nothing — owners pay a flat €20/month to list, so there is no commission on your rent. Total due at move-in: ${formatPrice(total)} — no hidden costs.`;
     }
     return `The asking price is ${formatPrice(listing.price_sale ?? 0)}, direct from the owner with no agency commission on top. Purchase taxes and notary fees depend on the region and your situation.`;
   }

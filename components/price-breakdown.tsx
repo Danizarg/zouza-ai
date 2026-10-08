@@ -23,8 +23,6 @@ function Row({
 /** The "real price" module — Zouza's transparency signature. */
 export function PriceBreakdown({ listing }: { listing: Listing }) {
   if (listing.mode === "rent") {
-    const feePct = listing.platform_fee_percent ?? 0;
-    const fee = Math.round(((listing.price_monthly ?? 0) * feePct) / 100);
     return (
       <dl className="divide-y divide-line">
         <Row label="Monthly rent" value={formatPrice(listing.price_monthly ?? 0)} />
@@ -37,13 +35,17 @@ export function PriceBreakdown({ listing }: { listing: Listing }) {
           }
         />
         <Row label="Deposit (refundable)" value={formatPrice(listing.deposit ?? 0)} />
-        <Row label={`Platform fee estimate (${feePct}%)`} value={formatPrice(fee)} />
+        <Row label="Zouza fee" value="€0 — never any" />
         <div className="flex items-baseline justify-between gap-4 pt-3">
           <dt className="text-sm font-semibold text-navy-900">Total due at move-in</dt>
           <dd className="font-display text-xl font-semibold text-navy-900">
             {formatPrice(totalMoveIn(listing))}
           </dd>
         </div>
+        <p className="pt-3 text-xs leading-relaxed text-navy-500">
+          Zouza charges tenants nothing. Owners pay a flat €20/month to list
+          — there is no commission or booking fee on top of your rent.
+        </p>
       </dl>
     );
   }
@@ -52,15 +54,17 @@ export function PriceBreakdown({ listing }: { listing: Listing }) {
     <dl className="divide-y divide-line">
       <Row label="Asking price" value={formatPrice(listing.price_sale ?? 0)} />
       <Row label="Agency commission" value="None — direct from owner" />
+      <Row label="Zouza fee" value="€0 — never any" />
       <Row
         label="Taxes & notary fees"
         value="Vary by region (placeholder)"
         muted
       />
       <p className="pt-3 text-xs leading-relaxed text-navy-500">
-        Purchase taxes, notary and registry fees depend on the region and your
-        situation. Zouza does not provide legal or tax advice — always
-        confirm final costs with an independent professional.
+        Zouza takes no cut of the sale price — owners pay a flat €20/month to
+        list. Purchase taxes, notary and registry fees depend on the region
+        and your situation; Zouza does not provide legal or tax advice, so
+        always confirm final costs with an independent professional.
       </p>
     </dl>
   );

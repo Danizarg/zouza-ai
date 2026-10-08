@@ -34,16 +34,20 @@ export function formatDate(iso: string): string {
   });
 }
 
-/** Total due at move-in: first month + deposit + platform fee on first month. */
+/**
+ * Total due at move-in: first month + utilities estimate + deposit.
+ *
+ * Zouza adds nothing to this. Every euro here goes to the owner or comes
+ * back to the tenant — the platform is funded by the owner's subscription,
+ * not by a cut of anyone's rent.
+ */
 export function totalMoveIn(input: {
   price_monthly?: number | null;
   utilities_monthly?: number | null;
   deposit?: number | null;
-  platform_fee_percent?: number | null;
 }): number {
   const rent = input.price_monthly ?? 0;
   const utilities = input.utilities_monthly ?? 0;
   const deposit = input.deposit ?? 0;
-  const fee = (rent * (input.platform_fee_percent ?? 0)) / 100;
-  return Math.round(rent + utilities + deposit + fee);
+  return Math.round(rent + utilities + deposit);
 }

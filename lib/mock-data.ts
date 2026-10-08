@@ -44,7 +44,6 @@ function listing(seed: Seed): Listing {
     price_sale: null,
     utilities_monthly: null,
     deposit: null,
-    platform_fee_percent: seed.mode === "rent" ? 2 : null,
     total_move_in_cost: null,
     available_from: null,
     minimum_stay: null,

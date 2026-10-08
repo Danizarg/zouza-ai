@@ -28,7 +28,7 @@ const pillars = [
   {
     icon: Receipt,
     title: "Clear prices, no hidden costs",
-    text: "Every rental shows rent, utilities, deposit and platform fee added up before you enquire. Every sale shows the direct asking price, with no invisible agency markup.",
+    text: "Every rental shows rent, utilities and deposit added up before you enquire — and Zouza adds nothing to it. Every sale shows the direct asking price with no agency markup. Owners pay a flat €20/month to list; buyers and tenants pay us nothing.",
   },
   {
     icon: Handshake,
