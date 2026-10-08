@@ -3,7 +3,10 @@
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 
-/** The small proactive greeting that appears next to the collapsed avatar — one nudge, dismissible. */
+/**
+ * The small proactive greeting next to the collapsed avatar — one nudge,
+ * dismissible. role="status" so it is announced politely when it appears.
+ */
 export function SuziGreetingBubble({
   text,
   onOpen,
@@ -15,21 +18,21 @@ export function SuziGreetingBubble({
 }) {
   return (
     <motion.div
+      role="status"
       initial={{ opacity: 0, y: 8, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 8, scale: 0.95 }}
       transition={{ duration: 0.25 }}
-      className="relative max-w-[220px] rounded-xl rounded-br-md border border-line bg-white py-3 pr-7 pl-3.5 text-sm leading-snug text-navy-800 shadow-card"
+      className="relative max-w-[240px] rounded-xl rounded-br-md border border-border bg-white py-3 pr-10 pl-3.5 text-sm leading-snug text-ink-2 shadow-card pointer-coarse:pr-12"
     >
       <button
         type="button"
         onClick={onDismiss}
-        aria-label="Dismiss"
-        className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center text-navy-400 hover:text-navy-700 cursor-pointer"
+        aria-label="Dismiss Suzi's greeting"
+        className="absolute top-0 right-0 flex h-9 w-9 items-center justify-center rounded-lg text-muted transition-colors hover:text-ink-2 cursor-pointer pointer-coarse:h-11 pointer-coarse:w-11"
       >
-        <X className="h-3.5 w-3.5" aria-hidden />
+        <X className="h-4 w-4" aria-hidden />
       </button>
-      <button type="button" onClick={onOpen} className="cursor-pointer text-left">
+      <button type="button" onClick={onOpen} className="cursor-pointer rounded-md text-left">
         {text}
       </button>
     </motion.div>

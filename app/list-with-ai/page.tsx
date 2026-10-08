@@ -2,9 +2,9 @@ import { Wizard } from "@/components/wizard/wizard";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "List with AI",
+  title: "List with Suzi",
   description:
-    "Upload photos and answer a few quick chat questions — Zouza writes your exposé, FAQ, translations, and switches on your property's AI assistant.",
+    "Add photos and answer a short chat. Suzi writes your listing and you review every word. Create and preview free; €20/month once published.",
 };
 
 export default function ListWithAiPage() {

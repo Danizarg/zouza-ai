@@ -13,8 +13,8 @@ export function LocalListingView({ id }: { id: string }) {
   if (!listing) {
     return (
       <div className="container-page flex flex-col items-center gap-3 py-24 text-center">
-        <h1 className="font-display text-2xl font-semibold text-navy-950">Listing not found</h1>
-        <p className="max-w-sm text-navy-600">
+        <h1 className="font-display text-2xl font-semibold text-ink">Listing not found</h1>
+        <p className="max-w-sm text-muted">
           This listing may have been unpublished, or the link is incorrect.
         </p>
         <Link href="/explore" className={buttonClasses("primary", "md")}>

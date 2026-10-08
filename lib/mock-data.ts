@@ -4,7 +4,6 @@ import type {
   Listing,
   Message,
   Review,
-  Testimonial,
   ViewingRequest,
 } from "@/lib/types";
 import { totalMoveIn } from "@/lib/utils";
@@ -692,39 +691,8 @@ export const MOCK_VIEWING_REQUESTS: ViewingRequest[] = [
 ];
 
 /* ------------------------------------------------------------------ */
-/* Testimonials + homepage AI chat examples                           */
+/* Homepage AI chat examples                                          */
 /* ------------------------------------------------------------------ */
-
-export const MOCK_TESTIMONIALS: Testimonial[] = [
-  {
-    id: "t1",
-    name: "Familie Brandt",
-    role: "Owner, listed a rental in Jávea",
-    quote:
-      "I uploaded twelve phone photos on a Sunday evening. By Monday morning Zouza had written a better description than the agency quote we'd been sitting on for weeks.",
-  },
-  {
-    id: "t2",
-    name: "Sofia N.",
-    role: "Tenant, relocated from Berlin to Valencia",
-    quote:
-      "I asked Zouza to find a place near the beach with room for a home office. It explained why each match fit and I booked a viewing before I'd even landed.",
-  },
-  {
-    id: "t3",
-    name: "Richard T.",
-    role: "Buyer, Marbella",
-    quote:
-      "Suzi answered my questions about community fees and taxes at 11pm my time. Dealing with the owner directly afterwards felt refreshingly simple.",
-  },
-  {
-    id: "t4",
-    name: "Peter & Anja K.",
-    role: "Owners, sold a beach apartment in Dénia",
-    quote:
-      "We were not trying to write a brochure. We just wanted the photos to do the talking — Zouza turned them into one anyway, and it was accurate.",
-  },
-];
 
 export const MOCK_AI_CHAT_EXAMPLES: AiChatExample[] = [
   {
@@ -750,7 +718,7 @@ export const MOCK_AI_CHAT_EXAMPLES: AiChatExample[] = [
   {
     prompt: "I want to rent out my apartment.",
     reply:
-      "I can have a listing ready in minutes. Upload a few photos and I'll detect the rooms and features, then write the exposé, FAQ, and translations for you to review.",
+      "I can have a listing ready in minutes. Upload a few photos and I'll detect the rooms and features, then draft the title, description and FAQ for you to review.",
   },
   {
     prompt: "Help me find an investment property.",
@@ -772,13 +740,4 @@ export const MOCK_AI_CHAT_EXAMPLES: AiChatExample[] = [
     reply:
       "I've got a frontline apartment in Dénia (110 m², 20 m² sea terrace, €385,000) and a townhouse two streets from the sand in Sitges. Both verified. Want the full breakdown on either?",
   },
-];
-
-export const SPAIN_DESTINATIONS = [
-  { name: "Valencia", tagline: "City + beach living", image: img("photo-1560448204-e02f11c3d0e2"), count: 214 },
-  { name: "Costa Blanca", tagline: "Jávea · Dénia · Altea", image: img("photo-1512917774080-9991f1c4c750"), count: 342 },
-  { name: "Mallorca", tagline: "Palma & the Tramuntana", image: img("photo-1523217582562-09d0def993a6"), count: 189 },
-  { name: "Costa del Sol", tagline: "Marbella · Málaga", image: img("photo-1613490493576-7fde63acd811"), count: 276 },
-  { name: "Barcelona", tagline: "Eixample to Sitges", image: img("photo-1502672260266-1c1ef2d93688"), count: 158 },
-  { name: "Andalusia", tagline: "Seville · Granada", image: img("photo-1580587771525-78b9dba3b914"), count: 131 },
 ];

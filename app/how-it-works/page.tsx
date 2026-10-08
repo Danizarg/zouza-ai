@@ -1,172 +1,135 @@
+import { ZMark } from "@/components/brand/z-mark";
 import { Reveal } from "@/components/reveal";
-import { buttonClasses } from "@/components/ui/button";
-import {
-  Camera,
-  FileText,
-  Gauge,
-  Globe,
-  Languages,
-  MessageCircle,
-  Rocket,
-  Search,
-  Sparkles,
-  Tag,
-  Upload,
-  Wand2,
-} from "lucide-react";
+import { ArrowRight, Home, KeyRound, ListChecks, Search } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import type { ComponentType, SVGProps } from "react";
 
 export const metadata: Metadata = {
   title: "How it works",
-  description: "How Zouza's AI handles listing creation, natural-language search, and 24/7 property questions.",
+  description:
+    "Tell Suzi what you need. She searches verified homes, explains every match and connects you with the owner. Owners list for €20/month; buyers and tenants pay nothing.",
 };
 
-const steps = [
-  { icon: Camera, title: "Upload photos", text: "Drag in the photos you already have on your phone — no professional shoot required." },
-  { icon: Wand2, title: "AI creates everything", text: "Zouza detects rooms and features, then writes the title, description, FAQ, and pricing." },
-  { icon: Rocket, title: "Publish", text: "Review everything — every word stays editable — then go live with a dedicated AI assistant." },
-] as const;
+type Icon = ComponentType<SVGProps<SVGSVGElement>>;
 
-const aiCreates = [
-  { icon: FileText, label: "Property title" },
-  { icon: FileText, label: "Description" },
-  { icon: Sparkles, label: "Lifestyle text" },
-  { icon: MessageCircle, label: "Buyer FAQ" },
-  { icon: Tag, label: "Property highlights" },
-  { icon: Gauge, label: "Price estimation" },
-  { icon: Globe, label: "SEO text" },
-  { icon: Languages, label: "Multiple languages" },
-  { icon: MessageCircle, label: "AI assistant" },
-  { icon: Rocket, label: "Listing publication" },
-] as const;
+const steps: readonly { icon: Icon; title: string; text: string }[] = [
+  {
+    icon: ZMark,
+    title: "Tell Suzi",
+    text: "Describe the home you want in plain words. Type or speak.",
+  },
+  {
+    icon: Search,
+    title: "Suzi finds it",
+    text: "She searches every verified listing and shortlists what matches.",
+  },
+  {
+    icon: ListChecks,
+    title: "See why it fits",
+    text: "Each match shows a score and the reasons behind it.",
+  },
+  {
+    icon: KeyRound,
+    title: "Make it happen",
+    text: "Ask the home anything, then message its owner or request a viewing.",
+  },
+];
 
-const searchExamples = [
-  "I want to buy a villa in Marbella under €1.2M.",
-  "I need a long-term rental near the beach with 3 bedrooms.",
-  "Find investment properties with strong rental potential.",
-  "I am relocating from Germany and need a family home.",
+const doors: readonly { icon: Icon; title: string; next: string; href: string }[] = [
+  {
+    icon: Search,
+    title: "Find a home",
+    next: "Tell Suzi what you need. She shortlists verified homes.",
+    href: "/ai-search",
+  },
+  {
+    icon: Home,
+    title: "List your home",
+    next: "Photos plus a short chat. Suzi writes the listing.",
+    href: "/list-with-ai",
+  },
 ];
 
 export default function HowItWorksPage() {
   return (
     <div>
-      <section className="border-b border-line bg-parchment py-16 md:py-20">
+      <section className="border-b border-border bg-paper-2 py-16 md:py-20">
         <div className="container-page max-w-2xl">
           <Reveal>
             <p className="eyebrow">How it works</p>
-            <h1 className="mt-3 text-4xl font-semibold text-navy-950 sm:text-5xl">
-              Real estate, handled by AI.
+            <h1 className="mt-3 text-4xl font-semibold text-ink sm:text-5xl">
+              One conversation, four steps.
             </h1>
-            <p className="mt-5 text-lg leading-relaxed text-navy-600">
-              Zouza replaces the painful parts of buying, renting, selling and
-              listing property with an AI that does the work — not another
-              portal with a chatbot bolted on.
+            <p className="mt-5 text-lg leading-relaxed text-muted">
+              Suzi is your AI real estate partner. Here is what happens next.
             </p>
           </Reveal>
         </div>
       </section>
 
       <section className="container-page py-16 md:py-20">
-        <Reveal>
-          <p className="eyebrow">For owners</p>
-          <h2 className="mt-3 text-3xl font-semibold text-navy-950 sm:text-4xl">
-            From photos to a published listing in three steps
-          </h2>
-        </Reveal>
-        <div className="mt-10 grid gap-5 sm:grid-cols-3">
+        <ol className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((step, i) => (
-            <Reveal key={step.title} delay={i * 0.08} className="h-full">
-              <div className="h-full border-t-2 border-navy-950 pt-4">
-                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy-950 text-gold-300">
-                  <step.icon className="h-5 w-5" aria-hidden />
-                </span>
-                <h3 className="mt-4 text-base font-semibold text-navy-950">{step.title}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-navy-600">{step.text}</p>
-              </div>
-            </Reveal>
+            <li key={step.title} className="h-full">
+              <Reveal delay={i * 0.08} className="h-full">
+                <div className="h-full border-t-2 border-brand-500 pt-4">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-900 text-brand-300">
+                    <step.icon className="h-5 w-5" aria-hidden />
+                  </span>
+                  <h2 className="mt-4 font-sans text-base font-semibold text-ink">{step.title}</h2>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted">{step.text}</p>
+                </div>
+              </Reveal>
+            </li>
           ))}
-        </div>
-        <Reveal delay={0.2}>
-          <div className="mt-10">
-            <Link href="/list-with-ai" className={buttonClasses("primary", "md")}>
-              <Upload className="h-4 w-4" aria-hidden />
-              Start with AI
-            </Link>
-          </div>
-        </Reveal>
+        </ol>
       </section>
 
-      <section className="border-y border-line bg-navy-950 py-16 text-ivory md:py-20">
+      <section className="border-y border-border bg-brand-900 py-16 text-paper md:py-20">
         <div className="container-page">
           <Reveal>
-            <p className="eyebrow text-gold-300">One upload, one pipeline</p>
-            <h2 className="mt-3 max-w-xl text-3xl font-semibold sm:text-4xl">
-              Everything Zouza creates from your photos
-            </h2>
+            <p className="eyebrow text-brand-300">Start here</p>
+            <h2 className="mt-3 text-3xl font-semibold sm:text-4xl">Two doors, one Suzi.</h2>
           </Reveal>
-          <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            {aiCreates.map((item, i) => (
-              <Reveal key={item.label} delay={i * 0.04} className="h-full">
-                <div className="flex h-full flex-col items-start gap-3 rounded-xl border border-navy-700 bg-navy-900 p-4">
-                  <item.icon className="h-4.5 w-4.5 text-gold-300" aria-hidden />
-                  <p className="text-sm font-medium text-ivory">{item.label}</p>
-                </div>
+          <div className="mt-10 grid gap-5 sm:grid-cols-2">
+            {doors.map((door, i) => (
+              <Reveal key={door.title} delay={i * 0.08} className="h-full">
+                <Link
+                  href={door.href}
+                  className="group flex h-full flex-col rounded-xl border border-brand-700 bg-brand-900 p-6 transition-colors hover:border-brand-400"
+                >
+                  <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-500 text-white">
+                    <door.icon className="h-5 w-5" aria-hidden />
+                  </span>
+                  <span className="mt-6 flex items-center gap-2 font-display text-2xl font-semibold text-paper">
+                    {door.title}
+                    <ArrowRight
+                      className="h-5 w-5 text-brand-300 transition-transform group-hover:translate-x-0.5"
+                      aria-hidden
+                    />
+                  </span>
+                  <span className="mt-1.5 block text-sm leading-relaxed text-brand-200">{door.next}</span>
+                </Link>
               </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="container-page py-16 md:py-20">
-        <div className="grid gap-10 lg:grid-cols-2 lg:items-start">
-          <Reveal>
-            <p className="eyebrow">For buyers &amp; renters</p>
-            <h2 className="mt-3 text-3xl font-semibold text-navy-950 sm:text-4xl">
-              Search in plain language
-            </h2>
-            <p className="mt-4 max-w-md text-navy-600">
-              No filters to configure first. Describe the home you want, and
-              Zouza explains why each match fits — budget, bedrooms, distance
-              to the beach, lifestyle.
-            </p>
-            <Link
-              href="/ai-search"
-              className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-terra-600 hover:text-terra-700"
-            >
-              <Search className="h-4 w-4" aria-hidden />
-              Try AI search
-            </Link>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <div className="space-y-2">
-              {searchExamples.map((ex) => (
-                <p key={ex} className="rounded-xl border border-line bg-white px-4 py-3 text-sm text-navy-700">
-                  &ldquo;{ex}&rdquo;
-                </p>
-              ))}
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      <section className="border-t border-line bg-parchment py-16 md:py-20">
-        <div className="container-page max-w-2xl text-center">
-          <Reveal>
-            <p className="eyebrow">Every property gets its own AI</p>
-            <h2 className="mt-3 text-3xl font-semibold text-navy-950 sm:text-4xl">
-              Talk to this property&rsquo;s AI
-            </h2>
-            <p className="mt-4 text-navy-600">
-              Not &ldquo;Contact Agent.&rdquo; Every listing answers its own
-              questions about fees, taxes, availability and the neighbourhood
-              — 24 hours a day, from the listing&rsquo;s real data.
-            </p>
-            <Link href="/explore" className={buttonClasses("primary", "md", "mt-8")}>
-              Explore homes
-            </Link>
-          </Reveal>
-        </div>
+      <section className="container-page py-12 md:py-16">
+        <Reveal>
+          <p className="max-w-2xl text-lg leading-relaxed text-ink-2">
+            Owners pay €20/month per live listing. Buyers and tenants pay nothing. No fees.
+          </p>
+          <Link
+            href="/pricing"
+            className="mt-3 inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-700"
+          >
+            See pricing
+            <ArrowRight className="h-4 w-4" aria-hidden />
+          </Link>
+        </Reveal>
       </section>
     </div>
   );

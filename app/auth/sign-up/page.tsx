@@ -43,11 +43,11 @@ export default function SignUpPage() {
 
   if (status === "confirm") {
     return (
-      <AuthCard title="Check your inbox" subtitle="Confirm your email to finish creating your account." footer={null}>
-        <div className="flex items-start gap-3 rounded-xl border border-gold-200 bg-gold-100 p-4">
-          <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-gold-700" aria-hidden />
-          <p className="text-sm text-navy-800">
-            We sent a confirmation link to {email}. Click it to activate your account.
+      <AuthCard title="Check your inbox" subtitle="Confirm your email to finish signing up." footer={null}>
+        <div className="flex items-start gap-3 rounded-xl border border-brand-100 bg-brand-50 p-4">
+          <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand-700" aria-hidden />
+          <p className="text-sm text-ink-2">
+            We sent a confirmation link to {email}.
           </p>
         </div>
       </AuthCard>
@@ -57,11 +57,11 @@ export default function SignUpPage() {
   return (
     <AuthCard
       title="Create your account"
-      subtitle={isSupabaseConfigured() ? "Free to join — list, save, or message owners." : "Demo mode — this creates a local session only."}
+      subtitle={isSupabaseConfigured() ? "Free to join — save homes, enquire, or start a listing." : "Demo mode — this creates a local session only."}
       footer={
         <>
           Already have an account?{" "}
-          <Link href="/auth/sign-in" className="font-medium text-terra-600 hover:text-terra-700">
+          <Link href="/auth/sign-in" className="font-medium text-brand-600 hover:text-brand-700">
             Sign in
           </Link>
         </>
@@ -80,7 +80,11 @@ export default function SignUpPage() {
           <Label htmlFor="password">Password</Label>
           <Input id="password" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
         </div>
-        {error ? <p className="text-sm text-terra-700">{error}</p> : null}
+        {error ? (
+          <p role="alert" className="text-sm text-danger">
+            {error}
+          </p>
+        ) : null}
         <Button type="submit" disabled={status === "loading"} className="w-full">
           {status === "loading" ? "Creating account…" : "Create account"}
         </Button>

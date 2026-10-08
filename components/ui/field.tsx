@@ -6,8 +6,10 @@ import type {
   TextareaHTMLAttributes,
 } from "react";
 
+/* Inputs use border-strong (3.17:1 on paper) so the control boundary itself
+   clears WCAG 1.4.11; the global :focus-visible ring is NOT overridden here. */
 const controlClasses =
-  "w-full rounded-lg border border-line bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-400 transition-colors focus:border-navy-400 focus:outline-none disabled:opacity-50";
+  "w-full min-h-11 rounded-lg border border-border-strong bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-muted-2 transition-colors focus:border-brand-500 disabled:opacity-50";
 
 export function Label({
   children,
@@ -19,9 +21,9 @@ export function Label({
   hint?: string;
 }) {
   return (
-    <label htmlFor={htmlFor} className="mb-1.5 block text-sm font-medium text-navy-800">
+    <label htmlFor={htmlFor} className="mb-1.5 block text-sm font-medium text-ink-2">
       {children}
-      {hint ? <span className="ml-2 font-normal text-navy-400">{hint}</span> : null}
+      {hint ? <span className="ml-2 font-normal text-muted">{hint}</span> : null}
     </label>
   );
 }
@@ -56,7 +58,7 @@ export function Select({
 
 export function FieldError({ message }: { message?: string }) {
   if (!message) return null;
-  return <p className="mt-1 text-xs text-terra-700">{message}</p>;
+  return <p className="mt-1 text-xs text-danger">{message}</p>;
 }
 
 export function CheckboxRow({
@@ -74,10 +76,10 @@ export function CheckboxRow({
     <label
       htmlFor={id}
       className={cn(
-        "flex cursor-pointer items-center gap-2.5 rounded-lg border px-3.5 py-2.5 text-sm transition-colors select-none",
+        "flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg border px-3.5 py-2.5 text-sm transition-colors select-none",
         checked
-          ? "border-navy-950 bg-parchment text-navy-950"
-          : "border-line bg-white text-navy-700 hover:border-navy-300",
+          ? "border-brand-500 bg-brand-50 text-ink"
+          : "border-border-strong bg-surface text-ink-2 hover:border-brand-400",
       )}
     >
       <input
@@ -85,7 +87,7 @@ export function CheckboxRow({
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="h-4 w-4 accent-[var(--color-gold-600)]"
+        className="h-4 w-4 accent-[var(--color-brand-500)]"
       />
       {label}
     </label>

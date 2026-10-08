@@ -79,7 +79,7 @@ function mockGenerate(facts: ListingFacts): GeneratedListingContent {
     facts.furnished ? "Fully furnished and move-in ready" : "Unfurnished — ready to make your own",
     facts.pool ? "Private pool area" : null,
     facts.sea_view ? "Open sea views" : null,
-    facts.garage ? "Garage / secure parking" : "Street parking nearby",
+    facts.garage ? "Garage / secure parking" : null,
     facts.pets_allowed ? "Pets welcome" : null,
     facts.floor !== null ? `Floor ${facts.floor}` : null,
   ].filter((x): x is string => Boolean(x));
@@ -146,17 +146,19 @@ function mockGenerate(facts: ListingFacts): GeneratedListingContent {
     },
     {
       question: "When can I visit?",
-      answer: "Use the “Request viewing” button to propose a date — the owner confirms directly, usually within a day.",
+      answer: "Use “Request viewing” to propose a date; the owner confirms directly.",
     },
     {
       question: "Is there parking?",
       answer: facts.garage
         ? "Yes — the property includes a garage / secure parking space."
-        : "There is no private garage, but street parking is available nearby.",
+        : "No private garage is listed — ask the owner about parking.",
     },
     {
       question: "Is it suitable for remote work?",
-      answer: `${facts.bedrooms > 1 ? "Yes — a spare room works well as a home office, and" : "Yes —"} fibre internet is available in this area.`,
+      answer: facts.bedrooms > 1
+        ? "A spare bedroom can work as a home office. Internet speed isn't part of this listing's data — ask the owner through the message button."
+        : "Internet speed isn't part of this listing's data — ask the owner through the message button.",
     },
   ];
 
@@ -241,15 +243,15 @@ export function answerAgentQuestion(listing: Listing, question: string): string 
     return `The asking price is ${formatPrice(listing.price_sale ?? 0)}, direct from the owner with no agency commission on top. Purchase taxes and notary fees depend on the region and your situation.`;
   }
   if (/(book|schedule).*(viewing|visit|tour)/.test(q) || /(visit|viewing|see it|tour|appointment|when can i)/.test(q)) {
-    return "Yes. I can help request a viewing. The owner currently has slots available Thursday afternoon and Saturday morning — use the “Request viewing” button and I'll pass your preferred time along.";
+    return "Yes — I can help request a viewing. Use the “Request viewing” button and tell me a time that suits you; I'll pass your preferred time to the owner, who confirms what's available.";
   }
   if (/(garage|park)/.test(q)) {
     return listing.garage
       ? "Yes — the property includes a garage / secure parking space."
-      : "There is no private garage, but street parking is generally available in this area.";
+      : "No private garage is listed — ask the owner about parking.";
   }
   if (/(remote|work|office|wifi|internet|fibre|fiber)/.test(q)) {
-    return `${listing.bedrooms > 1 ? "Yes — one of the bedrooms works well as a home office, and fibre" : "Fibre"} internet is available in ${listing.city}. Many residents in ${listing.address_area} work remotely.`;
+    return `${listing.bedrooms > 1 ? "With more than one bedroom, a spare room could work as a home office. " : ""}Internet speed isn't part of this listing's data, so I can't confirm the connection — I can ask the owner for you if you'd like.`;
   }
   if (/(beach|sea|coast|swim)/.test(q)) {
     if (listing.distance_to_beach_min) {

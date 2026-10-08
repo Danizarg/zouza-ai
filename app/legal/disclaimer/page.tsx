@@ -33,7 +33,7 @@ export default function DisclaimerPage() {
           tenant or buyer reliability, or that any listing is free of
           defects or misrepresentation. Verification badges reflect a
           best-effort check, not a guarantee — see{" "}
-          <a href="/trust" className="underline hover:text-navy-900">Trust &amp; verification</a>.
+          <a href="/trust" className="underline hover:text-ink">Trust &amp; verification</a>.
         </p>
       </LegalSection>
 

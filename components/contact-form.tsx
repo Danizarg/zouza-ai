@@ -39,13 +39,11 @@ export function ContactForm() {
 
   if (status === "done") {
     return (
-      <div className="flex items-start gap-3 rounded-xl border border-gold-200 bg-gold-100 p-6">
-        <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-gold-700" aria-hidden />
+      <div className="flex items-start gap-3 rounded-xl border border-brand-100 bg-brand-50 p-6">
+        <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand-700" aria-hidden />
         <div>
-          <p className="font-medium text-navy-900">Message sent</p>
-          <p className="mt-1 text-sm text-navy-700">
-            Thank you — we typically reply within one business day.
-          </p>
+          <p className="font-medium text-ink">Message sent</p>
+          <p className="mt-1 text-sm text-ink-2">Thanks — a real person will reply by email.</p>
         </div>
       </div>
     );
@@ -77,7 +75,7 @@ export function ContactForm() {
         <Textarea id="message" name="message" required minLength={10} className="min-h-36" />
       </div>
       {status === "error" ? (
-        <p className="text-sm text-terra-700">Something went wrong — please try again.</p>
+        <p className="text-sm text-brand-700">Something went wrong — please try again.</p>
       ) : null}
       <Button type="submit" disabled={status === "sending"} className="w-full sm:w-auto">
         {status === "sending" ? "Sending…" : "Send message"}

@@ -19,19 +19,19 @@ export function StepPreview({
 }) {
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-navy-950 sm:text-3xl">Preview your listing</h1>
-      <p className="mt-2 text-navy-600">This is exactly what buyers and tenants will see.</p>
+      <h1 className="text-2xl font-semibold text-ink sm:text-3xl">Preview your listing</h1>
+      <p className="mt-2 text-muted">This is exactly what buyers and tenants will see.</p>
 
-      <div className="mt-8 overflow-hidden rounded-xl border border-line bg-white">
+      <div className="mt-8 overflow-hidden rounded-xl border border-border bg-white">
         <div className="grid gap-1 sm:grid-cols-4">
-          <div className="relative aspect-[4/3] bg-sand sm:col-span-2 sm:aspect-auto">
+          <div className="relative aspect-[4/3] bg-paper-2 sm:col-span-2 sm:aspect-auto">
             {listing.images[0] ? (
               <Image src={listing.images[0]} alt={listing.title} fill className="object-cover" unoptimized />
             ) : null}
           </div>
           <div className="grid grid-cols-2 gap-1 sm:col-span-2">
             {listing.images.slice(1, 5).map((src, i) => (
-              <div key={i} className="relative aspect-square bg-sand">
+              <div key={i} className="relative aspect-square bg-paper-2">
                 <Image src={src} alt="" fill className="object-cover" unoptimized />
               </div>
             ))}
@@ -39,26 +39,26 @@ export function StepPreview({
         </div>
 
         <div className="p-6">
-          <p className="flex items-center gap-1 text-sm text-navy-500">
+          <p className="flex items-center gap-1 text-sm text-muted">
             <MapPin className="h-4 w-4" aria-hidden />
             {listing.address_area}, {listing.city}, {listing.country}
           </p>
-          <h2 className="mt-2 font-display text-2xl font-semibold text-navy-900">{listing.title}</h2>
-          <div className="mt-3 flex items-center gap-5 text-sm text-navy-600">
+          <h2 className="mt-2 font-display text-2xl font-semibold text-ink">{listing.title}</h2>
+          <div className="mt-3 flex items-center gap-5 text-sm text-muted">
             <span className="flex items-center gap-1"><BedDouble className="h-4 w-4" aria-hidden />{listing.bedrooms} bed</span>
             <span className="flex items-center gap-1"><Bath className="h-4 w-4" aria-hidden />{listing.bathrooms} bath</span>
             <span className="flex items-center gap-1"><Ruler className="h-4 w-4" aria-hidden />{listing.size_m2} m²</span>
           </div>
 
-          <p className="mt-5 leading-relaxed whitespace-pre-line text-navy-700">{listing.description}</p>
+          <p className="mt-5 leading-relaxed whitespace-pre-line text-ink-2">{listing.description}</p>
 
-          <div className="mt-6 rounded-xl border border-line bg-parchment p-5">
+          <div className="mt-6 rounded-xl border border-border bg-paper-2 p-5">
             <PriceBreakdown listing={listing} />
           </div>
 
           <ul className="mt-6 grid gap-2 sm:grid-cols-2">
             {listing.features.map((f) => (
-              <li key={f} className="text-sm text-navy-600">— {f}</li>
+              <li key={f} className="text-sm text-muted">— {f}</li>
             ))}
           </ul>
         </div>

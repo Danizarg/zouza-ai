@@ -34,11 +34,11 @@ export default function SignInPage() {
   return (
     <AuthCard
       title="Welcome back"
-      subtitle={isSupabaseConfigured() ? "Sign in to your Zouza account." : "Demo mode — any email/password signs you in."}
+      subtitle={isSupabaseConfigured() ? "Sign in to your Zouza account." : "Demo mode — any email and password works."}
       footer={
         <>
           New to Zouza?{" "}
-          <Link href="/auth/sign-up" className="font-medium text-terra-600 hover:text-terra-700">
+          <Link href="/auth/sign-up" className="font-medium text-brand-600 hover:text-brand-700">
             Create an account
           </Link>
         </>
@@ -53,10 +53,14 @@ export default function SignInPage() {
           <Label htmlFor="password">Password</Label>
           <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
         </div>
-        {error ? <p className="text-sm text-terra-700">{error}</p> : null}
+        {error ? (
+          <p role="alert" className="text-sm text-danger">
+            {error}
+          </p>
+        ) : null}
         <div className="flex items-center justify-between text-sm">
           <span />
-          <Link href="/auth/forgot-password" className="text-navy-500 hover:text-navy-700">
+          <Link href="/auth/forgot-password" className="text-muted hover:text-ink-2">
             Forgot password?
           </Link>
         </div>

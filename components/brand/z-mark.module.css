@@ -1,0 +1,119 @@
+/*
+ * Motion for <ZPulse />. Transform/opacity/dash only, so it stays cheap,
+ * and every animation is removed under prefers-reduced-motion — the mark
+ * then renders fully drawn and still, identical to the "ready" state.
+ */
+
+/* Listening — the dot breathes. */
+.listening .dot {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: z-dot-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes z-dot-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.25);
+  }
+}
+
+/*
+ * Thinking — the stroke draws itself: top bar, then the diagonal, then
+ * the bottom bar, rests, fades, and loops. Each path carries
+ * pathLength="1", so a dash of 1 is the whole segment and the three
+ * keyframe sets only differ in *when* each segment runs (its share of
+ * the 1.8s cycle is proportional to its real length: 32 / 51 / 22).
+ * A segment stays at opacity 0 until its turn, which hides the round
+ * cap that would otherwise peek through at a fully offset dash.
+ */
+.thinking .segTop,
+.thinking .segDiag,
+.thinking .segBottom {
+  stroke-dasharray: 1;
+  animation-duration: 1.8s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+.thinking .segTop {
+  animation-name: z-draw-top;
+}
+
+.thinking .segDiag {
+  animation-name: z-draw-diag;
+}
+
+.thinking .segBottom {
+  animation-name: z-draw-bottom;
+}
+
+@keyframes z-draw-top {
+  0% {
+    stroke-dashoffset: 1;
+    opacity: 1;
+  }
+  22%,
+  86% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes z-draw-diag {
+  0%,
+  21.99% {
+    stroke-dashoffset: 1;
+    opacity: 0;
+  }
+  22% {
+    stroke-dashoffset: 1;
+    opacity: 1;
+  }
+  57%,
+  86% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes z-draw-bottom {
+  0%,
+  56.99% {
+    stroke-dashoffset: 1;
+    opacity: 0;
+  }
+  57% {
+    stroke-dashoffset: 1;
+    opacity: 1;
+  }
+  72%,
+  86% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .listening .dot,
+  .thinking .segTop,
+  .thinking .segDiag,
+  .thinking .segBottom {
+    animation: none;
+  }
+}

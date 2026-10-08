@@ -53,6 +53,10 @@ export function SuziPromptInput({
 
   const shown = listening && interim ? interim : value;
 
+  // Mic and send are the most-tapped controls on the site: 44px on touch
+  // (WCAG 2.2 target size), 36px with a mouse to keep the desktop density.
+  const controlSize = micFirst ? "h-11 w-11" : "h-9 w-9 pointer-coarse:h-11 pointer-coarse:w-11";
+
   return (
     <form
       onSubmit={(e) => {
@@ -60,8 +64,9 @@ export function SuziPromptInput({
         onSubmit(value);
       }}
       className={cn(
-        "flex items-center gap-2 rounded-lg border border-line bg-white px-2 py-2 transition-shadow duration-300 focus-within:border-navy-400",
-        listening && "border-gold-400 shadow-[0_0_0_3px_rgba(179,148,90,0.14)]",
+        "flex items-center gap-2 rounded-lg border border-border bg-white px-2 transition-shadow duration-300 focus-within:border-brand-500",
+        micFirst ? "py-1.5" : "py-2 pointer-coarse:py-1.5",
+        listening && "border-brand-400 ring-[3px] ring-brand-500/15",
         className,
       )}
     >
@@ -73,12 +78,12 @@ export function SuziPromptInput({
           aria-pressed={listening}
           className={cn(
             "flex shrink-0 items-center justify-center rounded-lg transition-colors cursor-pointer",
-            micFirst ? "h-10 w-10" : "h-9 w-9",
+            controlSize,
             listening
-              ? "bg-gold-500 text-navy-950"
+              ? "bg-brand-500 text-white"
               : micFirst
-                ? "bg-navy-950 text-gold-300 hover:bg-navy-800"
-                : "bg-parchment text-navy-600 hover:bg-sand",
+                ? "bg-brand-900 text-brand-300 hover:bg-brand-800"
+                : "bg-paper-2 text-muted hover:bg-brand-100",
           )}
         >
           {listening ? <VoiceWaveform active /> : <Mic className="h-4 w-4" aria-hidden />}
@@ -91,14 +96,17 @@ export function SuziPromptInput({
         placeholder={listening ? "Listening…" : placeholder}
         disabled={disabled}
         aria-label="Tell Suzi what you need"
-        className="min-w-0 flex-1 bg-transparent px-2 py-1 text-sm text-navy-900 placeholder:text-navy-400 focus:outline-none disabled:opacity-50"
+        className="min-w-0 flex-1 bg-transparent px-2 py-1 text-sm text-ink placeholder:text-muted-2 disabled:opacity-50"
       />
 
       <button
         type="submit"
         disabled={disabled || !value.trim()}
         aria-label="Send"
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy-950 text-ivory disabled:opacity-40 cursor-pointer"
+        className={cn(
+          "flex shrink-0 items-center justify-center rounded-lg bg-brand-900 text-paper disabled:opacity-40 cursor-pointer",
+          controlSize,
+        )}
       >
         <ArrowUp className="h-4 w-4" aria-hidden />
       </button>

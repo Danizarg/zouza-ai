@@ -25,24 +25,20 @@ export default function ExplorePage() {
 
   return (
     <div>
-      <div className="border-b border-line bg-parchment py-10">
+      <div className="border-b border-border bg-paper-2 py-10">
         <div className="container-page">
-          <p className="eyebrow">Explore · AI-enhanced</p>
-          <h1 className="mt-2 text-3xl font-semibold text-navy-950 sm:text-4xl">
+          <p className="eyebrow">Explore</p>
+          <h1 className="mt-2 text-3xl font-semibold text-ink sm:text-4xl">
             Browse every verified home
           </h1>
-          <p className="mt-2 max-w-xl text-navy-600">
-            Prefer to browse? Every card still shows why it&rsquo;s verified,
-            the real total cost, and a direct line to talk to its AI.
-          </p>
-          <div className="mt-5 inline-flex rounded-lg border border-line bg-white p-1">
+          <div className="mt-5 inline-flex rounded-lg border border-border bg-white p-1">
             {(["all", "rent", "buy"] as const).map((m) => (
               <button
                 key={m}
                 type="button"
                 onClick={() => setMode(m)}
                 className={`rounded-md px-4 py-1.5 text-sm font-medium capitalize transition-colors ${
-                  mode === m ? "bg-navy-950 text-ivory" : "text-navy-600"
+                  mode === m ? "bg-brand-900 text-paper" : "text-muted"
                 }`}
               >
                 {m === "all" ? "All homes" : m}
@@ -60,9 +56,9 @@ export default function ExplorePage() {
         </aside>
 
         <div>
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
-            <p className="text-sm text-navy-600">
-              <span className="font-semibold text-navy-900">{results.length}</span>{" "}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
+            <p className="text-sm text-muted">
+              <span className="font-semibold text-ink">{results.length}</span>{" "}
               {results.length === 1 ? "home" : "homes"} found
             </p>
             <Select
@@ -79,9 +75,9 @@ export default function ExplorePage() {
           </div>
 
           {results.length === 0 ? (
-            <div className="mt-6 flex flex-col items-center gap-2 rounded-xl border border-dashed border-line bg-parchment py-16 text-center">
-              <p className="font-display text-lg font-semibold text-navy-900">No homes match yet</p>
-              <p className="max-w-sm text-sm text-navy-600">
+            <div className="mt-6 flex flex-col items-center gap-2 rounded-xl border border-dashed border-border bg-paper-2 py-16 text-center">
+              <p className="font-display text-lg font-semibold text-ink">No homes match yet</p>
+              <p className="max-w-sm text-sm text-muted">
                 Try widening your budget or clearing a filter.
               </p>
             </div>

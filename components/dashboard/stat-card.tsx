@@ -10,22 +10,21 @@ export function StatCard({
   icon: LucideIcon;
   label: string;
   value: string | number;
-  tone?: "neutral" | "gold" | "terra";
+  tone?: "neutral" | "brand";
 }) {
   return (
-    <div className="rounded-xl border border-line bg-white p-5">
+    <div className="rounded-xl border border-border bg-white p-5">
       <span
         className={cn(
           "flex h-9 w-9 items-center justify-center rounded-xl",
-          tone === "gold" && "bg-gold-100 text-gold-700",
-          tone === "terra" && "bg-terra-100 text-terra-700",
-          tone === "neutral" && "bg-parchment text-navy-700",
+          tone === "brand" && "bg-brand-100 text-brand-700",
+          tone === "neutral" && "bg-paper-2 text-ink-2",
         )}
       >
         <Icon className="h-4.5 w-4.5" aria-hidden />
       </span>
-      <p className="mt-3 font-display text-2xl font-semibold text-navy-900">{value}</p>
-      <p className="mt-0.5 text-xs text-navy-500">{label}</p>
+      <p className="mt-3 font-display text-2xl font-semibold text-ink">{value}</p>
+      <p className="mt-0.5 text-xs text-muted">{label}</p>
     </div>
   );
 }

@@ -255,7 +255,7 @@ export function Wizard() {
       {step === 7 && listing ? <StepPublish listing={listing} /> : null}
 
       {!isSupabaseConfigured() && step < 7 ? (
-        <p className="mt-10 text-center text-xs text-navy-400">
+        <p className="mt-10 text-center text-xs text-muted">
           Demo mode — no Supabase connection configured. Your listing will be
           saved locally in this browser.
         </p>

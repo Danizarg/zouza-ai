@@ -13,8 +13,8 @@ older, chronological build journal (§1–§18) — still valuable for the
   (CONTEXT.md §2 says `C:\Users\husky\Documents\Mamawebseite` — that is
   stale, the project moved.)
 - Domain: **zouza.ai** (Vercel)
-- Last verified: 2026-08-25 — `tsc --noEmit`, `npm run lint`,
-  `npm run build` all clean, 23/23 routes.
+- Last verified: 2026-10-16 — `tsc --noEmit`, `npm run lint`,
+  `npm run build` all clean, 25/25 routes.
 
 ---
 
@@ -207,17 +207,19 @@ app/
   sitemap.ts, robots.ts
 components/
   ui/                     button, field, badge — design primitives
-  home/                   Hero (Suzi conversation), value-strip,
-                          conversation-showcase, live-demo,
-                          nl-search-demo, agent-demo, suzi-* hero parts
+  brand/                  z-mark — the Z brand mark + ZPulse state mark
+  home/                   landing (full-viewport statement + tide),
+                          doors, nl-search-demo, suzi-prompt-input
   suzi/                   Global floating Suzi avatar assistant
+                          (suzi-widget lazy-loads the panel chunk)
   wizard/                 7-step listing creation
   listing/                Detail page parts incl. agent-chat
   search/                 filter-panel, search-results
   dashboard/, messages/, auth/, motion/
 lib/
   types.ts                All domain types (mirrors schema.sql)
-  mock-data.ts            12 Spain listings + testimonials + chat examples
+  mock-data.ts            12 Spain listings + chat examples (no
+                          testimonials — fabricated proof was removed)
   listings.ts             SERVER-ONLY data access
   listing-filters.ts      CLIENT-SAFE filter/sort
   local-listings.ts       localStorage listing store (mock mode)
@@ -233,12 +235,18 @@ supabase/schema.sql       Full Postgres schema + RLS + storage bucket
 
 ### Design system
 
-`app/globals.css` `@theme`. Backgrounds `ivory`/`parchment`/`sand`;
-ink `navy-900…950`; accent `gold-500/600`; primary CTA `terra-600`
-(terracotta). Utilities `.container-page`, `.eyebrow`, `.glow-cta`
-(reserved for primary "Start with Suzi" CTAs only). Shadows
-`shadow-card` / `shadow-lift`. Radius: `rounded-2xl` cards,
-`rounded-full` buttons/badges.
+**v2 (violet) since 2026-10-16.** `app/globals.css` `@theme`, mirrored
+hex-for-hex in `design/tokens.json` for the mobile app. Brand scale
+`brand-50…950` (primary `brand-500` #7255F0, dark bands `brand-900`);
+neutrals `paper`/`paper-2`/`surface`, `border`/`border-strong`,
+`ink`/`ink-2`/`muted`/`muted-2`/`faint`; semantic `success`/`danger`.
+The old navy/gold/terra/ivory/parchment/sand/olive tokens are **gone,
+with no aliases** — a stale class renders unstyled, on purpose.
+Utilities `.container-page`, `.eyebrow` (muted), `.glow-cta` (reserved
+for the primary "Talk to Suzi" CTA). Shadows `shadow-card` /
+`shadow-lift` (ink-tinted). Radius: `rounded-lg` controls, `rounded-xl`
+cards. Brand mark: `components/brand/z-mark.tsx` (Z mark B, "Voice") —
+never the lucide Sparkles for Zouza or Suzi.
 
 Constraints deliberately followed: one accent colour, one neutral
 background system, no gradient blobs, no glassmorphism, restrained
@@ -256,11 +264,12 @@ platform" filler. `design.md` holds the full spec.
   `ANTHROPIC_API_KEY` is set, with a deterministic fallback that keeps the
   whole product working when it isn't (§7)
 
-- AI-first homepage: Suzi hero conversation (type + native speech-to-text),
-  value strip, 4-step how-it-works, tabbed conversation showcase,
-  featured properties, "Why Suzi is different", property-AI demo,
-  seller flow (live demo + creates-grid), NL search demo, testimonials,
-  final CTA + mini prompt
+- AI-first homepage (v2, ≤140 visible words): full-viewport landing —
+  Z mark, "Just tell Suzi what you need." / "She'll do the rest.", two
+  equal doors (Talk to Suzi / List with Suzi) and the night-sea tide —
+  then "Ask Suzi" (NL search demo seeded with a ranked Valencia query),
+  "Photos in. Listing out.", three verified homes, closing doors. No
+  testimonials, star ratings or "trusted by" claims — removed on purpose
 - Global floating **Suzi avatar assistant** on every route — page-aware
   greetings/suggestions/quick actions, property-aware on
   `/property/[id]`, navigation-intent auto-routing, ESC/focus a11y,
@@ -515,6 +524,17 @@ bugs found while testing (see §13).
 (§7), and replaced the 0–3% tenant-paid platform fee with the **€20/month
 owner subscription, no transaction fees** (§3.2) — pricing page rewritten,
 `platform_fee_percent` removed end to end. See `CONTEXT.md` §19–§20.
+
+**Session of 2026-10-16:** design system v2 (violet) — see §4 "Design
+system" and `design.md`. New brand scale + violet-tinted neutrals in
+`app/globals.css`, mirrored in `design/tokens.json`; Z mark replaces the
+Sparkles icon everywhere; `/` rebuilt as a ≤140-word landing; `/pro`
+added; `icon.svg` + generated OpenGraph image replace `favicon.ico`;
+every page re-skinned; fabricated proof (testimonials, counts, "trusted
+by") deleted and the deterministic answers in `lib/ai/service.ts` hedged
+so Suzi no longer asserts facts (internet speed, parking) a listing
+doesn't carry. `marketing/reels-brief.md` holds the 2026-10-08 campaign
+scripts.
 
 Before that, the last commit was `6c79f61` (2026-07-18) — hero/header
 polish, following the Suzi persona + global assistant work in
