@@ -5,7 +5,7 @@ import { TypewriterText } from "@/components/motion/typewriter-text";
 import { answerAgentQuestion } from "@/lib/ai/service";
 import { MOCK_LISTINGS } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -28,6 +28,7 @@ interface DemoMessage {
 
 /** Interactive demo of the per-listing AI property agent, on real demo data. */
 export function AgentDemo() {
+  const reducedMotion = useReducedMotion();
   const [messages, setMessages] = useState<DemoMessage[]>([
     {
       role: "agent",
@@ -39,8 +40,8 @@ export function AgentDemo() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, thinking]);
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: reducedMotion ? "auto" : "smooth" });
+  }, [messages, thinking, reducedMotion]);
 
   function ask(question: string) {
     if (thinking) return;
@@ -61,8 +62,8 @@ export function AgentDemo() {
       <div className="flex items-center gap-3 border-b border-line bg-navy-900 px-5 py-4">
         <motion.span
           className="flex h-9 w-9 items-center justify-center rounded-full bg-gold-500/20 text-gold-300"
-          animate={thinking ? { scale: [1, 1.12, 1] } : { scale: 1 }}
-          transition={{ duration: 1, repeat: thinking ? Infinity : 0 }}
+          animate={thinking && !reducedMotion ? { scale: [1, 1.12, 1] } : { scale: 1 }}
+          transition={{ duration: reducedMotion ? 0 : 1, repeat: thinking && !reducedMotion ? Infinity : 0 }}
         >
           <Sparkles className="h-4.5 w-4.5" aria-hidden />
         </motion.span>

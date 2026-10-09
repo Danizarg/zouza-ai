@@ -12,8 +12,9 @@ paint.
 
 ## Macrostructure family
 - Marketing pages (/, /how-it-works, /about, /trust, /pricing): AI-chat hero
-  or statement head → bordered content sections separated by hairlines
-  (`border-line`) and alternating ivory/parchment/navy-950 bands. Section
+  or statement head → content sections separated by space or hairlines
+  (`border-line`). Use at most one navy-950 and one parchment band per page;
+  neither band is required. Section
   heads: Fraunces display heading, optional one-line support text; eyebrow
   labels quiet (navy-400), not gold.
 - App pages (/ai-search, /explore, /dashboard*, /list-with-ai,
@@ -57,13 +58,24 @@ Border-led, not shadow-led. Cards: `border border-line bg-white`, hover =
 product panel, sticky/floating elements, and overlays.
 
 ## Spacing
-Tailwind default 4-pt scale. Section rhythm: `py-16 md:py-20` (marketing),
-`py-8 md:py-10` (app). Page gutter: `container-page` (max-w-76rem).
+Tailwind default 4-pt scale. The homepage hero uses `pt-16 pb-12 md:pt-24 md:pb-16`.
+Subsequent sections use one top gap: `pt-8 md:pt-12`
+for the capability row and `pt-12 md:pt-20` for conversation, properties,
+and seller content. A band can place that gap outside itself and add internal
+padding. The closing navy band uses `mt-16 md:mt-24` and `py-12 md:py-16`.
+Use 12px from eyebrow to heading and heading to support, 24–32px from a
+heading group to content, 16–24px grid gaps, 32–48px two-column gaps, and
+20–24px card padding. App pages can use `py-8 md:py-10`. Page gutter:
+`container-page` (max-w-76rem).
 
 ## Motion
-framer-motion, entrance-only: fade + ≤14px translate, 0.5–0.7s ease-out,
-staggered ≤0.2s. No scroll-jacking, no loops except the wizard's generation
-spinner. Respect prefers-reduced-motion (Reveal component).
+framer-motion entrance effects may use a fade and at most 14px of translation,
+0.5–0.7s ease-out, staggered at most 0.2s. `Reveal` and the hero entrances
+must skip their entrance effects under `prefers-reduced-motion`. All remaining
+loops, typing indicators, and smooth scrolling on changed surfaces must stop
+or render statically under that preference. The focus outline and the prompt
+input's focus and listening states are functional feedback and remain visible.
+Do not add decorative pulse rings, glow effects, or cursor-following chrome.
 
 ## Microinteractions stance
 - Silent success (inline confirmation notes, no toasts)
@@ -91,7 +103,8 @@ spinner. Respect prefers-reduced-motion (Reveal component).
 
 ## What pages MAY differ on
 - Marketing pages may use one parchment band and one navy-950 band per page.
-- The hero product panel (receipt-card) appears only on /.
+- The homepage hero pairs its headline and prompt with one portrait; it has
+  no additional intro card.
 - App pages may use denser spacing.
 
 ## Honest-copy rules (carry from Hallmark)

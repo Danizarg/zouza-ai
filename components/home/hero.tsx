@@ -4,22 +4,23 @@ import { SuziHeroVisual } from "@/components/home/suzi-hero-visual";
 import { SuziPromptInput } from "@/components/home/suzi-prompt-input";
 import { ThinkingDots } from "@/components/motion/thinking-dots";
 import { TypewriterText } from "@/components/motion/typewriter-text";
-import { chatRespond } from "@/lib/ai/service";
 import { useClientSnapshot } from "@/lib/use-client-snapshot";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 interface ChatTurn {
   role: "user" | "ai";
   text: string;
+  href?: string;
+  action?: string;
 }
 
 const STARTER_PROMPTS = [
   "Villa in Marbella with sea view",
   "Apartment for rent in Madrid",
-  "Sell my property",
-  "Investment opportunities",
+  "Find a home near the beach",
 ];
 
 function isTouchDevice(): boolean {
@@ -27,7 +28,25 @@ function isTouchDevice(): boolean {
   return window.matchMedia("(pointer: coarse)").matches;
 }
 
+function heroReply(message: string): ChatTurn {
+  if (/\b(sell|seller|list|listing|owner)\b/i.test(message)) {
+    return {
+      role: "ai",
+      text: "Share the details you have and review a listing draft before it goes live.",
+      href: "/list-with-ai",
+      action: "Start a listing draft",
+    };
+  }
+  return {
+    role: "ai",
+    text: "Search example properties by location, budget, and home type, then ask about the details shown on a listing.",
+    href: "/ai-search",
+    action: "Search example homes",
+  };
+}
+
 export function Hero() {
+  const reducedMotion = useReducedMotion();
   const micFirst = useClientSnapshot(isTouchDevice, false);
   const [turns, setTurns] = useState<ChatTurn[]>([]);
   const [input, setInput] = useState("");
@@ -36,8 +55,11 @@ export function Hero() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [turns, thinking]);
+    scrollRef.current?.scrollTo({
+      top: scrollRef.current.scrollHeight,
+      behavior: reducedMotion ? "auto" : "smooth",
+    });
+  }, [turns, thinking, reducedMotion]);
 
   function ask(message: string) {
     const text = message.trim();
@@ -47,7 +69,7 @@ export function Hero() {
     setThinking(true);
     window.setTimeout(() => {
       setTurns((prev) => {
-        const next = [...prev, { role: "ai" as const, text: chatRespond(text) }];
+        const next = [...prev, heroReply(text)];
         setTypingIndex(next.length - 1);
         return next;
       });
@@ -58,59 +80,42 @@ export function Hero() {
   const active = thinking || typingIndex !== null;
 
   return (
-    <section className="container-page grid grid-cols-1 gap-10 py-16 md:py-20 lg:grid-cols-[1fr_1.15fr] lg:gap-12">
-      {/* 1. Header text — always first */}
-      <div className="order-1 lg:col-start-1 lg:row-start-1">
+    <section className="container-page grid grid-cols-1 gap-8 pt-16 pb-12 md:pt-24 md:pb-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] lg:items-center lg:gap-12">
+      <div className="min-w-0">
         <motion.p
           className="eyebrow"
-          initial={{ opacity: 0, y: 10 }}
+          initial={reducedMotion ? false : { opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: reducedMotion ? 0 : 0.5 }}
         >
           AI-powered real estate platform
         </motion.p>
         <motion.h1
-          className="mt-4 text-4xl leading-[1.08] font-semibold text-navy-950 sm:text-5xl"
-          initial={{ opacity: 0, y: 14 }}
+          className="mt-3 max-w-xl text-4xl leading-[1.08] font-semibold text-navy-950 sm:text-5xl"
+          initial={reducedMotion ? false : { opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.05 }}
+          transition={{ duration: reducedMotion ? 0 : 0.6, delay: reducedMotion ? 0 : 0.05 }}
         >
-          Just tell Suzi what you need.
-          <br />
-          She&rsquo;ll do the rest.
+          Tell Suzi what you&rsquo;re looking for.
         </motion.h1>
         <motion.p
-          className="mt-5 max-w-lg text-lg leading-relaxed text-navy-600"
-          initial={{ opacity: 0, y: 14 }}
+          className="mt-3 max-w-lg text-lg leading-relaxed text-navy-600"
+          initial={reducedMotion ? false : { opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.12 }}
+          transition={{ duration: reducedMotion ? 0 : 0.6, delay: reducedMotion ? 0 : 0.12 }}
         >
-          The easy way to buy, rent, sell or list a property. Suzi helps you
-          find the right home or sell yours faster — simply by talking or
-          typing.
+          Ask about example homes by typing or speaking naturally.
         </motion.p>
-      </div>
 
-      {/* 2. Suzi module — portrait + card, side by side on desktop, portrait first on mobile */}
-      <motion.div
-        className="order-2 lg:col-start-2 lg:row-start-1"
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7, delay: 0.2 }}
-      >
-        <SuziHeroVisual portraitSrc="/images/suzi-portrait.png" />
-      </motion.div>
-
-      {/* 3. Suzi conversation — the interaction entry point, not a search bar */}
-      <motion.div
-        className={cn(
-          "order-3 rounded-xl border bg-white shadow-card transition-shadow duration-500 lg:col-start-1 lg:row-start-2",
-          active ? "border-gold-300 shadow-[0_0_0_4px_rgba(179,148,90,0.12)]" : "border-line",
-        )}
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7, delay: 0.15 }}
-      >
+        <motion.div
+          className={cn(
+            "mt-8 rounded-xl border bg-white shadow-card transition-shadow duration-500 motion-reduce:transition-none",
+            active ? "border-gold-300 shadow-[0_0_0_4px_rgba(179,148,90,0.12)]" : "border-line",
+          )}
+          initial={reducedMotion ? false : { opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: reducedMotion ? 0 : 0.6, delay: reducedMotion ? 0 : 0.15 }}
+        >
         {turns.length > 0 || thinking ? (
           <div ref={scrollRef} className="max-h-72 space-y-3 overflow-y-auto px-5 py-4">
             {turns.map((t, i) => (
@@ -127,6 +132,11 @@ export function Hero() {
                   ) : (
                     t.text
                   )}
+                  {t.href && t.action && i !== typingIndex ? (
+                    <Link href={t.href} className="mt-2 block font-medium text-navy-700 underline underline-offset-2 hover:text-navy-950">
+                      {t.action}
+                    </Link>
+                  ) : null}
                 </p>
               </div>
             ))}
@@ -166,6 +176,15 @@ export function Hero() {
             placeholder="I'm moving to Marbella with a €900,000 budget…"
           />
         </div>
+        </motion.div>
+      </div>
+      <motion.div
+        className="mx-auto w-full max-w-md lg:max-w-none"
+        initial={reducedMotion ? false : { opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: reducedMotion ? 0 : 0.6, delay: reducedMotion ? 0 : 0.2 }}
+      >
+        <SuziHeroVisual portraitSrc="/images/suzi-portrait.png" />
       </motion.div>
     </section>
   );

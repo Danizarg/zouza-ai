@@ -1,6 +1,6 @@
 "use client";
 
-import { buttonClasses, type ButtonSize } from "@/components/ui/button";
+import { buttonClasses, type ButtonSize, type ButtonVariant } from "@/components/ui/button";
 import { openSuziPanel } from "@/lib/suzi-events";
 import { Sparkles } from "lucide-react";
 
@@ -11,13 +11,15 @@ import { Sparkles } from "lucide-react";
  */
 export function TalkToSuziButton({
   size = "lg",
+  variant = "primary",
   className,
 }: {
   size?: ButtonSize;
+  variant?: ButtonVariant;
   className?: string;
 }) {
   return (
-    <button type="button" onClick={openSuziPanel} className={buttonClasses("primary", size, className)}>
+    <button type="button" onClick={openSuziPanel} className={buttonClasses(variant, size, className)}>
       <Sparkles className="h-4.5 w-4.5" aria-hidden />
       Talk to Suzi
     </button>
