@@ -229,13 +229,6 @@ export interface ListingFacts {
 /* Homepage AI demos                                                  */
 /* ---------------------------------------------------------------- */
 
-export interface Testimonial {
-  id: string;
-  name: string;
-  role: string;
-  quote: string;
-}
-
 /** A canned prompt shown in the homepage AI panel, with a deterministic mock reply. */
 export interface AiChatExample {
   prompt: string;
