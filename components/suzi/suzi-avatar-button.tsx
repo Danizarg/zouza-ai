@@ -1,14 +1,6 @@
 "use client";
 
-import { useClientSnapshot } from "@/lib/use-client-snapshot";
-import { motion } from "framer-motion";
-
-function reduceMotion(): boolean {
-  if (typeof window === "undefined") return false;
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
-
-/** The collapsed floating trigger — a warm glowing orb, not a support-widget icon. */
+/** The collapsed floating trigger for the conversation panel. */
 export function SuziAvatarButton({
   onClick,
   hasUnread,
@@ -16,10 +8,8 @@ export function SuziAvatarButton({
   onClick: () => void;
   hasUnread?: boolean;
 }) {
-  const reduced = useClientSnapshot(reduceMotion, false);
-
   return (
-    <motion.button
+    <button
       type="button"
       onClick={onClick}
       aria-label="Open Suzi, your AI real estate partner"
@@ -27,14 +17,6 @@ export function SuziAvatarButton({
       style={{
         background: "radial-gradient(circle at 35% 30%, #E8CFA0 0%, #B3945A 45%, #0F1B33 100%)",
       }}
-      animate={
-        reduced
-          ? undefined
-          : { boxShadow: ["0 0 0 0 rgba(179,148,90,0.35)", "0 0 0 12px rgba(179,148,90,0)"] }
-      }
-      transition={reduced ? undefined : { duration: 2.2, repeat: Infinity, ease: "easeOut" }}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.96 }}
     >
       <span className="font-display text-base font-semibold text-ivory">S</span>
       {hasUnread ? (
@@ -43,6 +25,6 @@ export function SuziAvatarButton({
           aria-hidden
         />
       ) : null}
-    </motion.button>
+    </button>
   );
 }

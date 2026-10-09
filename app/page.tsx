@@ -56,23 +56,23 @@ export default function HomePage() {
       <Hero />
 
       {/* What Suzi does */}
-      <section className="border-y border-line bg-navy-950 py-16 text-ivory md:py-20">
-        <div className="container-page">
+      <section className="container-page pt-8 md:pt-12">
+        <div>
           <Reveal>
-            <p className="eyebrow text-gold-300">Not a general chatbot</p>
+            <p className="eyebrow">What Suzi does</p>
             <h2 className="mt-3 max-w-xl text-3xl font-semibold sm:text-4xl">
               Why Suzi is different
             </h2>
-            <p className="mt-4 max-w-lg text-navy-300">
+            <p className="mt-3 max-w-lg text-navy-600">
               Tell Suzi what you need. Search example properties, compare details, or start a listing draft.
             </p>
           </Reveal>
-          <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
             {whySuzi.map((item, i) => (
               <Reveal key={item.label} delay={i * 0.04} className="h-full">
-                <div className="flex h-full flex-col items-start gap-3 rounded-xl border border-navy-700 bg-navy-900 p-4">
-                  <item.icon className="h-4.5 w-4.5 text-gold-300" aria-hidden />
-                  <p className="text-sm font-medium text-ivory">{item.label}</p>
+                <div className="flex h-full flex-col items-start gap-3 rounded-xl border border-line bg-white p-5">
+                  <item.icon className="h-4.5 w-4.5 text-gold-600" aria-hidden />
+                  <p className="text-sm font-medium text-navy-900">{item.label}</p>
                 </div>
               </Reveal>
             ))}
@@ -80,7 +80,7 @@ export default function HomePage() {
           <Reveal delay={0.2}>
             <Link
               href="/how-it-works"
-              className="mt-10 inline-flex items-center gap-2 text-sm font-medium text-ivory/80 hover:text-ivory"
+              className="mt-8 inline-flex items-center gap-2 text-sm font-medium text-navy-700 hover:text-navy-950"
             >
               See how it works
               <ArrowRight className="h-4 w-4" aria-hidden />
@@ -90,14 +90,14 @@ export default function HomePage() {
       </section>
 
       {/* One example conversation */}
-      <section className="border-b border-line bg-white py-16 md:py-20">
-        <div className="container-page grid gap-10 lg:grid-cols-2 lg:items-center">
+      <section className="container-page pt-12 md:pt-20">
+        <div className="grid gap-8 lg:grid-cols-2 lg:items-center lg:gap-12">
           <Reveal>
             <p className="eyebrow">One example conversation</p>
             <h2 className="mt-3 text-3xl font-semibold text-navy-950 sm:text-4xl">
               Questions about this home
             </h2>
-            <p className="mt-4 max-w-md text-navy-600">
+            <p className="mt-3 max-w-md text-navy-600">
               Ask about the property details shown here, including price, availability, parking, pets, and the area.
             </p>
           </Reveal>
@@ -108,7 +108,7 @@ export default function HomePage() {
       </section>
 
       {/* Example properties */}
-      <section className="container-page py-16 md:py-20">
+      <section className="container-page pt-12 md:pt-20">
         <Reveal>
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -128,7 +128,7 @@ export default function HomePage() {
             </Link>
           </div>
         </Reveal>
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
           {examples.map((l, i) => (
             <Reveal key={l.id} delay={i * 0.06} className="h-full">
               <ListingCard listing={l} />
@@ -138,8 +138,8 @@ export default function HomePage() {
       </section>
 
       {/* List your property */}
-      <section className="border-y border-line bg-parchment py-16 md:py-20">
-        <div className="container-page grid gap-10 lg:grid-cols-2 lg:items-start">
+      <section className="mt-12 border-y border-line bg-parchment py-12 md:mt-20 md:py-16">
+        <div className="container-page grid gap-8 lg:grid-cols-2 lg:items-start lg:gap-12">
           <Reveal>
             <p className="eyebrow">List with the details you have</p>
             <h2 className="mt-3 max-w-xl text-3xl font-semibold text-navy-950 sm:text-4xl">
@@ -149,18 +149,18 @@ export default function HomePage() {
               Share the property details you have. Suzi helps shape a draft listing for you to review before it goes live.
             </p>
             <div className="mt-8">
-              <Link href="/list-with-ai" className={buttonClasses("primary", "md", "glow-cta")}>
+              <Link href="/list-with-ai" className={buttonClasses("primary", "md")}>
                 <Upload className="h-4 w-4" aria-hidden />
                 List with Suzi
               </Link>
             </div>
           </Reveal>
           <Reveal delay={0.1}>
-            <ul className="grid grid-cols-2 gap-3">
+            <ul className="grid grid-cols-2 gap-4">
               {suziDrafts.map((item) => (
                 <li
                   key={item.label}
-                  className="flex items-center gap-3 rounded-xl border border-line bg-white p-4 text-sm font-medium text-navy-900"
+                  className="flex items-center gap-3 rounded-xl border border-line bg-white p-5 text-sm font-medium text-navy-900"
                 >
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-parchment text-navy-700">
                     <item.icon className="h-4 w-4" aria-hidden />
@@ -174,11 +174,11 @@ export default function HomePage() {
       </section>
 
       {/* Closing CTA */}
-      <section className="border-t border-line bg-navy-950 py-16 text-ivory md:py-20">
+      <section className="mt-16 bg-navy-950 py-12 text-ivory md:mt-24 md:py-16">
         <div className="container-page">
           <h2 className="font-display text-3xl font-semibold sm:text-4xl">Tell Suzi what you need.</h2>
           <div className="mt-6 flex flex-wrap gap-3">
-            <TalkToSuziButton className="glow-cta" />
+            <TalkToSuziButton variant="outline" />
             <Link
               href="/explore"
               className="inline-flex items-center gap-2 rounded-lg border border-ivory/25 px-7 py-3 text-base font-medium text-ivory transition-colors hover:border-ivory/50"
