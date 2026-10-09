@@ -11,11 +11,14 @@ import { useEffect, useRef, useState } from "react";
 
 const demoListing = MOCK_LISTINGS.find((l) => l.id === "l-marbella-villa") ?? MOCK_LISTINGS[0];
 
+// Keep every starter on a branch of `answerAgentQuestion` that reads real
+// listing fields. The viewing branch returns hardcoded owner slots that are
+// not real for any property, so it is deliberately not offered here.
 const starterQuestions = [
   "Are there community fees?",
   "How far is it from the beach?",
   "Are dogs allowed?",
-  "Can I book a viewing?",
+  "Is there a garage?",
 ];
 
 interface DemoMessage {
@@ -66,7 +69,7 @@ export function AgentDemo() {
         <div>
           <p className="text-sm font-semibold text-ivory">Talk to Suzi about this property</p>
           <p className="text-xs text-navy-300">
-            {demoListing.title.split(",")[0]} · answers 24/7 from listing data
+            Example listing · {demoListing.title.split(",")[0]}
           </p>
         </div>
       </div>

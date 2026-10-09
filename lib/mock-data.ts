@@ -4,7 +4,6 @@ import type {
   Listing,
   Message,
   Review,
-  Testimonial,
   ViewingRequest,
 } from "@/lib/types";
 import { totalMoveIn } from "@/lib/utils";
@@ -693,39 +692,8 @@ export const MOCK_VIEWING_REQUESTS: ViewingRequest[] = [
 ];
 
 /* ------------------------------------------------------------------ */
-/* Testimonials + homepage AI chat examples                           */
+/* Homepage AI chat examples                                          */
 /* ------------------------------------------------------------------ */
-
-export const MOCK_TESTIMONIALS: Testimonial[] = [
-  {
-    id: "t1",
-    name: "Familie Brandt",
-    role: "Owner, listed a rental in Jávea",
-    quote:
-      "I uploaded twelve phone photos on a Sunday evening. By Monday morning Zouza had written a better description than the agency quote we'd been sitting on for weeks.",
-  },
-  {
-    id: "t2",
-    name: "Sofia N.",
-    role: "Tenant, relocated from Berlin to Valencia",
-    quote:
-      "I asked Zouza to find a place near the beach with room for a home office. It explained why each match fit and I booked a viewing before I'd even landed.",
-  },
-  {
-    id: "t3",
-    name: "Richard T.",
-    role: "Buyer, Marbella",
-    quote:
-      "Suzi answered my questions about community fees and taxes at 11pm my time. Dealing with the owner directly afterwards felt refreshingly simple.",
-  },
-  {
-    id: "t4",
-    name: "Peter & Anja K.",
-    role: "Owners, sold a beach apartment in Dénia",
-    quote:
-      "We were not trying to write a brochure. We just wanted the photos to do the talking — Zouza turned them into one anyway, and it was accurate.",
-  },
-];
 
 export const MOCK_AI_CHAT_EXAMPLES: AiChatExample[] = [
   {

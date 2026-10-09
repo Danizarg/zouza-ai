@@ -26,11 +26,11 @@ export const metadata: Metadata = {
     template: "%s · Zouza",
   },
   description:
-    "Buy, rent, sell, or list a property — tell Zouza what you want to do and the AI handles the rest: search, listings, pricing, and the questions you'd normally ask an agent.",
+    "Explore example properties, compare listing details, or draft a property listing with Zouza.",
   openGraph: {
     title: "Zouza — Your AI Real Estate Partner",
     description:
-      "Buy, rent, sell, or list a property — tell Zouza what you want to do and the AI handles the rest.",
+      "Explore example properties, compare listing details, or draft a property listing with Zouza.",
     url: appUrl,
     siteName: "Zouza",
     locale: "en_GB",
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Zouza — Your AI Real Estate Partner",
-    description: "Buy, rent, sell, or list a property. Zouza does the work.",
+    description: "Explore example properties or draft a property listing with Zouza.",
   },
 };
 
