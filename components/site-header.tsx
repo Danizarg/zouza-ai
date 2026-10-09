@@ -63,7 +63,7 @@ export function SiteHeader() {
           <Link href="/auth/sign-in" className="text-sm font-medium text-navy-700 hover:text-navy-950">
             Sign in
           </Link>
-          <button type="button" onClick={openSuziPanel} className={buttonClasses("primary", "sm", "glow-cta")}>
+          <button type="button" onClick={openSuziPanel} className={buttonClasses("primary", "sm")}>
             <Sparkles className="h-3.5 w-3.5" aria-hidden />
             Talk to Suzi
           </button>
