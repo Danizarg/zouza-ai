@@ -40,7 +40,6 @@ const DEFAULT_FACTS: ListingFacts = {
   price: 1200,
   utilities_monthly: 120,
   deposit: 1200,
-  platform_fee_percent: 2,
   available_from: "",
   owner_rules: "",
   notes: "",
@@ -83,7 +82,6 @@ function buildListing(
     price_sale: isRent ? null : facts.price,
     utilities_monthly: isRent ? facts.utilities_monthly : null,
     deposit: isRent ? facts.deposit : null,
-    platform_fee_percent: isRent ? facts.platform_fee_percent : null,
     total_move_in_cost: null,
     available_from: facts.available_from || null,
     minimum_stay: null,
@@ -135,12 +133,17 @@ export function Wizard() {
     }
   }
 
-  function handleFactsSubmit() {
+  // `finalFacts` comes from the chat step rather than this component's
+  // `facts` state: the callback the chat step holds was created before the
+  // last answer was applied, so its closure would generate the listing from
+  // facts missing that answer (the price, for a sale).
+  function handleFactsSubmit(finalFacts: ListingFacts) {
+    setFacts(finalFacts);
     setStep(4);
     animationDoneRef.current = false;
     generatedRef.current = null;
     setContent(null);
-    generateListingAction({ ...facts, photo_count: photos.length }).then((generated) => {
+    generateListingAction({ ...finalFacts, photo_count: photos.length }).then((generated) => {
       generatedRef.current = generated;
       tryAdvancePastGenerating();
     });
@@ -252,7 +255,7 @@ export function Wizard() {
       {step === 7 && listing ? <StepPublish listing={listing} /> : null}
 
       {!isSupabaseConfigured() && step < 7 ? (
-        <p className="mt-10 text-center text-xs text-navy-400">
+        <p className="mt-10 text-center text-xs text-muted">
           Demo mode — no Supabase connection configured. Your listing will be
           saved locally in this browser.
         </p>

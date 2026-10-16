@@ -4,6 +4,7 @@ import { ThinkingDots } from "@/components/motion/thinking-dots";
 import { TypewriterText } from "@/components/motion/typewriter-text";
 import { Button } from "@/components/ui/button";
 import type { ListingFacts } from "@/lib/types";
+import { PROPERTY_TYPES } from "@/lib/types";
 import { Send } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -28,6 +29,24 @@ function buildSteps(forRent: boolean): QuestionStep[] {
         return { ...facts, address_area: area, city: city || area };
       },
       retry: "I need at least a city or area name to continue.",
+    },
+    {
+      ask: "What kind of property is it — apartment, house, villa, townhouse, penthouse, finca or studio?",
+      apply: (answer, facts) => {
+        const a = answer.toLowerCase();
+        const type =
+          PROPERTY_TYPES.find((t) => a.includes(t)) ??
+          (/(flat|piso)/.test(a)
+            ? "apartment"
+            : /(country house|cortijo|masia|farmhouse)/.test(a)
+              ? "finca"
+              : /(chalet)/.test(a)
+                ? "villa"
+                : null);
+        if (!type) return null;
+        return { ...facts, property_type: type };
+      },
+      retry: "Pick the closest one: apartment, house, villa, townhouse, penthouse, finca or studio.",
     },
     {
       ask: "How many bedrooms?",
@@ -113,7 +132,14 @@ export function StepChatFacts({
   facts: ListingFacts;
   onChange: (facts: ListingFacts) => void;
   onBack: () => void;
-  onContinue: () => void;
+  /**
+   * Receives the completed facts directly. The parent's `facts` state has
+   * been updated via `onChange` by this point, but the `onContinue` we hold
+   * is from the render *before* that update, so its own closure over `facts`
+   * is one answer behind — passing the value explicitly is what makes the
+   * last answer survive.
+   */
+  onContinue: (facts: ListingFacts) => void;
 }) {
   const [steps] = useState(() => buildSteps(facts.intent === "rent_out"));
   const [stepIndex, setStepIndex] = useState(0);
@@ -161,7 +187,7 @@ export function StepChatFacts({
 
       if (isLast) {
         setDone(true);
-        window.setTimeout(onContinue, 1400);
+        window.setTimeout(() => onContinue(next), 1400);
       } else {
         setStepIndex((i) => i + 1);
       }
@@ -170,20 +196,20 @@ export function StepChatFacts({
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-navy-950 sm:text-3xl">A few quick questions</h1>
-      <p className="mt-2 text-navy-600">
+      <h1 className="text-2xl font-semibold text-ink sm:text-3xl">A few quick questions</h1>
+      <p className="mt-2 text-muted">
         Answer like you would in a chat — Suzi fills in the rest.
       </p>
 
-      <div className="mt-8 overflow-hidden rounded-xl border border-line bg-white">
+      <div className="mt-8 overflow-hidden rounded-xl border border-border bg-white">
         <div ref={scrollRef} className="h-96 space-y-3 overflow-y-auto px-5 py-4">
           {turns.map((t, i) => (
             <div key={i} className={t.role === "user" ? "flex justify-end" : "flex justify-start"}>
               <p
                 className={
                   t.role === "user"
-                    ? "max-w-[80%] rounded-xl rounded-br-md bg-navy-950 px-4 py-2.5 text-sm leading-relaxed text-ivory"
-                    : "max-w-[80%] rounded-xl rounded-bl-md bg-parchment px-4 py-2.5 text-sm leading-relaxed text-navy-800"
+                    ? "max-w-[80%] rounded-xl rounded-br-md bg-brand-900 px-4 py-2.5 text-sm leading-relaxed text-paper"
+                    : "max-w-[80%] rounded-xl rounded-bl-md bg-paper-2 px-4 py-2.5 text-sm leading-relaxed text-ink-2"
                 }
               >
                 {t.role === "ai" && i === typingIndex ? (
@@ -196,7 +222,7 @@ export function StepChatFacts({
           ))}
           {thinking ? (
             <div className="flex justify-start">
-              <p className="flex items-center gap-2 rounded-xl rounded-bl-md bg-parchment px-4 py-2.5 text-sm text-navy-500">
+              <p className="flex items-center gap-2 rounded-xl rounded-bl-md bg-paper-2 px-4 py-2.5 text-sm text-muted">
                 Suzi is thinking <ThinkingDots />
               </p>
             </div>
@@ -208,7 +234,7 @@ export function StepChatFacts({
             e.preventDefault();
             submit();
           }}
-          className="flex items-center gap-2 border-t border-line bg-ivory px-5 py-3"
+          className="flex items-center gap-2 border-t border-border bg-paper px-5 py-3"
         >
           <input
             value={input}
@@ -217,13 +243,13 @@ export function StepChatFacts({
             disabled={done || thinking}
             aria-label="Your answer"
             autoFocus
-            className="flex-1 rounded-lg border border-line bg-white px-4 py-2 text-sm focus:border-navy-400 focus:outline-none disabled:opacity-50"
+            className="flex-1 rounded-lg border border-border bg-white px-4 py-2 text-sm focus:border-brand-500 disabled:opacity-50"
           />
           <button
             type="submit"
             disabled={done || thinking || !input.trim()}
             aria-label="Send"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy-950 text-ivory disabled:opacity-40 cursor-pointer"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-900 text-paper disabled:opacity-40 cursor-pointer"
           >
             <Send className="h-4 w-4" aria-hidden />
           </button>

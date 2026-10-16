@@ -36,10 +36,10 @@ export function Inbox() {
   }
 
   return (
-    <div className="grid h-[calc(100vh-3.5rem)] grid-cols-1 md:grid-cols-[320px_1fr]">
-      <div className={cn("overflow-y-auto border-r border-line", active ? "hidden md:block" : "block")}>
-        <div className="border-b border-line p-4">
-          <h1 className="font-display text-lg font-semibold text-navy-900">Messages</h1>
+    <div className="grid h-[calc(100dvh-3.5rem)] grid-cols-1 md:grid-cols-[320px_1fr]">
+      <div className={cn("overflow-y-auto border-r border-border", active ? "hidden md:block" : "block")}>
+        <div className="border-b border-border p-4">
+          <h1 className="font-display text-lg font-semibold text-ink">Messages</h1>
         </div>
         <ul>
           {MOCK_CONVERSATIONS.map((c) => (
@@ -48,30 +48,30 @@ export function Inbox() {
                 type="button"
                 onClick={() => setActiveId(c.id)}
                 className={cn(
-                  "flex w-full items-start gap-3 border-b border-line p-4 text-left transition-colors hover:bg-parchment",
-                  c.id === activeId && "bg-parchment",
+                  "flex w-full items-start gap-3 border-b border-border p-4 text-left transition-colors hover:bg-paper-2",
+                  c.id === activeId && "bg-paper-2",
                 )}
               >
-                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-sand">
+                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-paper-2">
                   <Image src={c.listing_image} alt="" fill className="object-cover" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="truncate text-sm font-semibold text-navy-900">{c.counterpart_name}</p>
+                    <p className="truncate text-sm font-semibold text-ink">{c.counterpart_name}</p>
                     {c.unread > 0 ? (
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-terra-600 text-[10px] font-semibold text-ivory">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-600 text-[10px] font-semibold text-paper">
                         {c.unread}
                       </span>
                     ) : null}
                   </div>
-                  <p className="truncate text-xs text-navy-500">{c.listing_title}</p>
+                  <p className="truncate text-xs text-muted">{c.listing_title}</p>
                   {c.prequalified ? (
-                    <Badge tone="gold" className="mt-1.5">
+                    <Badge tone="brand" className="mt-1.5">
                       <BadgeCheck className="h-3 w-3" aria-hidden />
                       Pre-qualified
                     </Badge>
                   ) : null}
-                  <p className="mt-1 text-xs text-navy-400">{daysAgo(c.last_message_at)}d ago</p>
+                  <p className="mt-1 text-xs text-muted">{daysAgo(c.last_message_at)}d ago</p>
                 </div>
               </button>
             </li>
@@ -82,23 +82,23 @@ export function Inbox() {
       <div className={cn("flex flex-col", !active ? "hidden md:flex" : "flex")}>
         {active ? (
           <>
-            <div className="flex items-center gap-3 border-b border-line p-4">
+            <div className="flex items-center gap-3 border-b border-border p-4">
               <button
                 type="button"
                 onClick={() => setActiveId(undefined as unknown as string)}
-                className="text-sm font-medium text-terra-600 md:hidden"
+                className="text-sm font-medium text-brand-600 md:hidden"
               >
                 Back
               </button>
-              <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-sand">
+              <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-paper-2">
                 <Image src={active.listing_image} alt="" fill className="object-cover" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-navy-900">{active.counterpart_name}</p>
-                <p className="text-xs text-navy-500">{active.listing_title}</p>
+                <p className="text-sm font-semibold text-ink">{active.counterpart_name}</p>
+                <p className="text-xs text-muted">{active.listing_title}</p>
               </div>
               {active.prequalified ? (
-                <Badge tone="gold" className="ml-auto">
+                <Badge tone="brand" className="ml-auto">
                   {active.prequalification_note}
                 </Badge>
               ) : null}
@@ -111,14 +111,14 @@ export function Inbox() {
                     className={cn(
                       "max-w-[75%] rounded-xl px-4 py-2.5 text-sm leading-relaxed",
                       m.sender === "me"
-                        ? "rounded-br-md bg-navy-900 text-ivory"
+                        ? "rounded-br-md bg-brand-900 text-paper"
                         : m.sender === "zouza_ai"
-                          ? "rounded-bl-md border border-gold-200 bg-gold-100 text-navy-800"
-                          : "rounded-bl-md bg-parchment text-navy-800",
+                          ? "rounded-bl-md border border-brand-100 bg-brand-50 text-ink-2"
+                          : "rounded-bl-md bg-paper-2 text-ink-2",
                     )}
                   >
                     {m.sender === "zouza_ai" ? (
-                      <p className="mb-1 text-xs font-semibold text-gold-700">Zouza AI pre-check</p>
+                      <p className="mb-1 text-xs font-semibold text-brand-700">Zouza AI pre-check</p>
                     ) : null}
                     {m.body}
                   </div>
@@ -131,27 +131,27 @@ export function Inbox() {
                 e.preventDefault();
                 send();
               }}
-              className="flex items-center gap-2 border-t border-line p-4"
+              className="flex items-center gap-2 border-t border-border p-4"
             >
               <input
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 placeholder="Type a message…"
                 aria-label="Message"
-                className="flex-1 rounded-lg border border-line bg-white px-4 py-2.5 text-sm focus:border-navy-400 focus:outline-none"
+                className="flex-1 rounded-lg border border-border bg-white px-4 py-2.5 text-sm focus:border-brand-500"
               />
               <button
                 type="submit"
                 disabled={!draft.trim()}
                 aria-label="Send"
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-navy-950 text-ivory disabled:opacity-40"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-900 text-paper disabled:opacity-40"
               >
                 <Send className="h-4 w-4" aria-hidden />
               </button>
             </form>
           </>
         ) : (
-          <div className="flex flex-1 items-center justify-center text-sm text-navy-400">
+          <div className="flex flex-1 items-center justify-center text-sm text-muted">
             Select a conversation
           </div>
         )}

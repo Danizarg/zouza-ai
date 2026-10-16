@@ -21,9 +21,9 @@ export function WizardProgress({ step }: { step: number }) {
             <span
               className={cn(
                 "flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold",
-                state === "done" && "bg-gold-600 text-ivory",
-                state === "current" && "bg-navy-900 text-ivory",
-                state === "upcoming" && "bg-parchment text-navy-400",
+                state === "done" && "bg-brand-600 text-paper",
+                state === "current" && "bg-brand-900 text-paper",
+                state === "upcoming" && "bg-paper-2 text-muted",
               )}
             >
               {index}
@@ -31,13 +31,13 @@ export function WizardProgress({ step }: { step: number }) {
             <span
               className={cn(
                 "hidden text-xs font-medium sm:inline",
-                state === "upcoming" ? "text-navy-400" : "text-navy-800",
+                state === "upcoming" ? "text-muted" : "text-ink-2",
               )}
             >
               {label}
             </span>
             {index < STEP_LABELS.length ? (
-              <span className="mx-1 hidden h-px w-6 bg-line sm:inline-block" aria-hidden />
+              <span className="mx-1 hidden h-px w-6 bg-border sm:inline-block" aria-hidden />
             ) : null}
           </li>
         );

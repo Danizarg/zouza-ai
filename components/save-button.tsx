@@ -54,7 +54,7 @@ export function SaveButton({
       <Heart
         className={cn(
           "h-4.5 w-4.5 transition-colors",
-          saved ? "fill-terra-600 text-terra-600" : "text-navy-700",
+          saved ? "fill-brand-600 text-brand-600" : "text-ink-2",
         )}
         aria-hidden
       />

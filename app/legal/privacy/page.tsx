@@ -55,7 +55,7 @@ export default function PrivacyPage() {
         <p>
           You may request access to, correction of, or deletion of your
           personal data by contacting us through the{" "}
-          <a href="/contact" className="underline hover:text-navy-900">contact page</a>.
+          <a href="/contact" className="underline hover:text-ink">contact page</a>.
         </p>
       </LegalSection>
 

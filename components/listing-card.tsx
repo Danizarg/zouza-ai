@@ -12,13 +12,13 @@ export function ListingCard({ listing }: { listing: Listing }) {
   const price = isRent ? listing.price_monthly : listing.price_sale;
 
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-xl border border-line bg-white transition-all duration-300 hover:-translate-y-1 hover:border-gold-400 hover:shadow-[0_0_0_3px_rgba(179,148,90,0.14)]">
+    <article className="group relative flex flex-col overflow-hidden rounded-xl border border-border bg-white transition-all duration-300 hover:-translate-y-1 hover:border-brand-400 hover:shadow-[0_0_0_3px_rgba(114,85,240,0.14)]">
       <Link
         href={`/property/${listing.id}`}
         className="absolute inset-0 z-10"
         aria-label={listing.title}
       />
-      <div className="relative aspect-[4/3] overflow-hidden bg-sand">
+      <div className="relative aspect-[4/3] overflow-hidden bg-paper-2">
         <Image
           src={listing.images[0]}
           alt={listing.title}
@@ -27,47 +27,47 @@ export function ListingCard({ listing }: { listing: Listing }) {
           className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
         />
         <div className="absolute top-3 left-3 z-20 flex gap-1.5">
-          <Badge tone="navy">{isRent ? "For rent" : "For sale"}</Badge>
-          {listing.new_build ? <Badge tone="terra">New build</Badge> : null}
+          <Badge tone="dark">{isRent ? "For rent" : "For sale"}</Badge>
+          {listing.new_build ? <Badge tone="brand">New build</Badge> : null}
         </div>
         <SaveButton listingId={listing.id} className="absolute top-3 right-3 z-20" />
       </div>
 
       <div className="flex flex-1 flex-col gap-3 p-5">
         {listing.match_reason ? (
-          <p className="text-xs font-medium text-gold-700">{listing.match_reason}</p>
+          <p className="text-xs font-medium text-brand-700">{listing.match_reason}</p>
         ) : null}
 
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="font-display text-xl font-semibold text-navy-900">
+            <p className="font-display text-xl font-semibold text-ink">
               {formatPrice(price ?? 0)}
               {isRent ? (
-                <span className="font-sans text-sm font-normal text-navy-500"> /month</span>
+                <span className="font-sans text-sm font-normal text-muted"> /month</span>
               ) : null}
             </p>
             {isRent ? (
-              <p className="mt-0.5 text-xs text-navy-500">
+              <p className="mt-0.5 text-xs text-muted">
                 {formatPrice(totalMoveIn(listing))} total at move-in — all costs shown
               </p>
             ) : (
-              <p className="mt-0.5 text-xs text-navy-500">
+              <p className="mt-0.5 text-xs text-muted">
                 Direct from owner · no agency commission
               </p>
             )}
           </div>
         </div>
 
-        <h3 className="font-sans text-sm leading-snug font-medium text-navy-800">
+        <h3 className="font-sans text-sm leading-snug font-medium text-ink-2">
           {listing.title}
         </h3>
 
-        <p className="flex items-center gap-1 text-xs text-navy-500">
+        <p className="flex items-center gap-1 text-xs text-muted">
           <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden />
           {listing.address_area}, {listing.city}
         </p>
 
-        <div className="flex items-center gap-4 text-xs text-navy-600">
+        <div className="flex items-center gap-4 text-xs text-muted">
           <span className="flex items-center gap-1">
             <BedDouble className="h-3.5 w-3.5" aria-hidden />
             {listing.bedrooms > 0 ? `${listing.bedrooms} bed` : "Studio"}
@@ -86,7 +86,7 @@ export function ListingCard({ listing }: { listing: Listing }) {
           <VerificationBadges listing={listing} compact />
           <Link
             href={`/property/${listing.id}#ai`}
-            className="relative z-20 inline-flex shrink-0 items-center gap-1 text-xs font-medium text-navy-700 hover:text-navy-950"
+            className="relative z-20 inline-flex shrink-0 items-center gap-1 text-xs font-medium text-ink-2 hover:text-ink"
           >
             <MessageCircle className="h-3.5 w-3.5 group-hover:motion-safe:animate-pulse" aria-hidden />
             Talk to Suzi

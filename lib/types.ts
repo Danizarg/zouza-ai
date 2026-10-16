@@ -60,7 +60,6 @@ export interface Listing {
   price_sale: number | null;
   utilities_monthly: number | null;
   deposit: number | null;
-  platform_fee_percent: number | null;
   total_move_in_cost: number | null;
   available_from: string | null;
   minimum_stay: string | null;
@@ -218,7 +217,6 @@ export interface ListingFacts {
   price: number;
   utilities_monthly: number | null;
   deposit: number | null;
-  platform_fee_percent: number;
   available_from: string;
   owner_rules: string;
   notes: string;

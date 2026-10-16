@@ -13,26 +13,24 @@ export function StepIntent({
 }) {
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-navy-950 sm:text-3xl">
+      <h1 className="text-2xl font-semibold text-ink sm:text-3xl">
         What would you like to do?
       </h1>
-      <p className="mt-2 text-navy-600">Zouza tailors the whole flow to your goal.</p>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         <button
           type="button"
           onClick={() => onSelect("rent_out")}
           className={`flex flex-col items-start gap-3 rounded-xl border-2 p-6 text-left transition-colors ${
-            value === "rent_out" ? "border-gold-500 bg-gold-100" : "border-line bg-white hover:border-navy-300"
+            value === "rent_out" ? "border-brand-500 bg-brand-50" : "border-border bg-white hover:border-border-strong"
           }`}
         >
-          <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-navy-900 text-gold-300">
+          <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-900 text-brand-300">
             <KeyRound className="h-5 w-5" aria-hidden />
           </span>
-          <span className="font-display text-xl font-semibold text-navy-900">Rent out</span>
-          <span className="text-sm leading-relaxed text-navy-600">
-            List your property for rent — Zouza writes the exposé and
-            answers tenants around the clock.
+          <span className="font-display text-xl font-semibold text-ink">Rent out</span>
+          <span className="text-sm leading-relaxed text-muted">
+            Suzi writes the listing and answers tenant questions for you.
           </span>
         </button>
 
@@ -40,16 +38,15 @@ export function StepIntent({
           type="button"
           onClick={() => onSelect("sell")}
           className={`flex flex-col items-start gap-3 rounded-xl border-2 p-6 text-left transition-colors ${
-            value === "sell" ? "border-gold-500 bg-gold-100" : "border-line bg-white hover:border-navy-300"
+            value === "sell" ? "border-brand-500 bg-brand-50" : "border-border bg-white hover:border-border-strong"
           }`}
         >
-          <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-navy-900 text-gold-300">
+          <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-900 text-brand-300">
             <Landmark className="h-5 w-5" aria-hidden />
           </span>
-          <span className="font-display text-xl font-semibold text-navy-900">Sell</span>
-          <span className="text-sm leading-relaxed text-navy-600">
-            List your property for sale — agency-level presentation, direct
-            to buyers.
+          <span className="font-display text-xl font-semibold text-ink">Sell</span>
+          <span className="text-sm leading-relaxed text-muted">
+            Suzi presents your home to buyers and answers their questions.
           </span>
         </button>
       </div>

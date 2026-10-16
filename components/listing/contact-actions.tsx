@@ -35,7 +35,7 @@ export function ContactActions({ listing }: { listing: Listing }) {
               e.preventDefault();
               setSentMessage(true);
             }}
-            className="space-y-3 rounded-xl border border-line bg-parchment p-4"
+            className="space-y-3 rounded-xl border border-border bg-paper-2 p-4"
           >
             <div>
               <Label htmlFor="msg-name">Your name</Label>
@@ -67,7 +67,7 @@ export function ContactActions({ listing }: { listing: Listing }) {
               e.preventDefault();
               setSentViewing(true);
             }}
-            className="space-y-3 rounded-xl border border-line bg-parchment p-4"
+            className="space-y-3 rounded-xl border border-border bg-paper-2 p-4"
           >
             <div>
               <Label htmlFor="view-date">Preferred date</Label>
@@ -87,8 +87,8 @@ export function ContactActions({ listing }: { listing: Listing }) {
 
 function SuccessNote({ text }: { text: string }) {
   return (
-    <div className="flex items-start gap-2.5 rounded-xl border border-gold-200 bg-gold-100 p-4 text-sm text-navy-800">
-      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-gold-700" aria-hidden />
+    <div className="flex items-start gap-2.5 rounded-xl border border-brand-100 bg-brand-50 p-4 text-sm text-ink-2">
+      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-700" aria-hidden />
       {text}
     </div>
   );

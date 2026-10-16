@@ -1,14 +1,20 @@
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 
-type BadgeTone = "gold" | "navy" | "terra" | "olive" | "neutral";
+/* design.md v2 badge tones:
+   brand   — product/feature tags (brand-100 / brand-700, 7.13:1)
+   dark    — mode tags ("For rent", "For sale")
+   success — verified / confirmed states
+   danger  — cancelled / declined states
+   neutral — everything else */
+type BadgeTone = "brand" | "dark" | "success" | "danger" | "neutral";
 
 const tones: Record<BadgeTone, string> = {
-  gold: "bg-gold-100 text-gold-700 border-gold-200",
-  navy: "bg-navy-900 text-ivory border-navy-900",
-  terra: "bg-terra-100 text-terra-700 border-terra-200",
-  olive: "bg-olive-100 text-olive-600 border-olive-100",
-  neutral: "bg-parchment text-navy-700 border-line",
+  brand: "bg-brand-100 text-brand-700 border-brand-200",
+  dark: "bg-brand-900 text-paper border-brand-900",
+  success: "bg-success/10 text-success border-success/20",
+  danger: "bg-danger/10 text-danger border-danger/20",
+  neutral: "bg-paper-2 text-ink-2 border-border",
 };
 
 export function Badge({

@@ -2,32 +2,42 @@ import { MOCK_AI_CHAT_EXAMPLES } from "@/lib/mock-data";
 import type {
   GeneratedListingContent,
   Listing,
+  ListingMode,
   ListingFacts,
+  PropertyType,
   SearchMatch,
   SearchMatchReason,
   TranslationLanguage,
 } from "@/lib/types";
-import { TRANSLATION_LANGUAGES } from "@/lib/types";
+import { PROPERTY_TYPES, TRANSLATION_LANGUAGES } from "@/lib/types";
 import { formatPrice, totalMoveIn } from "@/lib/utils";
 
 /**
- * AI service abstraction.
+ * Deterministic AI layer — CLIENT-SAFE.
  *
- * When OPENAI_API_KEY or ANTHROPIC_API_KEY is set, `generateListingContent`
- * is the single integration point to swap in a real model call: build a
- * prompt from `facts`, request JSON matching `GeneratedListingContent`, and
- * return it. Until then, deterministic mock generation keeps the entire
- * product flow working with zero configuration.
+ * Everything in this module runs offline with no key and no network. It is
+ * both the zero-configuration demo experience and the permanent fallback
+ * behind the real model: the server actions in `app/actions.ts` try
+ * `lib/ai/provider.ts` first and land here whenever a key is missing, a
+ * request fails, or the model declines.
+ *
+ * Do NOT import the Anthropic SDK (or anything server-only) here — client
+ * components import this module directly.
+ */
+
+/**
+ * Whether a real model is configured. Mirrors `isAiEnabled()` in
+ * `lib/ai/provider.ts`, which is server-only; this exists so client-safe
+ * callers can ask the same question.
  */
 export function hasAiProvider(): boolean {
   return Boolean(process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY);
 }
 
+/** Template exposé built purely from the owner's facts — the generation fallback. */
 export async function generateListingContent(
   facts: ListingFacts,
 ): Promise<GeneratedListingContent> {
-  // Integration point for a real model. Keep the mock as fallback so a
-  // missing/invalid key never breaks the product flow.
   return mockGenerate(facts);
 }
 
@@ -69,7 +79,7 @@ function mockGenerate(facts: ListingFacts): GeneratedListingContent {
     facts.furnished ? "Fully furnished and move-in ready" : "Unfurnished — ready to make your own",
     facts.pool ? "Private pool area" : null,
     facts.sea_view ? "Open sea views" : null,
-    facts.garage ? "Garage / secure parking" : "Street parking nearby",
+    facts.garage ? "Garage / secure parking" : null,
     facts.pets_allowed ? "Pets welcome" : null,
     facts.floor !== null ? `Floor ${facts.floor}` : null,
   ].filter((x): x is string => Boolean(x));
@@ -95,7 +105,7 @@ function mockGenerate(facts: ListingFacts): GeneratedListingContent {
     lifestyleParagraph,
     locationParagraph,
     forRent
-      ? `Offered ${facts.furnished ? "furnished" : "unfurnished"} from ${facts.available_from || "now"}. All costs are listed transparently — rent, utilities estimate, deposit and platform fee — so you know the total before you enquire.`
+      ? `Offered ${facts.furnished ? "furnished" : "unfurnished"} from ${facts.available_from || "now"}. All costs are listed transparently — rent, utilities estimate and deposit — so you know the total before you enquire. Zouza charges tenants nothing.`
       : `Offered for sale directly by the owner with full price transparency and a verification trail, so buyers can move forward with confidence.`,
   ].join("\n\n");
 
@@ -104,15 +114,14 @@ function mockGenerate(facts: ListingFacts): GeneratedListingContent {
         facts.utilities_monthly
           ? `, with utilities estimated at ${formatPrice(facts.utilities_monthly)}/month`
           : ""
-      }. The deposit is ${formatPrice(facts.deposit ?? facts.price)} and the platform fee estimate is ${facts.platform_fee_percent}% of one month. Total due at move-in: ${formatPrice(
+      }. The deposit is ${formatPrice(facts.deposit ?? facts.price)}, and Zouza adds no fee of any kind. Total due at move-in: ${formatPrice(
         totalMoveIn({
           price_monthly: facts.price,
           utilities_monthly: facts.utilities_monthly,
           deposit: facts.deposit ?? facts.price,
-          platform_fee_percent: facts.platform_fee_percent,
         }),
-      )}. No hidden costs.`
-    : `The asking price is ${formatPrice(facts.price)}. Purchase taxes and notary fees vary by region and buyer situation — Zouza shows an indicative placeholder and always recommends independent advice. There is no agency commission built into this price.`;
+      )}. No hidden costs, and no commission on your rent.`
+    : `The asking price is ${formatPrice(facts.price)}. Purchase taxes and notary fees vary by region and buyer situation — Zouza shows an indicative placeholder and always recommends independent advice. There is no agency commission built into this price, and Zouza takes no cut of the sale.`;
 
   const ownerRulesSummary = facts.owner_rules.trim()
     ? `House rules set by the owner: ${facts.owner_rules.trim()}`
@@ -137,17 +146,19 @@ function mockGenerate(facts: ListingFacts): GeneratedListingContent {
     },
     {
       question: "When can I visit?",
-      answer: "Use the “Request viewing” button to propose a date — the owner confirms directly, usually within a day.",
+      answer: "Use “Request viewing” to propose a date; the owner confirms directly.",
     },
     {
       question: "Is there parking?",
       answer: facts.garage
         ? "Yes — the property includes a garage / secure parking space."
-        : "There is no private garage, but street parking is available nearby.",
+        : "No private garage is listed — ask the owner about parking.",
     },
     {
       question: "Is it suitable for remote work?",
-      answer: `${facts.bedrooms > 1 ? "Yes — a spare room works well as a home office, and" : "Yes —"} fibre internet is available in this area.`,
+      answer: facts.bedrooms > 1
+        ? "A spare bedroom can work as a home office. Internet speed isn't part of this listing's data — ask the owner through the message button."
+        : "Internet speed isn't part of this listing's data — ask the owner through the message button.",
     },
   ];
 
@@ -157,7 +168,7 @@ function mockGenerate(facts: ListingFacts): GeneratedListingContent {
     `Location: ${facts.address_area}, ${facts.city}, ${facts.country}`,
     `Amenities: ${[facts.pool && "pool", facts.sea_view && "sea view", facts.garage && "garage", facts.furnished && "furnished", facts.pets_allowed && "pets allowed"].filter(Boolean).join(", ") || "standard"}`,
     forRent
-      ? `Pricing: ${formatPrice(facts.price)}/month, utilities ~${formatPrice(facts.utilities_monthly ?? 0)}, deposit ${formatPrice(facts.deposit ?? facts.price)}, platform fee ${facts.platform_fee_percent}%`
+      ? `Pricing: ${formatPrice(facts.price)}/month, utilities ~${formatPrice(facts.utilities_monthly ?? 0)}, deposit ${formatPrice(facts.deposit ?? facts.price)}, no Zouza fee to the tenant`
       : `Pricing: asking ${formatPrice(facts.price)}, direct from owner`,
     `Availability: ${facts.available_from || "immediately"}`,
     `Owner rules: ${facts.owner_rules || "none specified"}`,
@@ -222,25 +233,25 @@ export function answerAgentQuestion(listing: Listing, question: string): string 
   if (/(tax|ibi|notary)/.test(q)) {
     return listing.taxes_note
       ? listing.taxes_note
-      : "Utilities and platform fees are shown in the price breakdown above; for purchase taxes, always confirm with an independent notary.";
+      : "Utilities and the deposit are shown in the price breakdown above, and Zouza adds no fee of its own; for purchase taxes, always confirm with an independent notary.";
   }
   if (/(includ|price|cost|fee|total|how much|utilities|deposit)/.test(q)) {
     if (rentMode) {
       const total = totalMoveIn(listing);
-      return `The monthly rent is ${formatPrice(listing.price_monthly ?? 0)}${listing.utilities_monthly ? `, plus roughly ${formatPrice(listing.utilities_monthly)} in utilities` : ""}. The deposit is ${formatPrice(listing.deposit ?? 0)} and the platform fee estimate is ${listing.platform_fee_percent ?? 0}%. Total due at move-in: ${formatPrice(total)} — no hidden costs.`;
+      return `The monthly rent is ${formatPrice(listing.price_monthly ?? 0)}${listing.utilities_monthly ? `, plus roughly ${formatPrice(listing.utilities_monthly)} in utilities` : ""}. The deposit is ${formatPrice(listing.deposit ?? 0)}, and Zouza charges you nothing — owners pay a flat €20/month to list, so there is no commission on your rent. Total due at move-in: ${formatPrice(total)} — no hidden costs.`;
     }
     return `The asking price is ${formatPrice(listing.price_sale ?? 0)}, direct from the owner with no agency commission on top. Purchase taxes and notary fees depend on the region and your situation.`;
   }
   if (/(book|schedule).*(viewing|visit|tour)/.test(q) || /(visit|viewing|see it|tour|appointment|when can i)/.test(q)) {
-    return "Yes. I can help request a viewing. The owner currently has slots available Thursday afternoon and Saturday morning — use the “Request viewing” button and I'll pass your preferred time along.";
+    return "Yes — I can help request a viewing. Use the “Request viewing” button and tell me a time that suits you; I'll pass your preferred time to the owner, who confirms what's available.";
   }
   if (/(garage|park)/.test(q)) {
     return listing.garage
       ? "Yes — the property includes a garage / secure parking space."
-      : "There is no private garage, but street parking is generally available in this area.";
+      : "No private garage is listed — ask the owner about parking.";
   }
   if (/(remote|work|office|wifi|internet|fibre|fiber)/.test(q)) {
-    return `${listing.bedrooms > 1 ? "Yes — one of the bedrooms works well as a home office, and fibre" : "Fibre"} internet is available in ${listing.city}. Many residents in ${listing.address_area} work remotely.`;
+    return `${listing.bedrooms > 1 ? "With more than one bedroom, a spare room could work as a home office. " : ""}Internet speed isn't part of this listing's data, so I can't confirm the connection — I can ask the owner for you if you'd like.`;
   }
   if (/(beach|sea|coast|swim)/.test(q)) {
     if (listing.distance_to_beach_min) {
@@ -348,13 +359,71 @@ const CITY_ALIASES: Record<string, string[]> = {
   "Palma de Mallorca": ["palma", "mallorca"],
 };
 
+function deaccent(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
 /**
- * Interprets a free-text query against the given listings and returns
- * ranked matches with a one-line reason each. Pure keyword/heuristic
- * scoring — deterministic, and structured so a real model can replace the
- * scoring step while keeping the same { listing, match_reason } shape.
+ * Resolves a city name from any source onto the exact `listing.city`
+ * spelling the inventory uses, so ranking's exact-match comparison works
+ * for "Javea", "jávea" and "Costa Blanca" alike. Returns null when nothing
+ * in the inventory matches — a city Zouza has no homes in should not
+ * silently rank as if it did.
  */
-export function interpretSearchQuery(query: string, listings: Listing[]): SearchMatch[] {
+export function normalizeCity(
+  name: string | null | undefined,
+  listings: Listing[],
+): string | null {
+  if (!name) return null;
+  const wanted = deaccent(name);
+  if (!wanted) return null;
+
+  const cities = Array.from(new Set(listings.map((l) => l.city)));
+  const direct = cities.find((city) => deaccent(city) === wanted);
+  if (direct) return direct;
+
+  const aliased = Object.entries(CITY_ALIASES).find(([, aliases]) =>
+    aliases.some((alias) => deaccent(alias) === wanted),
+  )?.[0];
+  if (!aliased) return null;
+
+  return cities.find((city) => deaccent(city) === deaccent(aliased)) ?? null;
+}
+
+/**
+ * What a search query actually asked for. Understanding (free text →
+ * criteria) and ranking (criteria → matches) are separate on purpose: a
+ * real model is far better than regexes at the first half, and far worse
+ * than explicit scoring at the second, where the user is shown *why* each
+ * result matched. `askSuziSearch` in `app/actions.ts` swaps only the
+ * understanding half; the ranking below is always the same code.
+ */
+export interface SearchCriteria {
+  city: string | null;
+  /** Euros — monthly for rentals, total for sales. */
+  budget: number | null;
+  /** Minimum bedrooms required. */
+  bedrooms: number | null;
+  wantsBeach: boolean;
+  mode: ListingMode | null;
+  propertyType: PropertyType | null;
+}
+
+export const EMPTY_SEARCH_CRITERIA: SearchCriteria = {
+  city: null,
+  budget: null,
+  bedrooms: null,
+  wantsBeach: false,
+  mode: null,
+  propertyType: null,
+};
+
+/** Deterministic query understanding — the fallback when no model is available. */
+export function parseSearchQuery(query: string): SearchCriteria {
   const q = query.toLowerCase();
   // Require an explicit k/m/million suffix OR a € sign — otherwise a plain
   // number (e.g. "3 bedrooms") would be misread as a budget.
@@ -378,17 +447,53 @@ export function interpretSearchQuery(query: string, listings: Listing[]): Search
   const wantsBuy = /(buy|purchase|invest)/.test(q);
   const wantsRent = /(rent|renting)/.test(q);
   const wantedCity = Object.entries(CITY_ALIASES).find(([, aliases]) => aliases.some((a) => q.includes(a)))?.[0];
+  const wantedType = PROPERTY_TYPES.find((type) => q.includes(type)) ?? null;
+
+  return {
+    city: wantedCity ?? null,
+    budget,
+    bedrooms: wantBedrooms,
+    wantsBeach,
+    // A query mentioning both ("rent-to-buy") is treated as neither rather
+    // than scoring both modes, which would flatten the ranking.
+    mode: wantsBuy === wantsRent ? null : wantsBuy ? "buy" : "rent",
+    propertyType: wantedType,
+  };
+}
+
+/**
+ * Ranks listings against criteria and explains each match. Deterministic
+ * by design — the visitor is shown a match percentage and the reasons
+ * behind it, so the scoring has to be inspectable, stable, and identical
+ * whether the criteria came from a model or from `parseSearchQuery`.
+ */
+export function rankListings(criteria: SearchCriteria, listings: Listing[]): SearchMatch[] {
+  const { budget, wantsBeach } = criteria;
+  const wantedCity = criteria.city;
+  const wantBedrooms = criteria.bedrooms;
+  const wantedType = criteria.propertyType;
+  const wantsBuy = criteria.mode === "buy";
+  const wantsRent = criteria.mode === "rent";
+
+  // Someone asking to buy should never be shown a rental, however well it
+  // scores on the other criteria — a €1,450/month flat "fits" a €1.2M
+  // purchase budget arithmetically, and that is exactly the kind of result
+  // that makes a search feel broken.
+  const candidates = criteria.mode
+    ? listings.filter((listing) => listing.mode === criteria.mode)
+    : listings;
 
   // Relative to what the query actually asked for, so "no budget mentioned"
   // doesn't silently cap every match's percentage.
   const maxPossibleScore =
     (wantedCity ? 4 : 0) +
     (wantBedrooms ? 3 : 0) +
+    (wantedType ? 3 : 0) +
     (wantsBeach ? 2 : 0) +
     (wantsBuy || wantsRent ? 2 : 0) +
     (budget ? 2 : 0);
 
-  const scored = listings.map((listing) => {
+  const scored = candidates.map((listing) => {
     let score = 0;
     const proseReasons: string[] = [];
     const reasons: SearchMatchReason[] = [];
@@ -403,6 +508,14 @@ export function interpretSearchQuery(query: string, listings: Listing[]): Search
       score += 3;
       proseReasons.push(`it has ${listing.bedrooms} bedrooms`);
       reasons.push({ label: "Lifestyle fit", detail: `${listing.bedrooms} bedrooms — meets your ${wantBedrooms}+ requirement` });
+    }
+    if (wantedType && listing.property_type === wantedType) {
+      score += 3;
+      proseReasons.push(`it's a ${wantedType}`);
+      reasons.push({
+        label: "Property type",
+        detail: `${TYPE_LABEL[wantedType] ?? wantedType} — the type you asked for`,
+      });
     }
     if (wantsBeach && (listing.sea_view || (listing.distance_to_beach_min ?? 999) <= 15)) {
       score += 2;
@@ -439,4 +552,12 @@ export function interpretSearchQuery(query: string, listings: Listing[]): Search
       match_percent: Math.max(55, Math.min(100, Math.round((s.score / Math.max(maxPossibleScore, 1)) * 100))),
       reasons: s.reasons,
     }));
+}
+
+/**
+ * Free text → ranked matches, entirely offline. Kept as the fallback path
+ * for `askSuziSearch` and used directly by the homepage search demo.
+ */
+export function interpretSearchQuery(query: string, listings: Listing[]): SearchMatch[] {
+  return rankListings(parseSearchQuery(query), listings);
 }

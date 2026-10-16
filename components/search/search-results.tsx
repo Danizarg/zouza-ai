@@ -36,10 +36,10 @@ export function SearchResults({
       </aside>
 
       <div>
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
           <div>
-            <p className="text-sm text-navy-600">
-              <span className="font-semibold text-navy-900">{results.length}</span>{" "}
+            <p className="text-sm text-muted">
+              <span className="font-semibold text-ink">{results.length}</span>{" "}
               {results.length === 1 ? "home" : "homes"} found
             </p>
           </div>
@@ -47,7 +47,7 @@ export function SearchResults({
             <button
               type="button"
               onClick={() => setMobileFiltersOpen(true)}
-              className="flex items-center gap-1.5 rounded-lg border border-line bg-white px-3.5 py-2 text-sm font-medium text-navy-700 lg:hidden"
+              className="flex items-center gap-1.5 rounded-lg border border-border bg-white px-3.5 py-2 text-sm font-medium text-ink-2 lg:hidden"
             >
               <SlidersHorizontal className="h-4 w-4" aria-hidden />
               Filters
@@ -65,12 +65,12 @@ export function SearchResults({
               <option value="newest">Newest</option>
               <option value="most_verified">Most verified</option>
             </Select>
-            <div className="hidden items-center gap-1 rounded-lg border border-line bg-white p-1 sm:flex">
+            <div className="hidden items-center gap-1 rounded-lg border border-border bg-white p-1 sm:flex">
               <button
                 type="button"
                 onClick={() => setView("list")}
                 aria-pressed={view === "list"}
-                className={`flex h-8 w-8 items-center justify-center rounded-md ${view === "list" ? "bg-navy-950 text-ivory" : "text-navy-500"}`}
+                className={`flex h-8 w-8 items-center justify-center rounded-md ${view === "list" ? "bg-brand-900 text-paper" : "text-muted"}`}
                 aria-label="List view"
               >
                 <List className="h-4 w-4" aria-hidden />
@@ -79,7 +79,7 @@ export function SearchResults({
                 type="button"
                 onClick={() => setView("map")}
                 aria-pressed={view === "map"}
-                className={`flex h-8 w-8 items-center justify-center rounded-md ${view === "map" ? "bg-navy-950 text-ivory" : "text-navy-500"}`}
+                className={`flex h-8 w-8 items-center justify-center rounded-md ${view === "map" ? "bg-brand-900 text-paper" : "text-muted"}`}
                 aria-label="Map view"
               >
                 <MapIcon className="h-4 w-4" aria-hidden />
@@ -89,13 +89,13 @@ export function SearchResults({
         </div>
 
         {mobileFiltersOpen ? (
-          <div className="fixed inset-0 z-50 flex flex-col bg-ivory lg:hidden">
-            <div className="flex items-center justify-between border-b border-line px-4 py-4">
+          <div className="fixed inset-0 z-50 flex flex-col bg-paper lg:hidden">
+            <div className="flex items-center justify-between border-b border-border px-4 py-4">
               <p className="font-display text-lg font-semibold">Filters</p>
               <button
                 type="button"
                 onClick={() => setMobileFiltersOpen(false)}
-                className="text-sm font-medium text-terra-600"
+                className="text-sm font-medium text-brand-600"
               >
                 Done
               </button>
@@ -107,13 +107,13 @@ export function SearchResults({
         ) : null}
 
         {view === "map" ? (
-          <div className="mt-6 flex aspect-video items-center justify-center rounded-xl border border-dashed border-line bg-parchment text-sm text-navy-500">
+          <div className="mt-6 flex aspect-video items-center justify-center rounded-xl border border-dashed border-border bg-paper-2 text-sm text-muted">
             Interactive map view — coming soon. Showing {results.length} pinned homes.
           </div>
         ) : results.length === 0 ? (
-          <div className="mt-6 flex flex-col items-center gap-2 rounded-xl border border-dashed border-line bg-parchment py-16 text-center">
-            <p className="font-display text-lg font-semibold text-navy-900">No homes match yet</p>
-            <p className="max-w-sm text-sm text-navy-600">
+          <div className="mt-6 flex flex-col items-center gap-2 rounded-xl border border-dashed border-border bg-paper-2 py-16 text-center">
+            <p className="font-display text-lg font-semibold text-ink">No homes match yet</p>
+            <p className="max-w-sm text-sm text-muted">
               Try widening your budget or clearing a filter — new verified homes
               are added every week.
             </p>
