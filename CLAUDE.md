@@ -534,7 +534,13 @@ every page re-skinned; fabricated proof (testimonials, counts, "trusted
 by") deleted and the deterministic answers in `lib/ai/service.ts` hedged
 so Suzi no longer asserts facts (internet speed, parking) a listing
 doesn't carry. `marketing/reels-brief.md` holds the 2026-10-08 campaign
-scripts.
+scripts. Then merged `main`, which had meanwhile taken the parallel
+`redesign/*` pass (PRs #1–#4, still on the v1 tokens): v2 wins on every
+conflicted file and the v1-token homepage components it re-styled are
+gone; kept from it the CI gate (`.github/workflows/ci.yml`, currently
+scoped to `redesign/main-pass`), `npm run typecheck`,
+`scripts/homepage-word-count.mjs`, reduced-motion handling in `Reveal` /
+`VoiceWaveform` / `ThinkingDots`, and the hedged metadata descriptions.
 
 Before that, the last commit was `6c79f61` (2026-07-18) — hero/header
 polish, following the Suzi persona + global assistant work in

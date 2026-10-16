@@ -1,0 +1,41 @@
+name: CI
+
+# Gate for the redesign integration branch (ZOU-2 Rev 3 §4.4 / acceptance
+# criterion 7): every PR into `redesign/main-pass` — and the branch itself after
+# a merge — must typecheck, lint and build.
+on:
+  pull_request:
+    branches: [redesign/main-pass]
+  push:
+    branches: [redesign/main-pass]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Typecheck, lint, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
