@@ -16,6 +16,7 @@ import {
   suziSystemPrompt,
 } from "@/lib/ai/prompts";
 import { isAiEnabled, runStructured, runText } from "@/lib/ai/provider";
+import { allowModelCall } from "@/lib/ai/rate-limit";
 import { getListings } from "@/lib/listings";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type {
@@ -100,6 +101,8 @@ export async function askSuzi(input: AskSuziInput): Promise<AskSuziResult> {
   }
 
   if (!isAiEnabled()) return { ...fallback, source: "fallback" };
+  // Over budget looks like no model: the deterministic answer, no error.
+  if (!(await allowModelCall("chat"))) return { ...fallback, source: "fallback" };
 
   try {
     const history = (input.history ?? [])
@@ -160,7 +163,7 @@ export async function askSuziSearch(query: string): Promise<SuziSearchResult> {
   const [rentals, sales] = await Promise.all([getListings("rent"), getListings("buy")]);
   const listings = [...rentals, ...sales];
 
-  if (isAiEnabled()) {
+  if (isAiEnabled() && (await allowModelCall("search"))) {
     try {
       const criteria = await runStructured({
         system: SEARCH_EXTRACTION_SYSTEM,
@@ -222,6 +225,7 @@ export async function generateListingAction(
   const template = await generateListingContent(facts);
 
   if (!isAiEnabled()) return template;
+  if (!(await allowModelCall("generate"))) return template;
 
   try {
     const written = await runStructured({

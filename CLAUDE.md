@@ -448,9 +448,13 @@ is imported directly by client code. Verify after changes:
   Streaming real tokens into it would cut perceived latency a lot.
 - **Prompt caching.** The system prompt is below the ~1024-token minimum
   cacheable prefix, so nothing caches yet. Worth revisiting as prompts grow.
-- **No usage metering or rate limiting.** Anyone can call the actions
-  freely. Needed before public launch (and required anyway for the plan
-  limits in §3).
+- **No per-account metering yet.** `lib/ai/rate-limit.ts` (added
+  2026-10-16 for the first public beta) caps model calls per visitor IP
+  (chat 40 / 10 min, search 40 / 10 min, generate 12 / hour) and per
+  server instance (600 / min); over budget serves the deterministic
+  answer, never an error. Counters are in process memory, so on Vercel
+  each instance counts separately — a first line of defence, not the
+  plan limits in §3. Those need identity (P0.2) and a shared store.
 - Suzi still can't *act* — no tools, no ability to save a search, book a
   viewing, or message an owner on the visitor's behalf. That needs §10's
   identity work first.
