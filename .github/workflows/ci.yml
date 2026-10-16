@@ -1,13 +1,13 @@
 name: CI
 
-# Gate for the redesign integration branch (ZOU-2 Rev 3 §4.4 / acceptance
-# criterion 7): every PR into `redesign/main-pass` — and the branch itself after
-# a merge — must typecheck, lint and build.
+# Every PR into `main` — and `main` itself after a merge — must typecheck,
+# lint and build. (Began as the gate for the `redesign/main-pass` integration
+# branch, ZOU-2 Rev 3 §4.4; that branch has landed.)
 on:
   pull_request:
-    branches: [redesign/main-pass]
+    branches: [main]
   push:
-    branches: [redesign/main-pass]
+    branches: [main]
 
 concurrency:
   group: ci-${{ github.ref }}
