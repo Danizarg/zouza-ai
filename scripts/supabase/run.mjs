@@ -97,7 +97,7 @@ async function test(paths) {
     }
   }
   console.log(`${files.length - failed}/${files.length} test files passed`);
-  if (failed) process.exit(1);
+  if (failed) process.exitCode = 1;
 }
 
 async function types(out) {
