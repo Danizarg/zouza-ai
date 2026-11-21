@@ -119,9 +119,38 @@ async function advisors() {
   }
 }
 
+// Zouza auth settings (design 2026-11-21): confirmation emails from info@zouza.ai through the existing
+// mailbox, links straight back to the app (zouza:// in builds, exp:// in Expo Go until launch).
+const AUTH_SETTINGS = {
+  site_url: "https://zouza.ai",
+  uri_allow_list: "zouza://**,exp://**",
+  mailer_autoconfirm: false,
+  external_anonymous_users_enabled: false,
+  password_min_length: 8,
+  smtp_admin_email: "info@zouza.ai",
+  smtp_sender_name: "Zouza",
+  rate_limit_email_sent: 30,
+};
+
 async function authConfig() {
-  console.error("auth-config is added in Task 9");
-  process.exit(1);
+  for (const k of ["EMAIL_SMTP_HOST", "EMAIL_SMTP_PORT", "EMAIL_SMTP_USER", "EMAIL_SMTP_PASS"]) {
+    if (!env[k]) { console.error(`${k} is empty in the env file`); process.exitCode = 1; return; }
+  }
+  // The PATCH response is the applied config; a GET right after can still return the old values.
+  const c = await api(`/projects/${ref}/config/auth`, {
+    method: "PATCH",
+    body: JSON.stringify({
+      ...AUTH_SETTINGS,
+      smtp_host: env.EMAIL_SMTP_HOST,
+      smtp_port: String(env.EMAIL_SMTP_PORT),
+      smtp_user: env.EMAIL_SMTP_USER,
+      smtp_pass: env.EMAIL_SMTP_PASS,
+    }),
+  });
+  for (const k of [...Object.keys(AUTH_SETTINGS), "smtp_host", "smtp_port", "smtp_user"]) {
+    console.log(`${k}: ${JSON.stringify(c[k])}`);
+  }
+  console.log(`smtp_pass: ${c.smtp_pass ? "set" : "empty"}`);
 }
 
 async function status() {
