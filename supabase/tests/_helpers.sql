@@ -58,3 +58,14 @@ begin
 end $$;
 
 grant execute on all functions in schema tests to anon, authenticated;
+
+-- Create a listing as the database owner (no client rules apply); returns its id.
+create function tests.new_listing(owner uuid, status text default 'published', title text default 'Sunny flat')
+returns uuid language plpgsql as $$
+declare lid uuid := gen_random_uuid();
+begin
+  insert into public.listings (id, owner_id, mode, intent, title, city, property_type, status)
+  values (lid, owner, 'rent', 'rent_out', title, 'Valencia', 'apartment', status);
+  return lid;
+end $$;
+grant execute on function tests.new_listing(uuid, text, text) to anon, authenticated;
