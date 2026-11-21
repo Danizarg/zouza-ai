@@ -43,7 +43,7 @@ do $$ declare a uuid := tests.new_user('e@test.zouza'); b uuid := tests.new_user
   insert into storage.objects (bucket_id, name, owner_id) values ('listing-images', a::text || '/l1/0.jpg', a::text);
   perform tests.expect_error(format($q$insert into storage.objects (bucket_id, name, owner_id)
     values ('listing-images', %L, %L)$q$, b::text || '/l1/0.jpg', a::text), '42501');
-  perform tests.as_anon();
   perform tests.expect_count(format($q$select 1 from storage.objects where bucket_id = 'listing-images' and name = %L$q$, a::text || '/l1/0.jpg'), 1);
+  perform tests.as_anon();
   perform tests.expect_error($q$insert into storage.objects (bucket_id, name) values ('listing-images', 'anon/x.jpg')$q$, '42501');
 end $$;
