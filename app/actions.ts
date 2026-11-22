@@ -238,7 +238,7 @@ export async function generateListingAction(
       ],
       schema: generatedContentSchema,
       schemaName: "listing_content",
-      effort: "medium",
+      effort: "low", // ~6 s instead of ~28 s for a full exposé (measured 2026-11-22, gpt-5-nano)
     });
 
     if (!written) return template;
