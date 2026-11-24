@@ -1,5 +1,6 @@
 "use client";
 
+import { AccountMenu } from "@/components/auth/account-menu";
 import { ZBadge, ZMark } from "@/components/brand/z-mark";
 import { buttonClasses } from "@/components/ui/button";
 import { openSuziPanel } from "@/lib/suzi-events";
@@ -61,9 +62,7 @@ export function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-2 lg:flex">
-          <Link href="/auth/sign-in" className={buttonClasses("ghost", "sm")}>
-            Sign in
-          </Link>
+          <AccountMenu />
           <button type="button" onClick={openSuziPanel} className={buttonClasses("primary", "sm")}>
             <ZMark className="h-4 w-4" />
             Talk to Suzi
@@ -113,9 +112,7 @@ export function SiteHeader() {
               );
             })}
             <div className="mt-3 flex gap-2">
-              <Link href="/auth/sign-in" onClick={closeMenu} className={buttonClasses("ghost", "md", "flex-1")}>
-                Sign in
-              </Link>
+              <AccountMenu variant="mobile" onNavigate={closeMenu} />
               <button
                 type="button"
                 onClick={() => {

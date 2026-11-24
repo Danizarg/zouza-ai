@@ -5,7 +5,7 @@
 
 export type ListingMode = "rent" | "buy";
 export type ListingIntent = "rent_out" | "sell";
-export type ListingStatus = "draft" | "published" | "archived";
+export type ListingStatus = "draft" | "published" | "archived" | "pending_review" | "removed";
 export type TermLength = "short_term" | "medium_term" | "long_term";
 
 export type PropertyType =
