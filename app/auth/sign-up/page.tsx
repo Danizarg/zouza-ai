@@ -7,11 +7,19 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { CheckCircle2 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 
-export default function SignUpPage() {
+function safeNextPath(raw: string | null, fallback = "/dashboard"): string {
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//") || raw.includes("\\")) return fallback;
+  return raw;
+}
+
+function SignUpForm() {
   const router = useRouter();
+  const params = useSearchParams();
+  const next = safeNextPath(params.get("next"));
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,7 +34,13 @@ export default function SignUpPage() {
       const { error, data } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { full_name: name } },
+        options: {
+          data: { full_name: name },
+          // The confirmation link comes back through /auth/callback, which exchanges it for a
+          // session and continues to `next`. (Must be on the Supabase redirect allow list;
+          // otherwise the link lands on the Site URL and the proxy forwards it there.)
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+        },
       });
       if (error) {
         setError(error.message);
@@ -38,16 +52,22 @@ export default function SignUpPage() {
         return;
       }
     }
-    router.push("/dashboard");
+    router.push(next);
+    router.refresh();
   }
 
   if (status === "confirm") {
     return (
-      <AuthCard title="Check your inbox" subtitle="Confirm your email to finish signing up." footer={null}>
+      <AuthCard
+        title="Check your inbox"
+        subtitle="Confirm your email to finish signing up."
+        footer={null}
+      >
         <div className="flex items-start gap-3 rounded-xl border border-brand-100 bg-brand-50 p-4">
           <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand-700" aria-hidden />
           <p className="text-sm text-ink-2">
-            We sent a confirmation link to {email}.
+            We sent a confirmation link to {email}. Open it in this browser and you&rsquo;ll be
+            signed in straight away.
           </p>
         </div>
       </AuthCard>
@@ -57,11 +77,18 @@ export default function SignUpPage() {
   return (
     <AuthCard
       title="Create your account"
-      subtitle={isSupabaseConfigured() ? "Free to join — save homes, enquire, or start a listing." : "Demo mode — this creates a local session only."}
+      subtitle={
+        isSupabaseConfigured()
+          ? "Free to join — save homes, enquire, or start a listing."
+          : "Demo mode — this creates a local session only."
+      }
       footer={
         <>
           Already have an account?{" "}
-          <Link href="/auth/sign-in" className="font-medium text-brand-600 hover:text-brand-700">
+          <Link
+            href={`/auth/sign-in?next=${encodeURIComponent(next)}`}
+            className="font-medium text-brand-600 hover:text-brand-700"
+          >
             Sign in
           </Link>
         </>
@@ -70,15 +97,38 @@ export default function SignUpPage() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <Label htmlFor="name">Full name</Label>
-          <Input id="name" required value={name} onChange={(e) => setName(e.target.value)} />
+          <Input
+            id="name"
+            required
+            autoComplete="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
         </div>
         <div>
           <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+          <Input
+            id="email"
+            type="email"
+            required
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
         </div>
         <div>
-          <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
+          <Label htmlFor="password" hint="at least 8 characters">
+            Password
+          </Label>
+          <Input
+            id="password"
+            type="password"
+            required
+            minLength={8}
+            autoComplete="new-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
         </div>
         {error ? (
           <p role="alert" className="text-sm text-danger">
@@ -90,5 +140,13 @@ export default function SignUpPage() {
         </Button>
       </form>
     </AuthCard>
+  );
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignUpForm />
+    </Suspense>
   );
 }

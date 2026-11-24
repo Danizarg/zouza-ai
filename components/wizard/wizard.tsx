@@ -9,7 +9,9 @@ import { StepPreview } from "@/components/wizard/step-preview";
 import { StepPublish } from "@/components/wizard/step-publish";
 import { StepReview } from "@/components/wizard/step-review";
 import { WizardProgress } from "@/components/wizard/progress";
+import { buildListing } from "@/lib/build-listing";
 import { saveLocalListing } from "@/lib/local-listings";
+import { publishListing } from "@/lib/publish-listing";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import type {
@@ -18,7 +20,7 @@ import type {
   ListingFacts,
   ListingIntent,
 } from "@/lib/types";
-import { slugify, totalMoveIn } from "@/lib/utils";
+import Link from "next/link";
 import { useRef, useState } from "react";
 
 const DEFAULT_FACTS: ListingFacts = {
@@ -46,71 +48,6 @@ const DEFAULT_FACTS: ListingFacts = {
   photo_count: 0,
 };
 
-const FALLBACK_IMAGES = [
-  "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1400&q=80",
-  "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1400&q=80",
-  "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1400&q=80",
-];
-
-function buildListing(
-  facts: ListingFacts,
-  content: GeneratedListingContent,
-  imageUrls: string[],
-): Listing {
-  const isRent = facts.intent === "rent_out";
-  const slug = `${slugify(content.title)}-${Date.now().toString(36)}`;
-  const listing: Listing = {
-    id: `draft-${slug}`,
-    owner_id: "local-owner",
-    mode: isRent ? "rent" : "buy",
-    intent: facts.intent,
-    title: content.title,
-    slug,
-    summary: content.summary,
-    description: content.description,
-    city: facts.city,
-    country: facts.country,
-    address_area: facts.address_area,
-    latitude: null,
-    longitude: null,
-    property_type: facts.property_type,
-    bedrooms: facts.bedrooms,
-    bathrooms: facts.bathrooms,
-    size_m2: facts.size_m2,
-    floor: facts.floor,
-    price_monthly: isRent ? facts.price : null,
-    price_sale: isRent ? null : facts.price,
-    utilities_monthly: isRent ? facts.utilities_monthly : null,
-    deposit: isRent ? facts.deposit : null,
-    total_move_in_cost: null,
-    available_from: facts.available_from || null,
-    minimum_stay: null,
-    maximum_stay: null,
-    term: null,
-    pets_allowed: facts.pets_allowed,
-    pool: facts.pool,
-    sea_view: facts.sea_view,
-    garage: facts.garage,
-    furnished: facts.furnished,
-    new_build: false,
-    direct_owner: true,
-    verified_owner: false,
-    verified_property: false,
-    last_verified_at: null,
-    status: "published",
-    owner_rules: facts.owner_rules || null,
-    owner_name: "You",
-    rating: null,
-    review_count: 0,
-    images: imageUrls.length > 0 ? imageUrls : FALLBACK_IMAGES,
-    features: content.featureBullets,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
-  if (isRent) listing.total_move_in_cost = totalMoveIn(listing);
-  return listing;
-}
-
 export function Wizard() {
   const [step, setStep] = useState(1);
   const [intent, setIntent] = useState<ListingIntent | null>(null);
@@ -119,6 +56,7 @@ export function Wizard() {
   const [content, setContent] = useState<GeneratedListingContent | null>(null);
   const [listing, setListing] = useState<Listing | null>(null);
   const [publishing, setPublishing] = useState(false);
+  const [publishError, setPublishError] = useState<{ message: string; needsSignIn: boolean } | null>(null);
   const animationDoneRef = useRef(false);
   const generatedRef = useRef<GeneratedListingContent | null>(null);
 
@@ -152,37 +90,30 @@ export function Wizard() {
   async function handlePublish() {
     if (!content) return;
     setPublishing(true);
+    setPublishError(null);
 
-    let imageUrls = photos.map((p) => p.previewUrl);
     const supabase = getSupabaseBrowserClient();
-    if (supabase && photos.length > 0) {
-      try {
-        const uploaded = await Promise.all(
-          photos.map(async (p, i) => {
-            const path = `${Date.now()}-${i}-${p.file.name}`;
-            const { error } = await supabase.storage.from("listing-photos").upload(path, p.file);
-            if (error) return null;
-            return supabase.storage.from("listing-photos").getPublicUrl(path).data.publicUrl;
-          }),
-        );
-        const clean = uploaded.filter((u): u is string => Boolean(u));
-        if (clean.length > 0) imageUrls = clean;
-      } catch {
-        // fall back to local preview URLs
-      }
-    }
-
-    const finalListing = buildListing(facts, content, imageUrls);
-
     if (supabase) {
-      try {
-        await supabase.from("listings").insert({ ...finalListing, images: undefined, features: undefined });
-      } catch {
-        // mock-mode fallback below always runs too, so this never blocks the demo
+      // Supabase mode: a real row under the signed-in owner, or a clear reason why not.
+      // No local copy — a listing that failed to save must not look published.
+      const result = await publishListing(supabase, {
+        facts,
+        content,
+        photos: photos.map((p) => p.file),
+      });
+      setPublishing(false);
+      if (!result.ok) {
+        setPublishError({ message: result.error, needsSignIn: Boolean(result.needsSignIn) });
+        return;
       }
+      setListing(result.listing);
+      setStep(7);
+      return;
     }
-    saveLocalListing(finalListing);
 
+    // Mock mode: the browser is the database.
+    const finalListing = buildListing(facts, content, photos.map((p) => p.previewUrl));
+    saveLocalListing(finalListing);
     setListing(finalListing);
     setPublishing(false);
     setStep(7);
@@ -244,12 +175,30 @@ export function Wizard() {
       ) : null}
 
       {step === 6 && content ? (
-        <StepPreview
-          listing={buildListing(facts, content, photos.map((p) => p.previewUrl))}
-          onBack={() => setStep(5)}
-          onPublish={handlePublish}
-          publishing={publishing}
-        />
+        <>
+          {publishError ? (
+            <div
+              role="alert"
+              className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-danger/30 bg-danger/5 p-4 text-sm text-ink-2"
+            >
+              <p>{publishError.message}</p>
+              {publishError.needsSignIn ? (
+                <Link
+                  href="/auth/sign-in?next=%2Flist-with-ai"
+                  className="font-medium text-brand-600 hover:text-brand-700"
+                >
+                  Sign in
+                </Link>
+              ) : null}
+            </div>
+          ) : null}
+          <StepPreview
+            listing={buildListing(facts, content, photos.map((p) => p.previewUrl))}
+            onBack={() => setStep(5)}
+            onPublish={handlePublish}
+            publishing={publishing}
+          />
+        </>
       ) : null}
 
       {step === 7 && listing ? <StepPublish listing={listing} /> : null}

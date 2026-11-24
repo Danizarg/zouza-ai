@@ -123,7 +123,8 @@ async function advisors() {
 // mailbox, links straight back to the app (zouza:// in builds, exp:// in Expo Go until launch).
 const AUTH_SETTINGS = {
   site_url: "https://zouza.ai",
-  uri_allow_list: "zouza://**,exp://**",
+  // The website's /auth/callback on both hosts and in local dev, plus the app's deep links.
+  uri_allow_list: "https://zouza.ai/**,https://www.zouza.ai/**,http://localhost:3000/**,zouza://**,exp://**",
   mailer_autoconfirm: false,
   external_anonymous_users_enabled: false,
   password_min_length: 8,

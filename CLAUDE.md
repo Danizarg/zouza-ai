@@ -13,8 +13,8 @@ older, chronological build journal (§1–§18) — still valuable for the
   (CONTEXT.md §2 says `C:\Users\husky\Documents\Mamawebseite` — that is
   stale, the project moved.)
 - Domain: **zouza.ai** (Vercel)
-- Last verified: 2026-10-16 — `tsc --noEmit`, `npm run lint`,
-  `npm run build` all clean, 25/25 routes.
+- Last verified: 2026-11-24 — `tsc --noEmit`, `npm run lint`,
+  `npm run build` all clean, 29/29 routes (proxy active).
 
 ---
 
@@ -292,17 +292,25 @@ platform" filler. `design.md` holds the full spec.
 
 **PARTIAL**
 
-- **Supabase integration** — code paths exist everywhere
-  (`getListings`, `getListingById`, wizard publish insert, photo upload
-  to the `listing-photos` bucket, auth calls) but **no project is
-  configured** (`.env.local` absent), so every path falls through to
-  mock. Untested against a live database.
-- **Auth** — sign-in/sign-up/forgot-password call real Supabase Auth
-  when configured, but there is **no session anywhere else**: no
-  middleware, no server-side session read, header never shows a signed-in
-  state, and `/dashboard` is publicly reachable.
-- **Wizard publish** — writes to Supabase *and* always to localStorage;
-  `owner_id` is hardcoded `"local-owner"` (`components/wizard/wizard.tsx:65`).
+- **Supabase integration** — production (Vercel) is connected to the live
+  project since 2026-11-24 (`NEXT_PUBLIC_SUPABASE_URL` / `_ANON_KEY`).
+  Reads still fall back to `MOCK_LISTINGS` while the `listings` table is
+  empty, and `/explore` is pure mock. The signed-in dashboard queries in
+  `lib/dashboard.ts` were written against the schema but not yet exercised
+  with a real session.
+- **Auth / session** — `proxy.ts` → `lib/supabase/proxy.ts` refreshes the
+  session on every page request, forwards a `?code=` landing on any page to
+  `/auth/callback`, and redirects signed-out visitors away from
+  `/dashboard`. `lib/auth/server.ts` (`getViewer` / `requireViewer`) is the
+  server-side session read; `components/auth/account-menu.tsx` gives the
+  header its signed-in state. Still open: the Supabase redirect allow list
+  needs `https://zouza.ai/**` and `https://www.zouza.ai/**` (the proxy
+  fallback covers it meanwhile); no UI to start or reply to a conversation.
+- **Wizard publish** — in Supabase mode `lib/publish-listing.ts` inserts
+  the row for the signed-in user (`/list-with-ai` is gated behind an
+  account), uploads photos to `listing-images/<uid>/<listing>/…` and writes
+  `listing_images` + `listing_features`. Mock mode still saves to
+  localStorage. Not yet run end-to-end against the live project.
 
 **UI-ONLY / MOCK (no backend)**
 
@@ -331,7 +339,9 @@ platform" filler. `design.md` holds the full spec.
 ## 6. Database
 
 `supabase/schema.sql` — a single idempotent script (paste into the
-Supabase SQL editor). **It has never been run against a live project.**
+Supabase SQL editor). The live project (ref `nltrwifcwxrsyabyxswi`) carries
+`supabase/migrations/0001–0010`, which are canonical; `schema.sql` is the
+older single-file form.
 
 **Entities today:** `profiles` (extends `auth.users`), `listings`,
 `listing_images`, `listing_features`, `conversations`, `messages`,
@@ -550,12 +560,14 @@ Before that, the last commit was `6c79f61` (2026-07-18) — hero/header
 polish, following the Suzi persona + global assistant work in
 `CONTEXT.md` §18. Nothing had been left half-written.
 
-**Where the project stands now:** Zouza is a polished front-end with a
-genuinely intelligent AI layer behind it, and a well-designed but still
-**largely unexercised** data layer. Every user-visible flow works. Suzi is
-real. What is still missing is *persistence and identity*: no live
-Supabase project, no session, no account owns anything. That is the next
-block of work and everything in §3's business model sits behind it.
+**Where the project stands now (2026-11-24):** Zouza is a polished
+front-end with a genuinely intelligent AI layer behind it, now connected to
+a live Supabase project with session plumbing, a protected dashboard that
+reads the signed-in user's own rows, and listings owned by their real
+creator. What is still *unexercised* is the live write path (publish with
+photo upload) and the dashboard against real data, since neither has been
+run with a real session yet. Messaging has no compose/reply UI, and
+`/explore` is still mock.
 
 ---
 
@@ -569,13 +581,15 @@ matcher.
 
 1. ~~**Make Suzi real.**~~ **Done 2026-08-25** — see §7. Needs an
    `ANTHROPIC_API_KEY` in the Vercel project to be live in production.
-2. **Real identity + ownership.** ← *next up.* Supabase session plumbing
-   (middleware refresh, server-side session read, signed-in header state,
-   protected `/dashboard`), and listings owned by the actual creator
-   instead of `"local-owner"`. Everything in §3 depends on knowing who
-   someone is, and Suzi can't *act* on anyone's behalf until it exists.
-3. **Live Supabase project.** Run the schema, verify the read/write
-   paths that have never executed, confirm photo upload + RLS.
+2. ~~**Real identity + ownership.**~~ **Done 2026-11-24** — `proxy.ts`
+   session refresh, `lib/auth/server.ts`, `AccountMenu`, protected
+   `/dashboard` reading real rows, `publishListing` owned by `auth.uid()`.
+   Left open: Supabase redirect allow list entries for zouza.ai; a UI to
+   start/reply to conversations; `/explore` still mock.
+3. ~~**Live Supabase project.**~~ **Done 2026-11-24** — migrations
+   0001–0010 applied, Vercel production env points at it. ← *next up:*
+   exercise publish + photo upload + dashboard with a real account and fix
+   whatever the first run surfaces.
 
 ### P1 — Essential MVP
 
